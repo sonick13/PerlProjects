@@ -3,11 +3,11 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/uptime.pl
 # Started On        - Wed 17 Apr 13:13:34 BST 2019
-# Last Change       - Wed 17 Apr 15:24:53 BST 2019
+# Last Change       - Wed 17 Apr 15:26:21 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-# An attempt at rewriting the 'up' function in my .bash_functions file, in Perl.
+# A rewrite of the 'up' function in my .bash_functions file, in Perl.
 #----------------------------------------------------------------------------------
 
 # Open and output the contents of the given file.
