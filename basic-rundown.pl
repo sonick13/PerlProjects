@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Wed 17 Apr 16:25:46 BST 2019
+# Last Change       - Wed 17 Apr 16:37:36 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ printf("\n");
 
 # The use command is like import in Python.
 use feature "say";
-say("Using say(), which is like the shell echo.");
+say("Using say(), which is like the shell echo; it includes newline.");
 say("Say() needs: use feature \"say\".");
 printf("\n");
 
@@ -96,6 +96,11 @@ printf("The name I want is at index 0 (first): %s\n", $array[0]);
 @string = qw/This is string split by whitespace into an array./;
 print("I want the 2nd index (1) of \$string: $string[1]\n");
 
+# Read from standard input, which works with pipes in shell. Pipe something into
+# this Perl script to then output what went in. Commented out though, because it
+# for some reason breaks the below code.
+#print(<STDIN> . "\n");
+
 # Create a directory in the CWD. As it is, it seems to follow your umask. This is
 # also a basic example of grabbing user input via STDIN.
 print("Create a test directory? ");
@@ -128,3 +133,17 @@ printf("\n");
 # Assign a value to $string, then print it with all upper- then lowercase.
 $string = "Test String.";
 printf(qq{Uppercase: "%s"\nLowercase: "%s"\n\n}, uc($string), lc($string));
+
+# Grabbing and storing STDOUT from a shell command is incredibly easy in Perl.
+# Also, since the newline character is included in the grabbed output, you needn't
+# append it to the print() function.
+$output = readpipe('/bin/ls $HOME');
+print($output);
+
+# Renaming a file is also stupidly easy in Perl. Commented out, as it just shows
+# the expected syntax. I imagine it works for directories, too.
+#rename('OLD', 'NAME')
+
+# String substitition is simple enough in Perl.
+$string = "This is a test.";
+say(s/a test\./cool./);
