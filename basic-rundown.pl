@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Wed 17 Apr 16:37:36 BST 2019
+# Last Change       - Wed 17 Apr 23:51:49 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -147,3 +147,62 @@ print($output);
 # String substitition is simple enough in Perl.
 $string = "This is a test.";
 say(s/a test\./cool./);
+
+# Change the CWD. I get a message saying this is deprecated. No clue what to use.
+chdir("$HOME");
+
+# Create and open a new file in the CWD, overwriting existing one, then close it.
+#open(file, >filename_test.tmp)
+#close(file);
+
+# Open and append to given filename, then close it.
+#open(file, '>>filename_test.tmp');
+#close(file);
+
+# Pipe file contents into the STDIN of supplied shell command or program. Doesn't
+# seem to create an actual file. Perhaps this mimics a simple pipe, allowing you to
+# choose what is piped into the given program.
+open(file, '| /bin/grep "1"');
+# This does as above, but the other way around.
+open(file, '/bin/ls |');
+# To demonstrate:
+print(<file>);
+close(file);
+# It seems to closely replicate readpipe(), but I think this is better, as it will
+# leave the 'file' open (until closed), making for easy processing, without having
+# to explicitly set a variable with the contents of readpipe().
+
+# Consise example of the above approach to getting output from shell command into
+# a Perl script. This is a one-liner.
+open(file, "/usr/bin/uptime |") or die "File not found"
+@A = split(" ", <file>)
+say($A[0])
+close(file)
+
+# The stat() function, much like in Python, shell, and likely C, allows you to get
+# various important values related to files, such as their UID. However, stat() is
+# a list (like in Python), so, lists must be contained in parentheses and to call
+# a specific index within that list, you'd use syntax similar to calling an index
+# in a variable array, like shell. [4] is UID, [5] is GID. There are 13 in total, -
+# but seem to be platform-dependent. In Linux, in order, they are as follows:
+#
+# dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize, blocks
+printf("The UID of /home is: %d\n", (stat("/home"))[4])
+
+# Like in Python, you can straight-out execute a program, as if by shell. This also
+# demonstrates using special file testing flags. In this case, -e, like in shell, -
+# is testing with the following file exists. The rest of the flags are pretty much
+# as they are in shell.
+#
+# -e exists, -f is file, -r is readable, -x is executable, -w is writable
+# -z file is empty, -d file is directory, -S is socket, -p is named pipe
+# -c character special file, -b block special file, -k file has sticky bit set
+# -B file is binary, -s file isn't empty
+if(-e "/usr/bin/firefox"){
+	print("Run /usr/bin/firefox? ")
+	$answer = <STDIN>
+	if($answer =~ m{^[yY]$}){
+		system("/usr/bin/firefox") or die "Failed to load Firefox"
+		say("Firefox launched.")
+	}
+}
