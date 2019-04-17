@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Wed 17 Apr 13:06:24 BST 2019
+# Last Change       - Wed 17 Apr 14:48:03 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -66,4 +66,30 @@ print <<EOF;
 	I'm sure there's another way though.\n
 EOF
 
-print("Interestingly, the EOF doesn't need a suffixed semi-colon.\n")
+print("Interestingly, the EOF doesn't need a suffixed semi-colon.\n");
+
+# Define a function, which I'm guessing is called a subroutine in Perl.
+sub up(){
+	print("The 'up' function (sub) was called.\n\n");
+};
+
+# Call the function like this.
+up();
+
+# Open and output the contents of the given file.
+open($file, '/proc/uptime');
+print("This is the contents of /proc/uptime: " . <$file> . "\n");
+
+# In-case the file isn't found or otherwise unable to be opened, you can use 'or'
+# logic operator with 'die', which means kill the program and output the given
+# error message, suffixed with 'at FILE line NUM'. Here, I'm just printing.
+open($file, '/proc/nofile') or print("File not found\n");
+
+# Declaring a variable array. @ is used only with declaration.
+@array = ("Bob", "Tim", "Tom");
+
+# Here, I'm using the first index of the variable array.
+printf("The name I want is at index 0 (first): %s\n", $array[0]);
+
+@string = qw/This is string split by whitespace into an array./;
+print("I want the 2nd index (1) of \$string: $string[1]\n");
