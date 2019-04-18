@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/uptime.pl
 # Started On        - Wed 17 Apr 13:13:34 BST 2019
-# Last Change       - Thu 18 Apr 00:55:46 BST 2019
+# Last Change       - Thu 18 Apr 01:01:14 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -25,10 +25,13 @@ if(-e "$filename"){
 	open(my $file, '<:encoding(UTF-8)', "$filename");
 
 	# This is effectively like the shell while read loop, but easier to read.
-	while(<file>){
+	# $line resembles each line from the file, as with the default of $REPLY in
+	# a shell while read loop. While each line is true, effectively, continue
+	# through the loop, until there's nothing left.
+	while(my $line = <file>){
 		# $_ seems to store the currently iterated line. It's like a
 		# placeholder in various areas of the Perl programming language.
-		my(@array = split(" ", $_));
+		my(@array = split(" ", $line));
 		my($hour = $array[0] / 60 / 60);
 		my($min = $array[0] / 60 - ($hour * 60));
 
