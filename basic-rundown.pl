@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Wed 17 Apr 23:51:49 BST 2019
+# Last Change       - Fri 19 Apr 18:38:14 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -78,17 +78,22 @@ sub up(){
 # Call the function like this.
 up();
 
-# Open and output the contents of the given file.
-open($file, '/proc/uptime');
+# Open and output the contents of the given file. The < is read, > is write, >> is
+# append. The encoding part is pretty self-explanatory, but apparently optional.
+open(my $file, '<:encoding(UTF-8)', '/proc/uptime');
 print("This is the contents of /proc/uptime: " . <$file> . "\n");
 
 # In-case the file isn't found or otherwise unable to be opened, you can use 'or'
 # logic operator with 'die', which means kill the program and output the given
 # error message, suffixed with 'at FILE line NUM'. Here, I'm just printing.
-open($file, '/proc/nofile') or print("File not found\n");
+open(my $file, '<:encoding(UTF-8)', '/proc/nofile') or print("File not found\n");
 
-# Declaring a variable array. @ is used only with declaration.
-@array = ("Bob", "Tim", "Tom");
+# Similar to die, warn() outputs the same, but without exiting.
+warn "Demonstrational error detected"
+
+# Declaring a variable array. @ is used only with declaration. Using my() is proper
+# form, but depends on the situation. It's a 'scope' thing, like local or not.
+my(@array = ("Bob", "Tim", "Tom"));
 
 # Here, I'm using the first index of the variable array.
 printf("The name I want is at index 0 (first): %s\n", $array[0]);
@@ -104,14 +109,14 @@ print("I want the 2nd index (1) of \$string: $string[1]\n");
 # Create a directory in the CWD. As it is, it seems to follow your umask. This is
 # also a basic example of grabbing user input via STDIN.
 print("Create a test directory? ");
-$answer = <STDIN>;
+my $answer = <STDIN>;
 if($answer =~ m{^[yY]{1}$}){
 	mkdir("Directory_Name");
 	print("Directory created.\n");
 
 	# Now to demonstrate removing a directory, via user prompting.
 	print("Remove created directory? ");
-	$answer = <STDIN>;
+	my $answer = <STDIN>;
 	if($answer =~ m{^[yY]{1}$}){
 		rmdir("Directory_Name");
 		print("Directory removed.\n");
@@ -119,13 +124,13 @@ if($answer =~ m{^[yY]{1}$}){
 		print("Not removing directory.\n");
 	}else{
 		# Output error message, with extra info, then exit.
-		die "Incorrect response.\n";
+		die "Incorrect response";
 	};
 }elsif($answer =~ m{^[nN]{1}$}){
 	print("Not creating directory.\n");
 }else{
 	# Output error message, with extra info, then exit.
-	die "Incorrect response.\n";
+	die "Incorrect response";
 };
 
 printf("\n");
@@ -152,8 +157,8 @@ say(s/a test\./cool./);
 chdir("$HOME");
 
 # Create and open a new file in the CWD, overwriting existing one, then close it.
-#open(file, >filename_test.tmp)
-#close(file);
+#open(my $file, '>', 'filename_test.tmp')
+#close($file);
 
 # Open and append to given filename, then close it.
 #open(file, '>>filename_test.tmp');
@@ -174,10 +179,10 @@ close(file);
 
 # Consise example of the above approach to getting output from shell command into
 # a Perl script. This is a one-liner.
-open(file, "/usr/bin/uptime |") or die "File not found"
-@A = split(" ", <file>)
-say($A[0])
-close(file)
+open(file, "/usr/bin/uptime |") or die "File not found";
+@A = split(" ", <file>);
+say($A[0]);
+close(file);
 
 # The stat() function, much like in Python, shell, and likely C, allows you to get
 # various important values related to files, such as their UID. However, stat() is
@@ -187,7 +192,7 @@ close(file)
 # but seem to be platform-dependent. In Linux, in order, they are as follows:
 #
 # dev, ino, mode, nlink, uid, gid, rdev, size, atime, mtime, ctime, blksize, blocks
-printf("The UID of /home is: %d\n", (stat("/home"))[4])
+printf("The UID of /home is: %d\n", (stat("/home"))[4]);
 
 # Like in Python, you can straight-out execute a program, as if by shell. This also
 # demonstrates using special file testing flags. In this case, -e, like in shell, -
@@ -199,10 +204,35 @@ printf("The UID of /home is: %d\n", (stat("/home"))[4])
 # -c character special file, -b block special file, -k file has sticky bit set
 # -B file is binary, -s file isn't empty
 if(-e "/usr/bin/firefox"){
-	print("Run /usr/bin/firefox? ")
-	$answer = <STDIN>
+	print("Run /usr/bin/firefox? ");
+	$answer = <STDIN>;
 	if($answer =~ m{^[yY]$}){
-		system("/usr/bin/firefox") or die "Failed to load Firefox"
-		say("Firefox launched.")
-	}
-}
+		system("/usr/bin/firefox") or die "Failed to load Firefox";
+		say("Firefox launched.");
+	};
+};
+
+# This variable array stores arguments handed to the Perl script, akin to $@. It
+# must be uppercase; that is not a typo. Remember, @ when declaring an array, $
+# when calling for its contents, unless it needs to be processed as an array, such
+# as with shift(). Array elements can still be isolated via [x] syntax.
+print("$ARGV\n");
+
+# Logical operators to compare operands in, for example, an if statement, are not
+# as they are in shell programming. For example '==' will NOT compare strings. You
+# have to use '=' to compare strings in Perl. Even lt, eq, and gt can be used, for
+# string comparisons.
+
+# If the first index within the builtin ARGV variable array detects the REGEX match
+# within the '/'s, then proceed to say "Help". The =~ is apparently a substr test.
+if($ARGV[0] =~ /^(--help|-h|-\?)$/){ say "Help"; };
+
+# For loop syntax in Perl:
+for my $VAR ("list", "to", "iterative", "over"){
+	say "Command(s) to execute per list item.";
+};
+
+# The syntax for associative arrays (variable arrays with named keys, not numbered
+# indices) in Perl is as follows. This also shows a very useful associative array
+# built into Perl, which holds environment variables.
+say "$ENV{"USER"}";
