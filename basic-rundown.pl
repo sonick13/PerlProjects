@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Fri 19 Apr 18:38:14 BST 2019
+# Last Change       - Fri 19 Apr 19:12:59 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,6 +13,12 @@
 #                A common extension for Perl scripts is '.pl'. VIM picks Perl
 #                scripts up as type 'perl', not too surprisingly.
 #----------------------------------------------------------------------------------
+
+# The former is for catching and stopping at certain errors. The latter merely
+# warns of certain errors, but proccesses the code none-the-less. Recommended.
+# These seem very useful until experienced enough, but even then, worth using?
+use strict;
+use warnings;
 
 printf("Using printf(), like in many other languages.\n");
 printf("The addition of 1 and 4 is equal to %d.\n", 1 + 4);
@@ -158,11 +164,11 @@ chdir("$HOME");
 
 # Create and open a new file in the CWD, overwriting existing one, then close it.
 #open(my $file, '>', 'filename_test.tmp')
-#close($file);
+#close("$file");
 
 # Open and append to given filename, then close it.
 #open(file, '>>filename_test.tmp');
-#close(file);
+#close("$file");
 
 # Pipe file contents into the STDIN of supplied shell command or program. Doesn't
 # seem to create an actual file. Perhaps this mimics a simple pipe, allowing you to
@@ -172,7 +178,7 @@ open(file, '| /bin/grep "1"');
 open(file, '/bin/ls |');
 # To demonstrate:
 print(<file>);
-close(file);
+close("$file");
 # It seems to closely replicate readpipe(), but I think this is better, as it will
 # leave the 'file' open (until closed), making for easy processing, without having
 # to explicitly set a variable with the contents of readpipe().
@@ -182,7 +188,7 @@ close(file);
 open(file, "/usr/bin/uptime |") or die "File not found";
 @A = split(" ", <file>);
 say($A[0]);
-close(file);
+close("$file");
 
 # The stat() function, much like in Python, shell, and likely C, allows you to get
 # various important values related to files, such as their UID. However, stat() is
@@ -236,3 +242,10 @@ for my $VAR ("list", "to", "iterative", "over"){
 # indices) in Perl is as follows. This also shows a very useful associative array
 # built into Perl, which holds environment variables.
 say "$ENV{"USER"}";
+
+# This is effectively like the shell while read loop, but easier to read.
+# $line resembles each line from the file, as with the default of $REPLY in
+# a shell while read loop. While each line is true, effectively, continue
+# through the loop, until there's nothing left.
+open(my $file, '<', '/proc/uptime');
+while(my $line = <$file>){ say "$line"; };
