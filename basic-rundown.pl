@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Fri 19 Apr 19:12:59 BST 2019
+# Last Change       - Fri 19 Apr 23:58:54 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -249,3 +249,20 @@ say "$ENV{"USER"}";
 # through the loop, until there's nothing left.
 open(my $file, '<', '/proc/uptime');
 while(my $line = <$file>){ say "$line"; };
+
+# Causes Perl to 'die' if a file is unable to be read from or written to.
+use autodie;
+
+# As with shell, variable names may be wrapped in braces to protect them from
+# neighbouring characters being interpreted as part of the variable name. But, -
+# as shown here, the environment variable doesn't get expanded and so USER is
+# printed. Special exception?
+print("USER:$ENV{'USER'}!\n");
+
+# All output within the select psuedo-block (up until close) is written to the
+# provided file. Created if doesn't exist. Not appended. It looks like the file
+# MUST be closed afterwards, otherwise you risk doing all sorts to the file.
+open(my $FH, ">:encoding(UTF-8)", "$HOME/Desktop/new_file.txt");
+select $FH;
+	print("test\n");
+close("$FH");
