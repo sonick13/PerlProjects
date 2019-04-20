@@ -3,12 +3,16 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/redshifter.pl
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Sat 20 Apr 01:13:29 BST 2019
+# Last Change       - Sat 20 Apr 01:15:46 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # Perl rewrite of shell program redshifter.
 #----------------------------------------------------------------------------------
+
+#TODO - Why won't increments and decrements work properly? Reset does, and getting
+#       the current value in the first if statement seems to work fine, so why?
+#       It's like there's a bug with the if conditions on lines 53 and 64.
 
 use strict;
 use warnings;
