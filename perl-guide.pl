@@ -3,13 +3,15 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/perl-guide.pl
 # Started On        - Sat 20 Apr 13:07:54 BST 2019
-# Last Change       - Sat 20 Apr 15:53:45 BST 2019
+# Last Change       - Sat 20 Apr 15:54:12 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # I'm following the YouTuber 'The Bad Tutorials' who has a series of Perl
 # tutorials. In this script, I'll be documenting, taking notes, and showing
 # examples of what I learn from the series of videos, plus other things.
+#
+# This script is good to both execute and read.
 #----------------------------------------------------------------------------------
 
 use strict;
