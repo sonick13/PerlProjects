@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Fri 19 Apr 23:58:54 BST 2019
+# Last Change       - Sat 20 Apr 17:19:51 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -266,3 +266,6 @@ open(my $FH, ">:encoding(UTF-8)", "$HOME/Desktop/new_file.txt");
 select $FH;
 	print("test\n");
 close("$FH");
+
+# Hashes in Perl are basically associative arrays. This is how to assign a hash:
+my %hash = (value1=>"green", value2=>"blue", value3=>"red");
