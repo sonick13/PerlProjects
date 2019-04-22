@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/basic-rundown.pl
 # Started On        - Wed 17 Apr 11:55:55 BST 2019
-# Last Change       - Sat 20 Apr 17:19:51 BST 2019
+# Last Change       - Mon 22 Apr 18:14:46 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -269,3 +269,10 @@ close("$FH");
 
 # Hashes in Perl are basically associative arrays. This is how to assign a hash:
 my %hash = (value1=>"green", value2=>"blue", value3=>"red");
+
+# Demonstration of writing print's contents to a specified Filehandle. For some
+# reason, print() understands these two as separate arguments (?) without actually
+# separating them as such, with commas; weird.
+open($FH, ">", "./file_test_1232.txt");
+print($FH "This works!\n");
+close($FH)
