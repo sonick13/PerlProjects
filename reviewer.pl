@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/reviewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 14:30:43 BST 2019
+# Last Change       - Mon 22 Apr 15:08:23 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -30,6 +30,7 @@ sub USAGE{
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
+		            --summary|-S            - Conclude the reviews with a summary.
 
 		FILE:       The database file used is:
 
@@ -39,6 +40,8 @@ sub USAGE{
 	print(split("\t", $HELP));
 }
 
+my $SHOW_STATS = "False";
+
 if(@ARGV){
 	while($ARGV[0]){
 		if($ARGV[0] =~ /^(--help|-h|-\?)$/){
@@ -47,6 +50,10 @@ if(@ARGV){
 		}elsif($ARGV[0] =~ /^(--version|-v)$/){
 			print("$_VERSION_\n");
 			exit 0
+		}elsif($ARGV[0] =~ /^(--summary|-S)$/){
+			$SHOW_STATS = "True"
+		}elsif($ARGV[0] =~ /^-.*/){
+			XERR(__LINE__, "Incorrect argument(s) specified.")
 		}else{
 			last
 		}
@@ -78,6 +85,12 @@ $Text::Wrap::columns = `/usr/bin/tput cols`;
 
 open(my $FH, '<', $DATABASE);
 
+my $STAR1_COUNT = 0;
+my $STAR2_COUNT = 0;
+my $STAR3_COUNT = 0;
+my $STAR4_COUNT = 0;
+my $STAR5_COUNT = 0;
+my $TTL_COUNT = 0;
 my $COUNT = 0;
 while(<$FH>){
 	my @LINE = split("~~~", $_);
@@ -88,14 +101,16 @@ while(<$FH>){
 	my $USER = $LINE[2];
 
 	if($PACK eq $ARGV[0]){
+		$TTL_COUNT += 1;
+
 		my @DATA = ($RATE, $SAID, $USER);
 		if($DATA[0] == $ARGV[1]){
 			$COUNT++;
 
 			printf(
-				"%d/5 ('%s')\n\n%s\n\n",
+				"%d/5 ('%s')\n -\n%s -\n",
 				$DATA[0], $DATA[2],
-				wrap("", "", $DATA[1])
+				wrap(" | ", " | ", $DATA[1])
 			)
 		}
 	}
@@ -103,4 +118,13 @@ while(<$FH>){
 
 close($FH);
 
-printf("\nTTL: %d\n", $COUNT)
+if($SHOW_STATS eq "True"){
+	print("\n   +----------/");
+	printf("\n   | Reviews:     %d/%d\n   |", $COUNT, $TTL_COUNT);
+	printf("\n   | Total 1/5:   %d", $STAR1_COUNT);
+	printf("\n   | Total 2/5:   %d", $STAR2_COUNT);
+	printf("\n   | Total 3/5:   %d", $STAR3_COUNT);
+	printf("\n   | Total 4/5:   %d", $STAR4_COUNT);
+	printf("\n   | Total 5/5:   %d\n", $STAR5_COUNT);
+	print("   +----------------------/\n\n");
+}
