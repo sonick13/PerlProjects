@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 16:54:47 BST 2019
+# Last Change       - Mon 22 Apr 17:47:55 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -33,11 +33,15 @@ sub USAGE{
 		            --version|-v            - Output only the version datestamp.
 		            --summary|-S            - Conclude the reviews with a summary.
 		            --db-update             - Download and update the database.
+		            --db-file PATH          - Instead, use this database file.
 
 		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
 		            still prove useful in Debian and Ubuntu, albeit with inaccuracies.
 
-		FILE:       The database file used is:
+		            If you specifiy your own database file, it MUST adhere to the same
+		            formatting as the official one, lest previewer wind up a buggy mess.
+
+		FILE:       Unless told otherwise, the database is stored here:
 
 		              \$HOME/.config/reviewer.db
 
@@ -49,6 +53,7 @@ sub USAGE{
 
 my $SHOW_STATS = "False";
 my $UPDATE_DB = "False";
+my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
 if(@ARGV){
 	while($ARGV[0]){
@@ -62,6 +67,9 @@ if(@ARGV){
 			$SHOW_STATS = "True"
 		}elsif($ARGV[0] =~ /^--db-update$/){
 			$UPDATE_DB = "True"
+		}elsif($ARGV[0] =~ /^--db-file$/){
+			shift(@ARGV);
+			$DATABASE = $ARGV[0];
 		}elsif($ARGV[0] =~ /^-.*/){
 			XERR(__LINE__, "Incorrect argument(s) specified.")
 		}else{
@@ -86,9 +94,8 @@ if(! -x "/usr/bin/tput"){
 	XERR(__LINE__, "Dependency '/usr/bin/tput' not met.")
 }
 
-my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
-	XERR(__LINE__, "File '$DATABASE' not found.")
+	XERR(__LINE__, "Database file missing or inaccessible.")
 }elsif($UPDATE_DB eq "True"){
 	# Temporary.
 	if(! -x "/usr/bin/wget"){
