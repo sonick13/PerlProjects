@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 16:03:47 BST 2019
+# Last Change       - Mon 22 Apr 16:07:26 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -120,6 +120,12 @@ while(<$FH>){
 		$TTL_COUNT += 1;
 
 		my @DATA = ($RATE, $SAID, $USER);
+		if($DATA[0] == 1){$STAR1_COUNT += 1}
+		if($DATA[0] == 2){$STAR2_COUNT += 1}
+		if($DATA[0] == 3){$STAR3_COUNT += 1}
+		if($DATA[0] == 4){$STAR4_COUNT += 1}
+		if($DATA[0] == 5){$STAR5_COUNT += 1}
+
 		if($DATA[0] == $ARGV[1]){
 			$COUNT++;
 
@@ -137,10 +143,10 @@ close($FH);
 if($SHOW_STATS eq "True"){
 	print("\n   +----------/");
 	printf("\n   | Reviews:     %d/%d\n   |", $COUNT, $TTL_COUNT);
-	printf("\n   | Total 1/5:   %d", $STAR1_COUNT);
-	printf("\n   | Total 2/5:   %d", $STAR2_COUNT);
-	printf("\n   | Total 3/5:   %d", $STAR3_COUNT);
+	printf("\n   | Total 5/5:   %d", $STAR5_COUNT);
 	printf("\n   | Total 4/5:   %d", $STAR4_COUNT);
-	printf("\n   | Total 5/5:   %d\n", $STAR5_COUNT);
+	printf("\n   | Total 3/5:   %d", $STAR3_COUNT);
+	printf("\n   | Total 2/5:   %d", $STAR2_COUNT);
+	printf("\n   | Total 1/5:   %d\n", $STAR1_COUNT);
 	print("   +----------------------/\n\n");
 }
