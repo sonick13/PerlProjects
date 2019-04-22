@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 16:13:55 BST 2019
+# Last Change       - Mon 22 Apr 16:54:47 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,8 +22,7 @@ sub ERR{ printf("[L%0.4d] ERROR: %s\n", "$1", "$2"); }
 my $DB_SITE = 'https://community.linuxmint.com/data/new-reviews.list';
 
 sub USAGE{
-	my $HELP = qq{
-		            PREVIEWER ($_VERSION_)
+	my $HELP = qq{	            PREVIEWER ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
 		            Perl fork of the slower, shell counterpart, 'reviewer'.
