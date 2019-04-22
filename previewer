@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 20:32:44 BST 2019
+# Last Change       - Mon 22 Apr 20:39:24 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -35,9 +35,6 @@ sub USAGE{
 		            --boring|-b             - Omit these ASCII psuedo-borders.
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
-		            --format|-F STRING      - Format the output. See FORMAT below.
-
-		FORMAT:     ...
 
 		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
 		            still prove useful in Debian and Ubuntu, albeit with inaccuracies.
