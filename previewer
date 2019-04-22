@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 19:53:42 BST 2019
+# Last Change       - Mon 22 Apr 20:32:44 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -32,8 +32,12 @@ sub USAGE{
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
 		            --summary|-S            - Conclude the reviews with a summary.
+		            --boring|-b             - Omit these ASCII psuedo-borders.
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
+		            --format|-F STRING      - Format the output. See FORMAT below.
+
+		FORMAT:     ...
 
 		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
 		            still prove useful in Debian and Ubuntu, albeit with inaccuracies.
@@ -51,8 +55,9 @@ sub USAGE{
 	print(split("\t", $HELP))
 }
 
-my $SHOW_STATS = "False";
+my $BORING = "False";
 my $UPDATE_DB = "False";
+my $SHOW_STATS = "False";
 my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
 if(@ARGV){
@@ -69,7 +74,9 @@ if(@ARGV){
 			$UPDATE_DB = "True"
 		}elsif($ARGV[0] =~ /^--db-file$/){
 			shift(@ARGV);
-			$DATABASE = $ARGV[0];
+			$DATABASE = $ARGV[0]
+		}elsif($ARGV[0] =~ /^(--boring|-b)$/){
+			$BORING = "True"
 		}elsif($ARGV[0] =~ /^-.*/){
 			XERR(__LINE__, "Incorrect argument(s) specified.")
 		}else{
@@ -139,11 +146,15 @@ while(<$FH>){
 		if($DATA[0] == $ARGV[1]){
 			$COUNT++;
 
-			printf(
-				"%d/5 ('%s')\n -\n%s -\n",
-				$DATA[0], $DATA[2],
-				wrap(" | ", " | ", $DATA[1])
-			)
+			sub SHOW{
+				printf(
+					"%d/5 ('%s')\n $_[0]\n%s $_[0]\n",
+					$DATA[0], $DATA[2],
+					wrap(" $_[1] ", " $_[1] ", $DATA[1])
+				)
+			}
+
+			$BORING eq "True" ? SHOW(" ", " ") : SHOW("+", "|")
 		}
 	}
 }
@@ -151,12 +162,21 @@ while(<$FH>){
 close($FH);
 
 if($SHOW_STATS eq "True"){
-	print("\n   +----------/");
-	printf("\n   | Reviews:     %d/%d\n   |", $COUNT, $TTL_COUNT);
-	printf("\n   | Total 5/5:   %d", $STAR5_COUNT);
-	printf("\n   | Total 4/5:   %d", $STAR4_COUNT);
-	printf("\n   | Total 3/5:   %d", $STAR3_COUNT);
-	printf("\n   | Total 2/5:   %d", $STAR2_COUNT);
-	printf("\n   | Total 1/5:   %d\n", $STAR1_COUNT);
-	print("   +----------------------/\n\n");
+	sub SHOW2{
+		my $BUF = qq{
+			 $_[1]$_[2]$_[3]
+			 $_[0] Reviews:     $COUNT/$TTL_COUNT
+			 $_[0]
+			 $_[0] Total 5/5:   $STAR5_COUNT
+			 $_[0] Total 4/5:   $STAR4_COUNT
+			 $_[0] Total 3/5:   $STAR3_COUNT
+			 $_[0] Total 2/5:   $STAR2_COUNT
+			 $_[0] Total 1/5:   $STAR1_COUNT
+			 $_[1]$_[2]$_[3]
+			};
+
+		print(split("\t", $BUF))
+	}
+
+	$BORING ne "True" ? SHOW2("|", "+", ">") : SHOW2(" ", " ", " ")
 }
