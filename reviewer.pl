@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/reviewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 03:23:41 BST 2019
+# Last Change       - Mon 22 Apr 12:22:52 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -82,18 +82,14 @@ if(-f $DATABASE && -r $DATABASE){
 			my @DATA = ($RATE, $SAID, $USER);
 
 			if($DATA[0] == $ARGV[1]){
+				$Text::Wrap::columns = 80;
 				$COUNT++;
 
-				sub RESULT{
-					printf(
-						"%d/5 ('%s')\n\n%s\n\n",
-						$DATA[0], $DATA[2], $DATA[1]
-					);
-				}
-
-				$Text::Wrap::columns = 80;
-				wrap(" ", RESULT);
-				#TODO - Why won't this wrap() work?
+				printf(
+					"%d/5 ('%s')\n\n%s\n\n",
+					$DATA[0], $DATA[2],
+					wrap("", "", $DATA[1])
+				);
 			}
 		}
 	}
