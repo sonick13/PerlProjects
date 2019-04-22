@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 17:47:55 BST 2019
+# Last Change       - Mon 22 Apr 19:53:42 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -97,7 +97,8 @@ if(! -x "/usr/bin/tput"){
 if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
 	XERR(__LINE__, "Database file missing or inaccessible.")
 }elsif($UPDATE_DB eq "True"){
-	# Temporary.
+	#TODO - Get a 403 if using get() from LWP::Simple. Need to figure out how
+	#       to change the user agent string. Until then, wget will suffice.
 	if(! -x "/usr/bin/wget"){
 		XERR(__LINE__, "Dependency '/usr/bin/wget' not met.")
 	}else{
