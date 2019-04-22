@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 15:59:41 BST 2019
+# Last Change       - Mon 22 Apr 16:03:47 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ if(@ARGV){
 	unless($UPDATE_DB eq "True"){
 		if(! $ARGV[0]){
 			XERR(__LINE__, "A package name must be provided.")
-		}elsif($ARGV[1] !~ /^[1-5]{1}$/){
+		}elsif((! $ARGV[1]) || ($ARGV[1] !~ /^[1-5]{1}$/)){
 			XERR(__LINE__, "Invalid or unspecified rating.")
 		}
 	}
