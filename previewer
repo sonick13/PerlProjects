@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 20:48:04 BST 2019
+# Last Change       - Mon 22 Apr 20:59:40 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -146,12 +146,16 @@ while(<$FH>){
 			sub SHOW{
 				printf(
 					"%d/5 ('%s')\n $_[0]\n%s $_[0]\n",
-					$DATA[0], $DATA[2],
-					wrap(" $_[1] ", " $_[1] ", $DATA[1])
+					$_[3], $_[4],
+					wrap(" $_[1] ", " $_[1] ", $_[2])
 				)
 			}
 
-			$BORING eq "True" ? SHOW(" ", " ") : SHOW("+", "|")
+			if($BORING eq "True"){
+				SHOW(" ", " ", $DATA[1], $DATA[0], $DATA[2])
+			}else{
+				SHOW("+", "|", $DATA[1], $DATA[0], $DATA[2])
+			}
 		}
 	}
 }
