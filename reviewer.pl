@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/reviewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 12:22:52 BST 2019
+# Last Change       - Mon 22 Apr 14:30:43 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -18,8 +18,6 @@ my $_VERSION_ = "2019-04-22";
 
 sub XERR{ printf("[L%0.4d] ERROR: %s\n", $_[0], "$_[1]"); exit 1; }
 sub ERR{ printf("[L%0.4d] ERROR: %s\n", "$1", "$2"); }
-
-my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
 sub USAGE{
 	my $HELP = qq{
@@ -44,59 +42,65 @@ sub USAGE{
 if(@ARGV){
 	while($ARGV[0]){
 		if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-			USAGE; exit 0;
+			USAGE
+			exit 0
 		}elsif($ARGV[0] =~ /^(--version|-v)$/){
 			print("$_VERSION_\n");
-			exit 0;
+			exit 0
 		}else{
-			last;
+			last
 		}
 
-		shift(@ARGV);
+		shift(@ARGV)
 	}
 
 	if(! $ARGV[0]){
-		XERR(__LINE__, "A package name must be provided.");
+		XERR(__LINE__, "A package name must be provided.")
 	}elsif(! $ARGV[1]){
-		XERR(__LINE__, "A rating must be provided.");
+		XERR(__LINE__, "A rating must be provided.")
 	}elsif(! $ARGV[1] =~ /^[1-5]$/){
-		XERR(__LINE__, "Invalid rating specified.");
+		XERR(__LINE__, "Invalid rating specified.")
 	}
 }else{
-	XERR(__LINE__, "One or more arguments are required.");
+	XERR(__LINE__, "One or more arguments are required.")
 }
 
-if(-f $DATABASE && -r $DATABASE){
-	open(my $FH, '<', $DATABASE);
+if(! -x "/usr/bin/tput"){
+	XERR(__LINE__, "Dependency '/usr/bin/tput' not met.")
+}
 
-	my $COUNT = 0;
-	while(<$FH>){
-		my @LINE = split("~~~", $_);
+my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
+unless(-f $DATABASE && -r $DATABASE){
+	XERR(__LINE__, "File '$DATABASE' not found.")
+}
 
-		my $PACK = $LINE[0];
-		my $RATE = $LINE[3];
-		my $SAID = $LINE[4];
-		my $USER = $LINE[2];
+$Text::Wrap::columns = `/usr/bin/tput cols`;
 
-		if($PACK eq $ARGV[0]){
-			my @DATA = ($RATE, $SAID, $USER);
+open(my $FH, '<', $DATABASE);
 
-			if($DATA[0] == $ARGV[1]){
-				$Text::Wrap::columns = 80;
-				$COUNT++;
+my $COUNT = 0;
+while(<$FH>){
+	my @LINE = split("~~~", $_);
 
-				printf(
-					"%d/5 ('%s')\n\n%s\n\n",
-					$DATA[0], $DATA[2],
-					wrap("", "", $DATA[1])
-				);
-			}
+	my $PACK = $LINE[0];
+	my $RATE = $LINE[3];
+	my $SAID = $LINE[4];
+	my $USER = $LINE[2];
+
+	if($PACK eq $ARGV[0]){
+		my @DATA = ($RATE, $SAID, $USER);
+		if($DATA[0] == $ARGV[1]){
+			$COUNT++;
+
+			printf(
+				"%d/5 ('%s')\n\n%s\n\n",
+				$DATA[0], $DATA[2],
+				wrap("", "", $DATA[1])
+			)
 		}
 	}
-
-	close($FH);
-
-	printf("\nTTL: %d\n", $COUNT);
-}else{
-	XERR(__LINE__, "File '$DATABASE' not found.");
 }
+
+close($FH);
+
+printf("\nTTL: %d\n", $COUNT)
