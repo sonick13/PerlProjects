@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 20:39:24 BST 2019
+# Last Change       - Mon 22 Apr 20:48:04 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ close($FH);
 if($SHOW_STATS eq "True"){
 	sub SHOW2{
 		my $BUF = qq{
-			 $_[1]$_[2]$_[3]
+			 $_[1]$_[2]
 			 $_[0] Reviews:     $COUNT/$TTL_COUNT
 			 $_[0]
 			 $_[0] Total 5/5:   $STAR5_COUNT
@@ -169,8 +169,8 @@ if($SHOW_STATS eq "True"){
 			 $_[0] Total 3/5:   $STAR3_COUNT
 			 $_[0] Total 2/5:   $STAR2_COUNT
 			 $_[0] Total 1/5:   $STAR1_COUNT
-			 $_[1]$_[2]$_[3]
-			};
+			 $_[1]$_[2]
+		};
 
 		print(split("\t", $BUF))
 	}
