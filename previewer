@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 16:07:26 BST 2019
+# Last Change       - Mon 22 Apr 16:13:55 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -35,6 +35,9 @@ sub USAGE{
 		            --summary|-S            - Conclude the reviews with a summary.
 		            --db-update             - Download and update the database.
 
+		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
+		            still prove useful in Debian and Ubuntu, albeit with inaccuracies.
+
 		FILE:       The database file used is:
 
 		              \$HOME/.config/reviewer.db
@@ -42,7 +45,7 @@ sub USAGE{
 		SITE:       $DB_SITE
 	};
 
-	print(split("\t", $HELP));
+	print(split("\t", $HELP))
 }
 
 my $SHOW_STATS = "False";
@@ -51,7 +54,7 @@ my $UPDATE_DB = "False";
 if(@ARGV){
 	while($ARGV[0]){
 		if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-			USAGE
+			USAGE;
 			exit 0
 		}elsif($ARGV[0] =~ /^(--version|-v)$/){
 			print("$_VERSION_\n");
