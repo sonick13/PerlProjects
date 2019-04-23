@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/Testing_LWP.pl
 # Started On        - Mon 22 Apr 16:57:23 BST 2019
-# Last Change       - Mon 22 Apr 17:57:57 BST 2019
+# Last Change       - Tue 23 Apr 18:04:10 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,11 +12,13 @@
 
 use strict;
 use warnings;
-use LWP::Simple;
+use LWP::UserAgent;
+use feature 'say';
 
-my $_VERSION_ = "2019-04-22";
+my $SITE = $ARGV[0];
 
-my $TARG = $ARGV[0]; # Target URL of the file.
-my $DEST = $ARGV[1]; # Destination for the file.
+my $UA = LWP::UserAgent->new();
+$UA->agent('Mozilla/5.0');
+my $DATA = $UA->get($SITE)->decoded_content;
 
-print(get($TARG))
+print($DATA);
