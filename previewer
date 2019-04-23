@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 23 Apr 14:03:09 BST 2019
+# Last Change       - Tue 23 Apr 18:01:58 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -109,14 +109,18 @@ if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
 }elsif((-z $DATABASE) && ($UPDATE_DB ne "True")){
 	XERR(__LINE__, "Database file is empty.")
 }elsif($UPDATE_DB eq "True"){
-	#TODO - Get a 403 if using get() from LWP::Simple. Need to figure out how
-	#       to change the user agent string. Until then, wget will suffice.
-	if(! -x "/usr/bin/wget"){
-		XERR(__LINE__, "Dependency '/usr/bin/wget' not met.")
-	}else{
-		system("/usr/bin/wget -q '$DB_SITE' -O '$DATABASE'");
-		exit 0
-	}
+	use LWP::UserAgent;
+
+	open(my $FH, '>', $DATABASE);
+
+	my $UA = LWP::UserAgent->new();
+	$UA->agent('Mozilla/5.0');
+	my $BUFFER = $UA->get($DB_SITE)->decoded_content;
+	print($FH $BUFFER);
+
+	close($FH);
+
+	exit 0
 }
 
 $Text::Wrap::columns = `/usr/bin/tput cols`;
