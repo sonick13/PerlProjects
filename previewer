@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer.pl
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 22 Apr 21:05:38 BST 2019
+# Last Change       - Tue 23 Apr 14:03:09 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -41,6 +41,12 @@ sub USAGE{
 
 		            If you specifiy your own database file, it MUST adhere to the same
 		            formatting as the official one, lest previewer wind up a buggy mess.
+
+		            For example:
+
+		              PKG~~~ID~~~USER~~~RATING~~~REVIEW
+
+		            Each field must be separated by three tildes, without any quotes.
 
 		FILE:       Unless told otherwise, the database is stored here:
 
