@@ -1,23 +1,24 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - perlmisc/previewer.pl
+# Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 23 Apr 18:01:58 BST 2019
+# Last Change       - Wed 24 Apr 13:48:59 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
-#----------------------------------------------------------------------------------
-# Perl rewrite (almost) of the reviewer shell program. Faster and more efficient.
 #----------------------------------------------------------------------------------
 
 use strict;
 use warnings;
+use autodie;
 use Text::Wrap;
 
-my $_VERSION_ = "2019-04-22";
+my $_VERSION_ = "2019-04-24";
 
-sub XERR{ printf("[L%0.4d] ERROR: %s\n", $_[0], "$_[1]"); exit 1; }
-sub ERR{ printf("[L%0.4d] ERROR: %s\n", "$1", "$2"); }
+sub FAIL{
+	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
+	if($_[0] == 1){exit 1}
+}
 
 my $DB_SITE = 'https://community.linuxmint.com/data/new-reviews.list';
 
@@ -81,7 +82,7 @@ if(@ARGV){
 		}elsif($ARGV[0] =~ /^(--boring|-b)$/){
 			$BORING = "True"
 		}elsif($ARGV[0] =~ /^-.*/){
-			XERR(__LINE__, "Incorrect argument(s) specified.")
+			FAIL(1, __LINE__, "Incorrect argument(s) specified.")
 		}else{
 			last
 		}
@@ -91,23 +92,23 @@ if(@ARGV){
 
 	unless($UPDATE_DB eq "True"){
 		if(! $ARGV[0]){
-			XERR(__LINE__, "A package name must be provided.")
+			FAIL(1, __LINE__, "A package name must be provided.")
 		}elsif((! $ARGV[1]) || ($ARGV[1] !~ /^[1-5]{1}$/)){
-			XERR(__LINE__, "Invalid or unspecified rating.")
+			FAIL(1, __LINE__, "Invalid or unspecified rating.")
 		}
 	}
 }else{
-	XERR(__LINE__, "One or more arguments are required.")
+	FAIL(1, __LINE__, "One or more arguments are required.")
 }
 
 if(! -x "/usr/bin/tput"){
-	XERR(__LINE__, "Dependency '/usr/bin/tput' not met.")
+	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
 }
 
 if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
-	XERR(__LINE__, "Database file missing or inaccessible.")
+	FAIL(1, __LINE__, "Database file missing or inaccessible.")
 }elsif((-z $DATABASE) && ($UPDATE_DB ne "True")){
-	XERR(__LINE__, "Database file is empty.")
+	FAIL(1, __LINE__, "Database file is empty.")
 }elsif($UPDATE_DB eq "True"){
 	use LWP::UserAgent;
 
