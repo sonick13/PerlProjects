@@ -3,11 +3,15 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/apt-undo-install.pl
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Wed 24 Apr 03:50:01 BST 2019
+# Last Change       - Wed 24 Apr 03:53:13 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # Perl rewrite which I hope will eventually replace the current apt-undo-install.
+#
+# NOTE: This seems to work nicely, but it does system() a few times, which I will
+#       eventually do away with. You could probably use this just fine, but I
+#       wouldn't recommend it, until it's been polished up and further tested.
 #
 # NOTE: You'll not be able to properly check THIS program for updates, yet.
 #----------------------------------------------------------------------------------
