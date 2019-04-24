@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/redshifter.pl
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Wed 24 Apr 13:43:09 BST 2019
+# Last Change       - Wed 24 Apr 13:53:47 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -71,6 +71,8 @@ if($ARGV[0] =~ /^(--version|-v)$/){
 	print("$_VERSION_\n")
 }elsif($ARGV[0] =~ /^(--reset|-r)$/){
 	MAIN('>', '6500', "False");
+
+	system("/usr/bin/redshift -o -O 6500K")
 }elsif($ARGV[0] =~ /^(--increment|-i)$/){
 	$TEMP = $GAMMAS_NOW + $ARGV[1];
 	if($TEMP > 25000){
