@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/apt-undo-install.pl
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Wed 24 Apr 03:53:13 BST 2019
+# Last Change       - Wed 24 Apr 15:05:14 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -58,9 +58,10 @@ sub USAGE{
 		            --update|-U             - Check for updates to apt-undo-install.
 		            --count|-c N            - Execute this N many of install undos. Will
 		                                      work in reverse, from the latest to oldest.
-		            --output-only:F         - Only show package name(s); don't uninstall.
-		                                      Where F is either :col, :list, or :desc, to
-		                                      choose how you'd like the list formatted.
+		            --output-only:F         - Only show package name(s), if installed; -
+		                                      don't uninstall. Where F is either :col, -
+		                                      :list, or :desc, to choose how you'd like the
+		                                      list formatted.
 		            --logfile|-l FILE       - Use FILE instead of the default logfile.
 		                                      But ensure it's the standard log formatting.
 		                                      This will not be checked, so be careful!
@@ -76,9 +77,6 @@ sub USAGE{
 
 		NOTE:       The standard alternative apt-get long-format flags for some of the
 		            options listed above are also available with apt-undo-install.
-
-		            The :desc option for the --output-only flag will not display packages
-		            which are detected as not currently installed, by dpkg-query.
 
 		            The --date and --time flags may fail to work with your APT logfile if
 		            you're using non-standard localisation settings for an English-speaker.
@@ -286,11 +284,16 @@ if($OUTPUT_ONLY ne "True"){
 	)
 }else{
 	if($OUTPUT_FORMAT =~ /^desc$/){
-		#TODO - Temporary.
-		system(
-			qq{/usr/bin/dpkg-query -f='\${package} - \${binary:summary}\n' } .
-			qq{--show @INSTALLED_PKGS 2> /dev/null}
-		)
+		use AptPkg::Cache;
+
+		my $CACHE = AptPkg::Cache->new();
+		my $DESCS = $CACHE->packages("DescriptionList");
+		foreach(@INSTALLED_PKGS){
+			my $GETS = $CACHE->get("$_");
+			my $NAME = $GETS->{"FullName"};
+			my $DESC = $DESCS->lookup("$_")->{"ShortDesc"};
+			printf("%s - %s\n", $NAME, $DESC)
+		}
 	}elsif($OUTPUT_FORMAT =~ /^col$/){
 		#TODO - Temporary.
 		system(qq{printf "%s\n" @INSTALLED_PKGS | /usr/bin/column})
