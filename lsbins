@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Thu 25 Apr 19:39:37 BST 2019
+# Last Change       - Thu 25 Apr 20:11:08 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -27,10 +27,13 @@ sub USAGE{
 
 		            Perl rewrite of shell program 'lsbins'.
 
-		SYNTAX:     lsbins [OPTS]
+		SYNTAX:     lsbins [OPTS] BIN1 BIN2 . . .
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
+
+		NOTE:       Where BIN is one or more executable for which to search and, if
+		            found, output its name and short description.
 	};
 
 	print(split("\t", $INFO))
@@ -43,8 +46,10 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
 		print("$_VERSION_\n");
 		exit 0
-	}else{
+	}elsif($ARGV[0] =~ /^-.*/){
 		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}else{
+		last
 	}
 
 	shift(@ARGV)
@@ -68,7 +73,11 @@ if(-d '/usr/share/man'){
 	FAIL(1, __LINE__, "Unable to find the man pages.")
 }
 
-my $BUFFER = readpipe("/usr/bin/man -f @EXECS 2> /dev/null");
-undef @EXECS;
+# I really don't want to do this, but any method I try with Perl is very slow.
+my $BUFFER = readpipe("/usr/bin/man -f @EXECS 2> /dev/null") =~ s/\([0-8]\)\s+//gr;
+undef @EXECS; # <-- Save memory.
 
-print($BUFFER =~ s/\([0-8]\)\s+//gr)
+print($BUFFER)
+
+#TODO - Is there a while read equivalent in Perl? Stuck here. I just need to read
+#       the contents of $BUFFER, line-by-line, without juggling variables.
