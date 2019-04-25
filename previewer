@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu 25 Apr 21:19:50 BST 2019
+# Last Change       - Thu 25 Apr 21:50:38 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -35,6 +35,7 @@ sub USAGE{
 		            --summary|-S            - Conclude the reviews with a summary.
 		            --show-all|-a           - Show all reviews, regardless of rating.
 		            --boring|-b             - Omit these ASCII psuedo-borders.
+		            --user|-u NAME          - Only show review(s) by NAME user.
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
 
@@ -60,10 +61,12 @@ sub USAGE{
 	print(split("\t", $HELP))
 }
 
+my $IFUSER = '';
 my $BORING = "False";
+my $SHOW_ALL = "False";
 my $UPDATE_DB = "False";
 my $SHOW_STATS = "False";
-my $SHOW_ALL = "False";
+my $P1 = '+'; my $P2 = '|';
 my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
 while($ARGV[0]){
@@ -82,6 +85,9 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^--db-file$/){
 		shift(@ARGV);
 		$DATABASE = $ARGV[0]
+	}elsif($ARGV[0] =~ /^(--user|-u)$/){
+		shift(@ARGV);
+		$IFUSER = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
 		$BORING = "True"
 	}elsif($ARGV[0] =~ /^-.*/){
@@ -142,6 +148,10 @@ my $STAR5_COUNT = 0;
 my $TTL_COUNT = 0;
 my $COUNT = 0;
 
+if($BORING eq "True"){
+	$P1 = ' '; $P2 = ' '
+}
+
 while(<$FH>){
 	my @LINE = split("~~~", $_);
 
@@ -151,6 +161,8 @@ while(<$FH>){
 	my $USER = $LINE[2];
 
 	if($PACK eq $ARGV[0]){
+		if($IFUSER && $USER ne $IFUSER){next};
+
 		$TTL_COUNT += 1;
 
 		my @DATA = ($RATE, $SAID, $USER);
@@ -162,25 +174,24 @@ while(<$FH>){
 
 		sub SHOW{
 			printf(
-				"%d/5 ('%s')\n $_[0]\n%s $_[0]\n",
-				$_[3], $_[4],
-				wrap(" $_[1] ", " $_[1] ", $_[2])
+				"%d/5 ('%s')\n $P1\n%s $P1\n",
+				$_[1], $_[2], wrap(" $P2 ", " $P2 ", $_[0])
 			)
 		}
 
 		if($SHOW_ALL eq "True"){
 			if($BORING eq "True"){
-				SHOW(" ", " ", $DATA[1], $DATA[0], $DATA[2])
+				SHOW($DATA[1], $DATA[0], $DATA[2])
 			}else{
-				SHOW("+", "|", $DATA[1], $DATA[0], $DATA[2])
+				SHOW($DATA[1], $DATA[0], $DATA[2])
 			}
 		}elsif($DATA[0] == $ARGV[1]){
 			$COUNT++;
 
 			if($BORING eq "True"){
-				SHOW(" ", " ", $DATA[1], $DATA[0], $DATA[2])
+				SHOW($DATA[1], $DATA[0], $DATA[2])
 			}else{
-				SHOW("+", "|", $DATA[1], $DATA[0], $DATA[2])
+				SHOW($DATA[1], $DATA[0], $DATA[2])
 			}
 		}
 	}
