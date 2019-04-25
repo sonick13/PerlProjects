@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu 25 Apr 21:50:38 BST 2019
+# Last Change       - Thu 25 Apr 22:14:39 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ sub USAGE{
 	my $HELP = qq{	            PREVIEWER ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
-		            Perl fork of the slower, shell counterpart, 'reviewer'.
+		            Perl program to pretty-print Linux Mint package reviews.
 
 		SYNTAX:     previewer [OPTS] PACKAGE RATING
 
@@ -40,7 +40,8 @@ sub USAGE{
 		            --db-file PATH          - Instead, use this database file.
 
 		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
-		            still prove useful in Debian and Ubuntu, albeit with inaccuracies.
+		            still prove useful in Debian, Ubuntu, and their other derivatives, -
+		            albeit with inaccuracies.
 
 		            If you specifiy your own database file, it MUST adhere to the same
 		            formatting as the official one, lest previewer wind up a buggy mess.
@@ -50,6 +51,9 @@ sub USAGE{
 		              PKG~~~ID~~~USER~~~RATING~~~REVIEW
 
 		            Each field must be separated by three tildes, without any quotes.
+
+		            Previewer is a Perl fork of and vast improvement over the original -
+		            shell program, 'reviewer', written also by 'terminalforlife'.
 
 		FILE:       Unless told otherwise, the database is stored here:
 
