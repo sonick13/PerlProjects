@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Wed 24 Apr 13:48:59 BST 2019
+# Last Change       - Thu 25 Apr 20:37:31 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -33,6 +33,7 @@ sub USAGE{
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
 		            --summary|-S            - Conclude the reviews with a summary.
+		            --show-all|-a           - Show all reviews, regardless of rating.
 		            --boring|-b             - Omit these ASCII psuedo-borders.
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
@@ -62,6 +63,7 @@ sub USAGE{
 my $BORING = "False";
 my $UPDATE_DB = "False";
 my $SHOW_STATS = "False";
+my $SHOW_ALL = "False";
 my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
 if(@ARGV){
@@ -74,6 +76,8 @@ if(@ARGV){
 			exit 0
 		}elsif($ARGV[0] =~ /^(--summary|-S)$/){
 			$SHOW_STATS = "True"
+		}elsif($ARGV[0] =~ /^(--show-all|-a)$/){
+			$SHOW_ALL = "True"
 		}elsif($ARGV[0] =~ /^--db-update$/){
 			$UPDATE_DB = "True"
 		}elsif($ARGV[0] =~ /^--db-file$/){
@@ -90,7 +94,7 @@ if(@ARGV){
 		shift(@ARGV)
 	}
 
-	unless($UPDATE_DB eq "True"){
+	unless($UPDATE_DB eq "True" || $SHOW_ALL eq "True"){
 		if(! $ARGV[0]){
 			FAIL(1, __LINE__, "A package name must be provided.")
 		}elsif((! $ARGV[1]) || ($ARGV[1] !~ /^[1-5]{1}$/)){
@@ -103,6 +107,14 @@ if(@ARGV){
 
 if(! -x "/usr/bin/tput"){
 	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
+}
+
+if($ARGV[1] =~ /^[1-5]$/){
+	if($SHOW_ALL eq "True" && $ARGV[1]){
+		FAIL(1, __LINE__, "Told to show all, but provided a rating.")
+	}
+}else{
+	FAIL(1, __LINE__, "Invalid rating chosen.")
 }
 
 if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
@@ -154,16 +166,22 @@ while(<$FH>){
 		if($DATA[0] == 4){$STAR4_COUNT += 1}
 		if($DATA[0] == 5){$STAR5_COUNT += 1}
 
-		if($DATA[0] == $ARGV[1]){
-			$COUNT++;
+		sub SHOW{
+			printf(
+				"%d/5 ('%s')\n $_[0]\n%s $_[0]\n",
+				$_[3], $_[4],
+				wrap(" $_[1] ", " $_[1] ", $_[2])
+			)
+		}
 
-			sub SHOW{
-				printf(
-					"%d/5 ('%s')\n $_[0]\n%s $_[0]\n",
-					$_[3], $_[4],
-					wrap(" $_[1] ", " $_[1] ", $_[2])
-				)
+		if($SHOW_ALL eq "True"){
+			if($BORING eq "True"){
+				SHOW(" ", " ", $DATA[1], $DATA[0], $DATA[2])
+			}else{
+				SHOW("+", "|", $DATA[1], $DATA[0], $DATA[2])
 			}
+		}elsif($DATA[0] == $ARGV[1]){
+			$COUNT++;
 
 			if($BORING eq "True"){
 				SHOW(" ", " ", $DATA[1], $DATA[0], $DATA[2])
