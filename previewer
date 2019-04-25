@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu 25 Apr 20:37:31 BST 2019
+# Last Change       - Thu 25 Apr 21:16:57 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ use warnings;
 use autodie;
 use Text::Wrap;
 
-my $_VERSION_ = "2019-04-24";
+my $_VERSION_ = "2019-04-25";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
@@ -66,60 +66,52 @@ my $SHOW_STATS = "False";
 my $SHOW_ALL = "False";
 my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
-if(@ARGV){
-	while($ARGV[0]){
-		if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-			USAGE;
-			exit 0
-		}elsif($ARGV[0] =~ /^(--version|-v)$/){
-			print("$_VERSION_\n");
-			exit 0
-		}elsif($ARGV[0] =~ /^(--summary|-S)$/){
-			$SHOW_STATS = "True"
-		}elsif($ARGV[0] =~ /^(--show-all|-a)$/){
-			$SHOW_ALL = "True"
-		}elsif($ARGV[0] =~ /^--db-update$/){
-			$UPDATE_DB = "True"
-		}elsif($ARGV[0] =~ /^--db-file$/){
-			shift(@ARGV);
-			$DATABASE = $ARGV[0]
-		}elsif($ARGV[0] =~ /^(--boring|-b)$/){
-			$BORING = "True"
-		}elsif($ARGV[0] =~ /^-.*/){
-			FAIL(1, __LINE__, "Incorrect argument(s) specified.")
-		}else{
-			last
-		}
-
-		shift(@ARGV)
+while($ARGV[0]){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		USAGE;
+		exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$_VERSION_\n");
+		exit 0
+	}elsif($ARGV[0] =~ /^(--summary|-S)$/){
+		$SHOW_STATS = "True"
+	}elsif($ARGV[0] =~ /^(--show-all|-a)$/){
+		$SHOW_ALL = "True"
+	}elsif($ARGV[0] =~ /^--db-update$/){
+		$UPDATE_DB = "True"
+	}elsif($ARGV[0] =~ /^--db-file$/){
+		shift(@ARGV);
+		$DATABASE = $ARGV[0]
+	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
+		$BORING = "True"
+	}elsif($ARGV[0] =~ /^-.*/){
+		FAIL(1, __LINE__, "Incorrect argument(s) specified.")
+	}else{
+		last
 	}
 
-	unless($UPDATE_DB eq "True" || $SHOW_ALL eq "True"){
-		if(! $ARGV[0]){
-			FAIL(1, __LINE__, "A package name must be provided.")
-		}elsif((! $ARGV[1]) || ($ARGV[1] !~ /^[1-5]{1}$/)){
-			FAIL(1, __LINE__, "Invalid or unspecified rating.")
+	shift(@ARGV)
+}
+
+unless($UPDATE_DB eq "True"){
+	if($ARGV[1]){
+		if($ARGV[1] !~ /^[1-5]{1}$/ && $SHOW_ALL eq "False"){
+			FAIL(1, __LINE__, "Invalid rating provided.")
+		}elsif($SHOW_ALL eq "True"){
+			FAIL(1, __LINE__, "Told to show all, but provided a rating.")
 		}
+	}else{
+		FAIL(1, __LINE__, "A rating is by default required.")
 	}
-}else{
-	FAIL(1, __LINE__, "One or more arguments are required.")
 }
 
 if(! -x "/usr/bin/tput"){
 	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
 }
 
-if($ARGV[1] =~ /^[1-5]$/){
-	if($SHOW_ALL eq "True" && $ARGV[1]){
-		FAIL(1, __LINE__, "Told to show all, but provided a rating.")
-	}
-}else{
-	FAIL(1, __LINE__, "Invalid rating chosen.")
-}
-
-if(!(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
+if(not(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
 	FAIL(1, __LINE__, "Database file missing or inaccessible.")
-}elsif((-z $DATABASE) && ($UPDATE_DB ne "True")){
+}elsif(-z $DATABASE && $UPDATE_DB ne "True"){
 	FAIL(1, __LINE__, "Database file is empty.")
 }elsif($UPDATE_DB eq "True"){
 	use LWP::UserAgent;
