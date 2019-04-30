@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 30 Apr 21:14:11 BST 2019
+# Last Change       - Tue 30 Apr 21:26:37 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,6 +12,7 @@ use strict;
 use warnings;
 use autodie;
 use Text::Wrap;
+use LWP::UserAgent;
 
 my $_VERSION_ = "2019-04-30";
 
@@ -121,7 +122,7 @@ unless($UPDATE_DB eq "True"){
 	}
 }
 
-if(! -x "/usr/bin/tput"){
+if(not -x "/usr/bin/tput"){
 	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
 }
 
@@ -130,8 +131,6 @@ if(not(-f $DATABASE && -r $DATABASE) and ($UPDATE_DB eq "False")){
 }elsif(-z $DATABASE && $UPDATE_DB ne "True"){
 	FAIL(1, __LINE__, "Database file is empty.")
 }elsif($UPDATE_DB eq "True"){
-	use LWP::UserAgent;
-
 	open(my $FH, '>', $DATABASE);
 
 	my $UA = LWP::UserAgent->new();
@@ -169,16 +168,16 @@ while(<$FH>){
 	my $USER = $LINE[2];
 
 	if($PACK eq $ARGV[0]){
-		if($IFUSER && $USER ne $IFUSER){next};
+		next if $IFUSER and $USER ne $IFUSER;
 
 		$TTL_COUNT += 1;
 
 		my @DATA = ($RATE, $SAID, $USER);
-		if($DATA[0] == 1){$STAR1_COUNT += 1}
-		if($DATA[0] == 2){$STAR2_COUNT += 1}
-		if($DATA[0] == 3){$STAR3_COUNT += 1}
-		if($DATA[0] == 4){$STAR4_COUNT += 1}
-		if($DATA[0] == 5){$STAR5_COUNT += 1}
+		$STAR1_COUNT += 1 if $DATA[0] == 1;
+		$STAR2_COUNT += 1 if $DATA[0] == 2;
+		$STAR3_COUNT += 1 if $DATA[0] == 3;
+		$STAR4_COUNT += 1 if $DATA[0] == 4;
+		$STAR5_COUNT += 1 if $DATA[0] == 5;
 
 		sub SHOW{
 			printf(
@@ -188,19 +187,11 @@ while(<$FH>){
 		}
 
 		if($SHOW_ALL eq "True"){
-			if($BORING eq "True"){
-				SHOW($DATA[1], $DATA[0], $DATA[2])
-			}else{
-				SHOW($DATA[1], $DATA[0], $DATA[2])
-			}
+			$COUNT++;
+			SHOW($DATA[1], $DATA[0], $DATA[2])
 		}elsif($DATA[0] == $ARGV[1]){
 			$COUNT++;
-
-			if($BORING eq "True"){
-				SHOW($DATA[1], $DATA[0], $DATA[2])
-			}else{
-				SHOW($DATA[1], $DATA[0], $DATA[2])
-			}
+			SHOW($DATA[1], $DATA[0], $DATA[2])
 		}
 	}
 }
