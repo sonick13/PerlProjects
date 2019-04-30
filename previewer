@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 30 Apr 21:13:26 BST 2019
+# Last Change       - Tue 30 Apr 21:14:11 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ use warnings;
 use autodie;
 use Text::Wrap;
 
-my $_VERSION_ = "2019-04-25";
+my $_VERSION_ = "2019-04-30";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
