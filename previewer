@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu 25 Apr 22:14:39 BST 2019
+# Last Change       - Tue 30 Apr 21:13:26 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -104,8 +104,12 @@ while($ARGV[0]){
 }
 
 unless($UPDATE_DB eq "True"){
+	if($SHOW_ALL eq "True" and not $ARGV[0]){
+		FAIL(1, __LINE__, "Missing package name.")
+	}
+
 	if($ARGV[1]){
-		if($ARGV[1] !~ /^[1-5]{1}$/ && $SHOW_ALL eq "False"){
+		if($SHOW_ALL eq "False" and $ARGV[1] !~ /^[1-5]{1}$/){
 			FAIL(1, __LINE__, "Invalid rating provided.")
 		}elsif($SHOW_ALL eq "True"){
 			FAIL(1, __LINE__, "Told to show all, but provided a rating.")
@@ -121,7 +125,7 @@ if(! -x "/usr/bin/tput"){
 	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
 }
 
-if(not(-f $DATABASE && -r $DATABASE) && ($UPDATE_DB eq "False")){
+if(not(-f $DATABASE && -r $DATABASE) and ($UPDATE_DB eq "False")){
 	FAIL(1, __LINE__, "Database file missing or inaccessible.")
 }elsif(-z $DATABASE && $UPDATE_DB ne "True"){
 	FAIL(1, __LINE__, "Database file is empty.")
