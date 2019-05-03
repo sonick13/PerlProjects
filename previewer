@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 30 Apr 21:26:37 BST 2019
+# Last Change       - Fri  3 May 11:38:52 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,6 +13,7 @@ use warnings;
 use autodie;
 use Text::Wrap;
 use LWP::UserAgent;
+use Term::ReadKey 'GetTerminalSize';
 
 my $_VERSION_ = "2019-04-30";
 
@@ -122,10 +123,6 @@ unless($UPDATE_DB eq "True"){
 	}
 }
 
-if(not -x "/usr/bin/tput"){
-	FAIL(1, __LINE__, "Dependency '/usr/bin/tput' not met.")
-}
-
 if(not(-f $DATABASE && -r $DATABASE) and ($UPDATE_DB eq "False")){
 	FAIL(1, __LINE__, "Database file missing or inaccessible.")
 }elsif(-z $DATABASE && $UPDATE_DB ne "True"){
@@ -143,7 +140,7 @@ if(not(-f $DATABASE && -r $DATABASE) and ($UPDATE_DB eq "False")){
 	exit 0
 }
 
-$Text::Wrap::columns = `/usr/bin/tput cols`;
+$Text::Wrap::columns = @{[GetTerminalSize]}[0];
 
 open(my $FH, '<', $DATABASE);
 
