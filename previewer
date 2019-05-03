@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sat  4 May 00:30:14 BST 2019
+# Last Change       - Sat  4 May 00:41:35 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ my $STAR5_COUNT = 0;
 my $TTL_COUNT = 0;
 my $COUNT = 0;
 
-sub INC_VARS{
+sub INC_VARS{ # <-- $DATA[0] is passed here.
 	$STAR1_COUNT++ if $_[0] == 1;
 	$STAR2_COUNT++ if $_[0] == 2;
 	$STAR3_COUNT++ if $_[0] == 3;
@@ -175,6 +175,7 @@ sub SHOW{
 
 if($BORING){$P1 = ' '; $P2 = ' '}
 
+my $PACK_OLD;
 foreach(@FILE_DATA){
 	my @LINE = split("~~~", $_);
 
@@ -219,7 +220,17 @@ foreach(@FILE_DATA){
 		$COUNT++;
 		$TTL_COUNT++;
 		INC_VARS($DATA[0]);
-		print("\n > '$PACK'\n\n");
+
+		# Ensure print isn't unnecessarily repeated.
+		if($PACK_OLD and $PACK_OLD ne $PACK){
+			print("\n > '$PACK'\n\n");
+		}elsif(not $PACK_OLD){
+			print("\n > '$PACK'\n\n");
+		}
+
+		# When these aren't the same, next time, show what it is.
+		$PACK_OLD = $PACK;
+
 		SHOW($DATA[1], $DATA[0], $DATA[2])
 	}
 }
