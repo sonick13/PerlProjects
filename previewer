@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Fri  3 May 11:38:52 BST 2019
+# Last Change       - Fri  3 May 11:48:35 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 
-my $_VERSION_ = "2019-04-30";
+my $_VERSION_ = "2019-05-03";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
