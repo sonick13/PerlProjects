@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Fri  3 May 11:58:46 BST 2019
+# Last Change       - Fri  3 May 23:11:38 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -69,10 +69,10 @@ sub USAGE{
 }
 
 my $IFUSER = '';
-my $BORING = "False";
-my $SHOW_ALL = "False";
-my $UPDATE_DB = "False";
-my $SHOW_STATS = "False";
+my $BORING = 0;
+my $SHOW_ALL = 0;
+my $UPDATE_DB = 0;
+my $SHOW_STATS = 0;
 my $P1 = '+'; my $P2 = '|';
 my $DATABASE = "$ENV{HOME}/.config/reviewer.db";
 
@@ -84,11 +84,11 @@ while($ARGV[0]){
 		print("$_VERSION_\n");
 		exit 0
 	}elsif($ARGV[0] =~ /^(--summary|-S)$/){
-		$SHOW_STATS = "True"
+		$SHOW_STATS = 1
 	}elsif($ARGV[0] =~ /^(--show-all|-a)$/){
-		$SHOW_ALL = "True"
+		$SHOW_ALL = 1
 	}elsif($ARGV[0] =~ /^--db-update$/){
-		$UPDATE_DB = "True"
+		$UPDATE_DB = 1
 	}elsif($ARGV[0] =~ /^--db-file$/){
 		shift(@ARGV);
 		$DATABASE = $ARGV[0]
@@ -96,7 +96,7 @@ while($ARGV[0]){
 		shift(@ARGV);
 		$IFUSER = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
-		$BORING = "True"
+		$BORING = 1
 	}elsif($ARGV[0] =~ /^-.*/){
 		FAIL(1, __LINE__, "Incorrect argument(s) specified.")
 	}else{
@@ -106,29 +106,29 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-unless($UPDATE_DB eq "True"){
-	if($SHOW_ALL eq "True" and not $ARGV[0]){
+unless($UPDATE_DB){
+	if($SHOW_ALL and not $ARGV[0]){
 		FAIL(1, __LINE__, "Missing package name.")
 	}
 
 	if($ARGV[1]){
-		if($SHOW_ALL eq "False" and $ARGV[1] !~ /^[1-5]{1}$/){
+		if($SHOW_ALL and $ARGV[1] !~ /^[1-5]{1}$/){
 			FAIL(1, __LINE__, "Invalid rating provided.")
-		}elsif($SHOW_ALL eq "True"){
+		}elsif($SHOW_ALL){
 			FAIL(1, __LINE__, "Told to show all, but provided a rating.")
 		}
 	}else{
-		unless($SHOW_ALL eq "True"){
+		unless($SHOW_ALL){
 			FAIL(1, __LINE__, "A rating is by default required.")
 		}
 	}
 }
 
-if(not(-f $DATABASE && -r $DATABASE) and ($UPDATE_DB eq "False")){
+if(not(-f $DATABASE and -r $DATABASE) and $UPDATE_DB){
 	FAIL(1, __LINE__, "Database file missing or inaccessible.")
-}elsif(-z $DATABASE && $UPDATE_DB ne "True"){
+}elsif(-z $DATABASE and $UPDATE_DB){
 	FAIL(1, __LINE__, "Database file is empty.")
-}elsif($UPDATE_DB eq "True"){
+}elsif($UPDATE_DB){
 	open(my $FH, '>', $DATABASE);
 
 	my $UA = LWP::UserAgent->new();
@@ -153,9 +153,7 @@ my $STAR5_COUNT = 0;
 my $TTL_COUNT = 0;
 my $COUNT = 0;
 
-if($BORING eq "True"){
-	$P1 = ' '; $P2 = ' '
-}
+if($BORING){$P1 = ' '; $P2 = ' '}
 
 while(<$FH>){
 	my @LINE = split("~~~", $_);
@@ -165,26 +163,27 @@ while(<$FH>){
 	my $SAID = $LINE[4];
 	my $USER = $LINE[2];
 
+	my @DATA = ($RATE, $SAID, $USER);
+
+	sub SHOW{
+		printf(
+			"%d/5 ('%s')\n $P1\n%s $P1\n",
+			$_[1], $_[2], wrap(" $P2 ", " $P2 ", $_[0])
+		)
+	}
+
 	if($PACK eq $ARGV[0]){
 		next if $IFUSER and $USER ne $IFUSER;
 
 		$TTL_COUNT += 1;
 
-		my @DATA = ($RATE, $SAID, $USER);
 		$STAR1_COUNT += 1 if $DATA[0] == 1;
 		$STAR2_COUNT += 1 if $DATA[0] == 2;
 		$STAR3_COUNT += 1 if $DATA[0] == 3;
 		$STAR4_COUNT += 1 if $DATA[0] == 4;
 		$STAR5_COUNT += 1 if $DATA[0] == 5;
 
-		sub SHOW{
-			printf(
-				"%d/5 ('%s')\n $P1\n%s $P1\n",
-				$_[1], $_[2], wrap(" $P2 ", " $P2 ", $_[0])
-			)
-		}
-
-		if($SHOW_ALL eq "True"){
+		if($SHOW_ALL){
 			$COUNT++;
 			SHOW($DATA[1], $DATA[0], $DATA[2])
 		}elsif($DATA[0] == $ARGV[1]){
@@ -196,7 +195,7 @@ while(<$FH>){
 
 close($FH);
 
-if($SHOW_STATS eq "True"){
+if($SHOW_STATS){
 	sub SHOW2{
 		my $BUF = qq{
 			 $_[1]$_[2]
@@ -213,5 +212,5 @@ if($SHOW_STATS eq "True"){
 		print(split("\t", $BUF))
 	}
 
-	$BORING ne "True" ? SHOW2("|", "+", ">") : SHOW2(" ", " ", " ")
+	$BORING ? SHOW2("|", "+", ">") : SHOW2(" ", " ", " ")
 }
