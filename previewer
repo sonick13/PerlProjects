@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Fri  3 May 11:48:35 BST 2019
+# Last Change       - Fri  3 May 11:58:46 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,8 @@ sub FAIL{
 	if($_[0] == 1){exit 1}
 }
 
-my $DB_SITE = 'https://community.linuxmint.com/data/new-reviews.list';
+#my $DB_SITE = 'https://community.linuxmint.com/data/new-reviews.list';
+my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
 
 sub USAGE{
 	my $HELP = qq{	            PREVIEWER ($_VERSION_)
