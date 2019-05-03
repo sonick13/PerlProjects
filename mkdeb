@@ -1,0 +1,119 @@
+#!/usr/bin/perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - perlmisc/mkdeb
+# Started On        - Wed  1 May 23:27:08 BST 2019
+# Last Change       - Fri  3 May 11:46:40 BST 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# WARNING: Experimental work-in-progress. USE AT YOUR OWN RISK.
+#
+# Even when/if this is finished, it's going to be more for personal use, unless it
+# evolves into something more. I plan to build a lot of DEB packages, hence this.
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use File::Copy 'copy';
+
+my $_VERSION_ = '2019-05-02';
+
+sub FAIL{
+	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
+	if($_[0] == 1){exit 1}
+}
+
+sub USAGE{
+	my $INFO = qq{            MKDEB ($_VERSION_)
+		            Written by terminalforlife (terminalforlife\@yahoo.com)
+
+		            ...
+
+SYNTAX:     mkdeb [OPTS] CMDS
+
+OPTS:       --help|-h|-?            - Displays this help information.
+            --version|-v            - Output only the version datestamp.
+
+CMDS:       BASE_DIR                - The directory name for 'dpkg-deb' to use.
+
+NOTE:       All CMDS are written in key=value format.
+	};
+
+	print(split("\t", $INFO))
+}
+
+# Parse OPTS.
+while($ARGV[0]){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		USAGE;
+		exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$_VERSION_\n");
+		exit 0
+	}elsif($ARGV[0] =~ /^-.*/){
+		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}else{
+		last
+	}
+
+	shift(@ARGV)
+}
+
+sub KEY_VALUE{
+	my ($KEY, $VALUE) = split('=', $_[0]);
+}
+
+# Parse CMDS.
+while($ARGV[0]){
+	if($ARGV[0] =~ /^$/){
+	}elsif($ARGV[0] =~ /^$/){
+	}else{
+		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}
+
+	shift(@ARGV)
+}
+
+unless($#ARGV > 0){
+	FAIL(1, __LINE__, "Argument(s) are required.")
+}
+
+unless(-x '/usr/bin/dpkg-deb'){
+	FAIL(1, __LINE__, "Missing the required '/usr/bin/dpkg-deb' executable.")
+}
+
+my $REPOS = $ENV{HOME} . '/GitHub/terminalforlife/Personal';
+chdir($REPOS . '/' . $ARGV[0]);
+
+my $PKG_DIR = 'pkg-debian (' . $ARGV[1] . ')';
+mkdir($PKG_DIR) if not -d $PKG_DIR;
+mkdir($PKG_DIR . '/DEBIAN') if not -d $PKG_DIR . '/DEBIAN';
+chdir($PKG_DIR . '/DEBIAN');
+
+my $VERSION = readpipe("$_[1] --version");
+chomp($VERSION);
+
+my @SHORT_DESCRIPTION = readpipe("$_[1] --help");
+
+sub MK_CONTROL{
+	open(my $FH, '>', 'control');
+
+	my $CONTROL_CONTENTS = qq{Package: $ARGV[1]
+		Version: $VERSION
+		Architecture: all
+		Essential: no
+		Section: $ARGV[2]
+		Priority: optional
+		Depends: $ARGV[4]
+		Maintainer: TFL/LL <terminalforlife\@yahoo.com>
+		Installed-Size: $_[3]
+		Description: $SHORT_DESCRIPTION[3]
+		Homepage: https://github.com/terminalforlife/$_[0]
+	}:
+
+	print($FH $CONTROL_CONTENTS =~ s/\t//gr);
+
+	close($FH);
+}
