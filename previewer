@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Fri  3 May 23:11:38 BST 2019
+# Last Change       - Sat  4 May 00:30:14 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 
-my $_VERSION_ = "2019-05-03";
+my $_VERSION_ = "2019-05-04";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
@@ -69,6 +69,7 @@ sub USAGE{
 }
 
 my $IFUSER = '';
+my $ARGLESS = 0;
 my $BORING = 0;
 my $SHOW_ALL = 0;
 my $UPDATE_DB = 0;
@@ -106,7 +107,9 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-unless($UPDATE_DB){
+if(not $ARGV[0] and not $ARGV[1]){$ARGLESS = 1}
+
+unless($UPDATE_DB or length($IFUSER) > 0 or ($SHOW_ALL and $ARGLESS)){
 	if($SHOW_ALL and not $ARGV[0]){
 		FAIL(1, __LINE__, "Missing package name.")
 	}
@@ -144,6 +147,8 @@ if(not(-f $DATABASE and -r $DATABASE) and $UPDATE_DB){
 $Text::Wrap::columns = @{[GetTerminalSize]}[0];
 
 open(my $FH, '<', $DATABASE);
+my @FILE_DATA = <$FH>;
+close($FH);
 
 my $STAR1_COUNT = 0;
 my $STAR2_COUNT = 0;
@@ -153,9 +158,24 @@ my $STAR5_COUNT = 0;
 my $TTL_COUNT = 0;
 my $COUNT = 0;
 
+sub INC_VARS{
+	$STAR1_COUNT++ if $_[0] == 1;
+	$STAR2_COUNT++ if $_[0] == 2;
+	$STAR3_COUNT++ if $_[0] == 3;
+	$STAR4_COUNT++ if $_[0] == 4;
+	$STAR5_COUNT++ if $_[0] == 5
+}
+
+sub SHOW{
+	printf(
+		"%d/5 ('%s')\n $P1\n%s $P1\n",
+		$_[1], $_[2], wrap(" $P2 ", " $P2 ", $_[0])
+	)
+}
+
 if($BORING){$P1 = ' '; $P2 = ' '}
 
-while(<$FH>){
+foreach(@FILE_DATA){
 	my @LINE = split("~~~", $_);
 
 	my $PACK = $LINE[0];
@@ -165,35 +185,49 @@ while(<$FH>){
 
 	my @DATA = ($RATE, $SAID, $USER);
 
-	sub SHOW{
-		printf(
-			"%d/5 ('%s')\n $P1\n%s $P1\n",
-			$_[1], $_[2], wrap(" $P2 ", " $P2 ", $_[0])
-		)
-	}
-
-	if($PACK eq $ARGV[0]){
-		next if $IFUSER and $USER ne $IFUSER;
-
-		$TTL_COUNT += 1;
-
-		$STAR1_COUNT += 1 if $DATA[0] == 1;
-		$STAR2_COUNT += 1 if $DATA[0] == 2;
-		$STAR3_COUNT += 1 if $DATA[0] == 3;
-		$STAR4_COUNT += 1 if $DATA[0] == 4;
-		$STAR5_COUNT += 1 if $DATA[0] == 5;
-
-		if($SHOW_ALL){
-			$COUNT++;
-			SHOW($DATA[1], $DATA[0], $DATA[2])
-		}elsif($DATA[0] == $ARGV[1]){
-			$COUNT++;
-			SHOW($DATA[1], $DATA[0], $DATA[2])
+	if(length($IFUSER) > 0){ # <-- Go by users.
+		if(not $ARGV[0]){
+			if($IFUSER eq $USER){
+				$COUNT++;
+				$TTL_COUNT++;
+				INC_VARS($DATA[0]);
+				print("\n > '$PACK'\n\n");
+				SHOW($DATA[1], $DATA[0], $DATA[2]);
+			}
+		}elsif($PACK eq $ARGV[0]){
+			if($IFUSER eq $USER){
+				$COUNT++;
+				$TTL_COUNT++;
+				INC_VARS($DATA[0]);
+				SHOW($DATA[1], $DATA[0], $DATA[2]);
+			}
 		}
+	}elsif($ARGV[0]){ # <-- Go by packages.
+		if($PACK eq $ARGV[0]){
+			$TTL_COUNT++;
+			INC_VARS($DATA[0]);
+
+			if($SHOW_ALL){
+				$COUNT++;
+				SHOW($DATA[1], $DATA[0], $DATA[2])
+			}elsif(($ARGV[1]) and ($DATA[0] == $ARGV[1])){
+				$COUNT++;
+				SHOW($DATA[1], $DATA[0], $DATA[2])
+			}
+		}
+	}elsif($SHOW_ALL and $ARGLESS){ # <-- Just show all reviews.
+		$COUNT++;
+		$TTL_COUNT++;
+		INC_VARS($DATA[0]);
+		print("\n > '$PACK'\n\n");
+		SHOW($DATA[1], $DATA[0], $DATA[2])
 	}
 }
 
-close($FH);
+if($COUNT == 0){
+	print("Uh-oh! ...no reviews were found.\n");
+	exit(1)
+}
 
 if($SHOW_STATS){
 	sub SHOW2{
