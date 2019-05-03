@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/Testing_Curses.pl
 # Started On        - Thu  2 May 16:33:38 BST 2019
-# Last Change       - Thu  2 May 18:02:27 BST 2019
+# Last Change       - Thu  2 May 18:05:52 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,7 +12,7 @@ use strict;
 use warnings;
 use autodie;
 #use Curses; # <-- libcurses-perl
-use Curses::UI; # <-- libcurses-ui-perl
+use Curses::UI; # <-- libcurses-ui-perl (widgets: libcurses-widgets-perl)
 
 my $UI = Curses::UI->new(
 	-clear_on_exit => 0,
