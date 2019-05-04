@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sat  4 May 01:11:05 BST 2019
+# Last Change       - Sat  4 May 15:11:34 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -100,9 +100,13 @@ while($ARGV[0]){
 		$UPDATE_DB = 1
 	}elsif($ARGV[0] =~ /^--db-file$/){
 		shift(@ARGV);
+
+		FAIL(1, __LINE__, "No database file specified.") if not $ARGV[0];
 		$DATABASE = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--user|-u)$/){
 		shift(@ARGV);
+
+		FAIL(1, __LINE__, "No user specified.") if not $ARGV[0];
 		$IFUSER = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
 		$BORING = 1
@@ -121,7 +125,7 @@ while($ARGV[0]){
 
 if(not $ARGV[0] and not $ARGV[1]){$ARGLESS = 1}
 
-unless($UPDATE_DB or length($IFUSER) > 0 or ($SHOW_ALL and $ARGLESS)){
+unless($UPDATE_DB or $IFUSER or ($SHOW_ALL and $ARGLESS)){
 	if($SHOW_ALL and not $ARGV[0]){
 		FAIL(1, __LINE__, "Missing package name.")
 	}
