@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - cpufreq/cpufreq
+# Started On        - Sat  4 May 15:51:08 BST 2019
+# Last Change       - Sat  4 May 16:27:17 BST 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Display the current CPU core frequencies.
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+
+# Really not needed in cpufreq.
+no warnings 'uninitialized';
+
+my $_VERSION_ = "2019-05-04";
+
+sub FAIL{
+	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
+	if($_[0] == 1){exit 1}
+}
+
+while($ARGV[0]){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		print("USAGE: cpufreq [[--help|-h|-?] | [--version|-v]]\n");
+		exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$_VERSION_\n");
+		exit 0
+	}else{
+		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}
+
+	shift(@ARGV)
+}
+
+
+my $FILE = '/proc/cpuinfo';
+FAIL(1, __LINE__, "File '$FILE' not found.") if not -f $FILE;
+FAIL(1, __LINE__, "Read access for '$FILE' is denied.") if not -r $FILE;
+
+open(my $FH, '<', $FILE);
+
+my $NUM = 0;
+while(<$FH>){
+	chomp($_);
+
+	my @LINE = split(':', $_);
+	if($LINE[0] =~ /^cpu MHz/){
+		$NUM++;
+
+		printf(
+			"CORE_%d: %.3f\n",
+			$NUM, $LINE[1] =~ s/\s//gr
+		)
+	}
+}
+
+close($FH)
