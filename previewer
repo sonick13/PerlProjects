@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sun  5 May 21:04:42 BST 2019
+# Last Change       - Sun  5 May 21:38:23 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ sub USAGE{
 		SITE:       $DB_SITE
 	};
 
-	print(split("\t", $HELP))
+	print($HELP =~ tr/\t//dr)
 }
 
 my $IFUSER = '';
@@ -279,7 +279,7 @@ if($SHOW_STATS){
 			 $_[1]$_[2]
 		};
 
-		print($BUF =~ s/\t//gr)
+		print($BUF =~ tr/\t//dr)
 	}
 
 	$BORING ? SHOW2(' ', ' ', ' ') : SHOW2('|', '+', '>')
