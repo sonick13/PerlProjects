@@ -1,0 +1,116 @@
+#!/usr/bin/perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - perlmisc/kernelchk
+# Started On        - Sun  5 May 13:15:29 BST 2019
+# Last Change       - Sun  5 May 14:18:03 BST 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Simpler Perl rewrite of the old shell kernelchk program also by TFL.
+#
+# It's now up to the user directly how they want to handle a mis-match of kernel
+# versions. With a simple '-q' flag and then testing for kernelchk's exit status, -
+# a mis-match can be very easily handled however the user sees fit.
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+
+my $_VERSION_ = "2019-05-05";
+
+sub FAIL{
+	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
+	if($_[0] == 1){exit 1}
+}
+
+my $FILE = '/proc/version';
+
+sub USAGE{
+	my $INFO = qq{            KERNELCHK ($_VERSION_)
+		            Written by terminalforlife (terminalforlife\@yahoo.com)
+
+		            Basic Perl check for a change in kernel version.
+
+		SYNTAX:     kernelchk [OPTS]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+		            --quiet|-q              - Don't output if versions don't match.
+		            --set|-s                - Sets the current kernel version as the one
+		                                      for which to test with kernelchk thereafter.
+
+		NOTE:       If versions don't match, give an exit status of 2.
+
+		            With a simple '-q' flag and then testing for kernelchk's exit status, -
+		            a mis-match can be very easily handled however the user sees fit.
+
+		FILE:       Current version determined here:
+
+		              $FILE
+
+		            Current version saved here:
+
+		              \$HOME/.kernelchk
+	};
+
+	print($INFO =~ s/\t//gr)
+}
+
+my $QUIET = 0;
+my $SET = 0;
+
+while($ARGV[0]){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		USAGE;
+		exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$_VERSION_\n");
+		exit 0
+	}elsif($ARGV[0] =~ /^(--quiet|-q)$/){
+		$QUIET = 1
+	}elsif($ARGV[0] =~ /^(--set|-s)$/){
+		$SET = 1
+	}else{
+		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}
+
+	shift(@ARGV)
+}
+
+sub CHECK_FILE{
+	FAIL(1, __LINE__, "File '$_[0]' not found.") if not -f $_[0];
+	FAIL(1, __LINE__, "Read access to '$_[0]' denied.") if not -r $_[0];
+}
+
+my $SAVED_FILE = $ENV{HOME} . '/.kernelchk';
+
+# Get current version.
+CHECK_FILE($FILE);
+open(my $FH, '<', $FILE);
+my $CURRENT = @{[split(' ', <$FH>)]}[2];
+close($FH);
+
+# Get saved version.
+CHECK_FILE($SAVED_FILE);
+open($FH, '<', $SAVED_FILE);
+my $SAVED = <$FH>;
+close($FH);
+
+if($SET){
+	open(my $FH, '>', $SAVED_FILE);
+	print($FH $CURRENT);
+	close($FH);
+}else{
+	if($CURRENT ne $SAVED){
+		if(not $QUIET){
+			printf(
+				"%-14s%-s\n%-14s%-s\n",
+				'CURRENT:', $CURRENT, 'SAVED:', $SAVED
+			);
+		}
+
+		exit(2)
+	}
+}
