@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sat  4 May 15:11:34 BST 2019
+# Last Change       - Sun  5 May 21:04:42 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,14 +15,13 @@ use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 
-my $_VERSION_ = "2019-05-04";
+my $_VERSION_ = "2019-05-05";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
-	if($_[0] == 1){exit 1}
+	exit(1) if $_[0]
 }
 
-#my $DB_SITE = 'https://community.linuxmint.com/data/new-reviews.list';
 my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
 
 sub USAGE{
@@ -56,6 +55,8 @@ sub USAGE{
 		              PKG~~~ID~~~USER~~~RATING~~~REVIEW
 
 		            Each field must be separated by three tildes, without any quotes.
+
+		            An exit status of 2 will be given, if no reviews are found.
 
 		            Previewer is a Perl fork of and vast improvement over the original -
 		            shell program, 'reviewer', written also by 'terminalforlife'.
@@ -166,20 +167,13 @@ open(my $FH, '<', $DATABASE);
 my @FILE_DATA = <$FH>;
 close($FH);
 
-my $STAR1_COUNT = 0;
-my $STAR2_COUNT = 0;
-my $STAR3_COUNT = 0;
-my $STAR4_COUNT = 0;
-my $STAR5_COUNT = 0;
+my %STARS;
+$STARS{$_} = 0 foreach 1..5;
 my $TTL_COUNT = 0;
 my $COUNT = 0;
 
 sub INC_VARS{ # <-- $DATA[0] is passed here.
-	$STAR1_COUNT++ if $_[0] == 1;
-	$STAR2_COUNT++ if $_[0] == 2;
-	$STAR3_COUNT++ if $_[0] == 3;
-	$STAR4_COUNT++ if $_[0] == 4;
-	$STAR5_COUNT++ if $_[0] == 5
+	foreach(1..5){$STARS{$_}++ if $_[0] == $_}
 }
 
 sub SHOW{
@@ -256,7 +250,7 @@ foreach(@FILE_DATA){
 		if($PACK_OLD and $PACK_OLD ne $PACK){
 			print("\n > '$PACK'\n\n");
 		}elsif(not $PACK_OLD){
-			print("\n > '$PACK'\n\n");
+			print("\n-----> '$PACK'\n\n");
 		}
 
 		# When these aren't the same, next time, show what it is.
@@ -268,7 +262,7 @@ foreach(@FILE_DATA){
 
 if($COUNT == 0){
 	print("Uh-oh! ...no reviews were found.\n");
-	exit(1)
+	exit(2)
 }
 
 if($SHOW_STATS){
@@ -277,16 +271,16 @@ if($SHOW_STATS){
 			 $_[1]$_[2]
 			 $_[0] Reviews:     $COUNT/$TTL_COUNT
 			 $_[0]
-			 $_[0] Total 5/5:   $STAR5_COUNT
-			 $_[0] Total 4/5:   $STAR4_COUNT
-			 $_[0] Total 3/5:   $STAR3_COUNT
-			 $_[0] Total 2/5:   $STAR2_COUNT
-			 $_[0] Total 1/5:   $STAR1_COUNT
+			 $_[0] Total 5/5:   $STARS{5}
+			 $_[0] Total 4/5:   $STARS{4}
+			 $_[0] Total 3/5:   $STARS{3}
+			 $_[0] Total 2/5:   $STARS{2}
+			 $_[0] Total 1/5:   $STARS{1}
 			 $_[1]$_[2]
 		};
 
-		print(split("\t", $BUF))
+		print($BUF =~ s/\t//gr)
 	}
 
-	$BORING ? SHOW2("|", "+", ">") : SHOW2(" ", " ", " ")
+	$BORING ? SHOW2(' ', ' ', ' ') : SHOW2('|', '+', '>')
 }
