@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sun  5 May 21:38:23 BST 2019
+# Last Change       - Sun  5 May 21:51:22 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -167,16 +167,16 @@ open(my $FH, '<', $DATABASE);
 my @FILE_DATA = <$FH>;
 close($FH);
 
-my %STARS;
+my %STARS; # <-- Hash of each rating, for later incrementing, set below.
 $STARS{$_} = 0 foreach 1..5;
-my $TTL_COUNT = 0;
-my $COUNT = 0;
+my $TTL_COUNT = 0; # <-- TLL comments by user, or for a package.
+my $COUNT = 0; # <-- TTL comments displayed by user, or for a package.
 
-sub INC_VARS{ # <-- $DATA[0] is passed here.
+sub INC_VARS{ # <-- $RATE is passed here.
 	foreach(1..5){$STARS{$_}++ if $_[0] == $_}
 }
 
-sub SHOW{
+sub SHOW{ # <-- Arguments are typically $SAID, $RATE, then $USER.
 	if($RAW_OUTPUT){
 		if(not $NO_REVIEWS){
 			print($_);
@@ -209,54 +209,52 @@ foreach(@FILE_DATA){
 	my $SAID = $LINE[4];
 	my $USER = $LINE[2];
 
-	my @DATA = ($RATE, $SAID, $USER);
-
 	if(length($IFUSER) > 0){ # <-- Go by users.
 		if(not $ARGV[0]){
 			if($IFUSER eq $USER){
 				$COUNT++;
 				$TTL_COUNT++;
-				INC_VARS($DATA[0]);
+				INC_VARS($RATE);
 				print("\n > '$PACK'\n\n");
-				SHOW($DATA[1], $DATA[0], $DATA[2]);
+				SHOW($SAID, $RATE, $USER);
 			}
 		}elsif($PACK eq $ARGV[0]){
 			if($IFUSER eq $USER){
 				$COUNT++;
 				$TTL_COUNT++;
-				INC_VARS($DATA[0]);
-				SHOW($DATA[1], $DATA[0], $DATA[2]);
+				INC_VARS($RATE);
+				SHOW($SAID, $RATE, $USER);
 			}
 		}
 	}elsif($ARGV[0]){ # <-- Go by packages.
 		if($PACK eq $ARGV[0]){
 			$TTL_COUNT++;
-			INC_VARS($DATA[0]);
+			INC_VARS($RATE);
 
 			if($SHOW_ALL){
 				$COUNT++;
-				SHOW($DATA[1], $DATA[0], $DATA[2])
-			}elsif(($ARGV[1]) and ($DATA[0] == $ARGV[1])){
+				SHOW($SAID, $RATE, $USER)
+			}elsif(($ARGV[1]) and ($RATE == $ARGV[1])){
 				$COUNT++;
-				SHOW($DATA[1], $DATA[0], $DATA[2])
+				SHOW($SAID, $RATE, $USER)
 			}
 		}
 	}elsif($SHOW_ALL and $ARGLESS){ # <-- Just show all reviews.
 		$COUNT++;
 		$TTL_COUNT++;
-		INC_VARS($DATA[0]);
+		INC_VARS($RATE);
 
 		# Ensure print isn't unnecessarily repeated.
 		if($PACK_OLD and $PACK_OLD ne $PACK){
 			print("\n > '$PACK'\n\n");
 		}elsif(not $PACK_OLD){
-			print("\n-----> '$PACK'\n\n");
+			print("\n > '$PACK'\n\n");
 		}
 
 		# When these aren't the same, next time, show what it is.
 		$PACK_OLD = $PACK;
 
-		SHOW($DATA[1], $DATA[0], $DATA[2])
+		SHOW($SAID, $RATE, $USER)
 	}
 }
 
