@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - perlmisc/up
+# Project Name      - perlmisc/sup
 # Started On        - Wed 17 Apr 13:13:34 BST 2019
-# Last Change       - Sun  5 May 11:50:13 BST 2019
+# Last Change       - Sun  5 May 12:19:34 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-# A Perl rewrite of up() previously found in my .bash_functions.
+# A Perl rewrite of up() previously found in TFL .bash_functions.
 #----------------------------------------------------------------------------------
 
 use strict;
@@ -23,7 +23,7 @@ sub FAIL{
 
 while($ARGV[0]){
 	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		print("USAGE: up [[--help|-h|-?] | [--version|-v]]\n");
+		print("USAGE: sup [[--help|-h|-?] | [--version|-v]]\n");
 		exit 0
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
 		print("$_VERSION_\n");
