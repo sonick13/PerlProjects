@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Fri  3 May 11:46:40 BST 2019
+# Last Change       - Mon  6 May 20:49:37 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -18,11 +18,11 @@ use warnings;
 use autodie;
 use File::Copy 'copy';
 
-my $_VERSION_ = '2019-05-02';
+my $_VERSION_ = "2019-05-06";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
-	if($_[0] == 1){exit 1}
+	exit(1) if $_[0]
 }
 
 sub USAGE{
@@ -31,14 +31,14 @@ sub USAGE{
 
 		            ...
 
-SYNTAX:     mkdeb [OPTS] CMDS
+		SYNTAX:     mkdeb [OPTS] CMDS
 
-OPTS:       --help|-h|-?            - Displays this help information.
-            --version|-v            - Output only the version datestamp.
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
 
-CMDS:       BASE_DIR                - The directory name for 'dpkg-deb' to use.
+		CMDS:       BASE_DIR                - The directory name for 'dpkg-deb' to use.
 
-NOTE:       All CMDS are written in key=value format.
+		NOTE:       All CMDS are written in key=value format.
 	};
 
 	print(split("\t", $INFO))
@@ -61,14 +61,12 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-sub KEY_VALUE{
-	my ($KEY, $VALUE) = split('=', $_[0]);
-}
+sub KEY_VALUE{return(($KEY, $VALUE) = split('=', $_[0]))}
 
 # Parse CMDS.
 while($ARGV[0]){
 	if($ARGV[0] =~ /^$/){
-	}elsif($ARGV[0] =~ /^$/){
+		KEY_VALUE->KEY
 	}else{
 		FAIL(1, __LINE__, "Incorrect argument(s) specified")
 	}
@@ -111,7 +109,7 @@ sub MK_CONTROL{
 		Installed-Size: $_[3]
 		Description: $SHORT_DESCRIPTION[3]
 		Homepage: https://github.com/terminalforlife/$_[0]
-	}:
+	};
 
 	print($FH $CONTROL_CONTENTS =~ s/\t//gr);
 
