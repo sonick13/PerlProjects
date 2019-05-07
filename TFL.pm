@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - perlmisc/libtfl.pm
+# Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Tue  7 May 15:05:44 BST 2019
+# Last Change       - Tue  7 May 17:07:19 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -20,14 +20,19 @@ my $_VERSION_ = "2019-05-07";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
-# $_[1] = Integer for the required number of function arguments.
-sub _ArgChk{die "TFL::$_[0]() requires $_[1] arguments" if not $#_ == $_[1]}
+# $_[1] = Integer (expected $#_) for the current total number of arguments.
+# $_[2] = Integer for the required number of function arguments.
+sub _ArgChk{
+	die "TFL::$_[0]() requires $_[2] arguments"
+		if $_[1] + 1 != $_[2]
+}
 
 # Example: TFL::FAIL(1, __LINE__, "Text for error goes here.")
 # $_[0] = Boolean integer for whether to exit 1 (1) or not (0).
 # $_[1] = Line number; an integer, or, preferably, '__LINE__'.
+# $_[2] = The error message string itself, sans newline character.
 sub FAIL{
-	_ArgChk('FAIL', 2);
+	_ArgChk('FAIL', $#_, 3);
 
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
 	exit(1) if $_[0]
@@ -38,7 +43,7 @@ sub FAIL{
 # $_[1] = A URL string recognisable by 'LWP::Simple'.
 # $_[2] = The program's current version, preferably 0000-00-00 format.
 sub UpdChk{
-	_ArgChk('UpdChk', 3);
+	_ArgChk('UpdChk', $#_, 3);
 
 	if($_[0]){
 		use LWP::Simple;
@@ -63,7 +68,7 @@ sub UpdChk{
 # $_[0] = String 'key=value' to split.
 # $_[1] = Index to return; 0 (key) or 1 (value).
 sub KeyVal{
-	_ArgChk('KeyVal', 2);
+	_ArgChk('KeyVal', $#_, 2);
 
 	return(@{[split('=', $_[0])]}[$_[1]])
 }
@@ -73,7 +78,7 @@ sub KeyVal{
 # $_[1] = Same as first argument in FAIL().
 # $_[2] = Same as second argument in FAIL().
 sub DepChk{
-	_ArgChk('DepChk', 3);
+	_ArgChk('DepChk', $#_, 3);
 
 	FAIL($_[1], $_[2], "Missing required '$_[0]' executable.")
 		unless -f $_[0] and -x $_[0];
