@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sun  5 May 21:51:22 BST 2019
+# Last Change       - Tue  7 May 12:41:36 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 
-my $_VERSION_ = "2019-05-05";
+my $_VERSION_ = "2019-05-07";
 
 sub FAIL{
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
@@ -169,7 +169,7 @@ close($FH);
 
 my %STARS; # <-- Hash of each rating, for later incrementing, set below.
 $STARS{$_} = 0 foreach 1..5;
-my $TTL_COUNT = 0; # <-- TLL comments by user, or for a package.
+my $TTL_COUNT = 0; # <-- TTL comments by user, or for a package.
 my $COUNT = 0; # <-- TTL comments displayed by user, or for a package.
 
 sub INC_VARS{ # <-- $RATE is passed here.
