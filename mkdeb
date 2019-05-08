@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Wed  8 May 08:17:58 BST 2019
+# Last Change       - Wed  8 May 08:44:18 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ use POSIX 'setuid', 'setgid';
 use File::Copy 'copy';
 use File::Path 'make_path';
 use File::Basename 'dirname', 'basename';
-use TFL; # <-- libTFL-perl
+use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
 my $_VERSION_ = "2019-05-08";
 
@@ -28,7 +28,7 @@ sub USAGE{
 	my $INFO = qq{            @{[uc($0)]} ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
-		            ...
+		            Build a DEB package more easily. (non-compiling languages)
 
 		SYNTAX:     $0 [OPTS] CMDS FILES
 
@@ -36,12 +36,32 @@ sub USAGE{
 		            --version|-v            - Output only the version datestamp.
 
 		CMDS:       BASE=PATH               - Directory in which package files will live.
-		            NAME=STRING             - The name of the project to be packaged.
+		            NAME=STR                - Name of the project to be packaged.
+		            VERS=STR                - Version string for the package.
+		            SECT=STR                - Section under which this package falls.
+		            ESSE=STR                - Whether the package is essential or not.
+		            DEPS=STR                - List of dependencies; see below.
+		            SIZE=INT                - Total installed size, in KiB.
+		            SHDE=STR                - Short description for the package.
+		            LODE=STR                - Long description for the package.
+		            PRIO=STR                - Priority of the package.
+		            ARCH=STR                - Architecture required by this package.
+		            REPO=STR                - Name of the GitHub repository to use.
 
 		NOTE:       All CMDS are written in key=value format.
 
 		            The FILES part of the command must consist of absolute paths, and must
 		            not only point to the files to add, but also the files for md5sums.
+
+		            Dependencies, via the 'DEPS' key, should be correctly formatted.
+
+		            For example:
+
+		              DEPS='perl (>= v5.22.1), libTFL-perl (>= 2019-05-07)'
+
+		            The longer description for the 'LODE' key, as the rest of the keys, can
+		            be a variable assigned to the associated data, for easier building.
+		            This inconvenience will be addressed in future versions of mkdeb.
 	};
 
 	print($INFO =~ tr/\t//dr)
