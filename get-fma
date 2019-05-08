@@ -1,0 +1,189 @@
+#!/usr/bin/perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - get-fma
+# Started On        - Fri 26 Apr 16:13:18 BST 2019
+# Last Change       - Sat 27 Apr 19:48:15 BST 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use LWP::UserAgent;
+use File::Temp 'tempfile';
+use List::MoreUtils 'uniq';
+
+my $_VERSION_ = "2019-04-27";
+
+sub FAIL{
+	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
+	if($_[0] == 1){exit 1}
+}
+
+my $DOM = 'https://freemusicarchive.org';
+
+sub USAGE{
+	my $INFO = qq{            GET-FMA ($_VERSION_)
+		            Written by terminalforlife (terminalforlife\@yahoo.com)
+
+		            Perl downloader for MP3s discovered on Free Music Archive.
+
+		SYNTAX:     get-fma [OPTS] GENRE PAGE
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+		            --output-only|-O        - Don't download audio; output only.
+		            --name|-n TYPE          - Name TYPE to use for file names.
+		            --dest|-D PATH          - Files will be downloaded to PATH.
+
+		NOTE:       Where DEST is the destination for the downloaded audio files.
+
+		            Available name types are 'generic', 'id', and the default, 'title'.
+
+		SITE:       $DOM
+	};
+
+	print(split("\t", $INFO))
+}
+
+my $DEST = './';
+my $PRETTY = "True";
+my $NAME_FORMAT = "title";
+my $OUTPUT_ONLY = "False";
+
+while($ARGV[0]){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		USAGE;
+		exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$_VERSION_\n");
+		exit 0
+	}elsif($ARGV[0] =~ /^(--name|-n)$/){
+		shift(@ARGV);
+
+		if($ARGV[0] =~ /^(title|generic|id|link)$/){
+			$NAME_FORMAT = $ARGV[0]
+		}else{
+			FAIL(1, __LINE__, "Invalid format specified.")
+		}
+	}elsif($ARGV[0] =~ /^(--output-only|-O)$/){
+		$OUTPUT_ONLY = "True"
+	}elsif($ARGV[0] =~ /^(--dest|-D)$/){
+		shift(@ARGV);
+
+		if(-d $ARGV[0]){
+			if($ARGV[0] !~ /\/$/){
+				$DEST = $ARGV[0] . '/'
+			}else{
+				$DEST = $ARGV[0]
+			}
+		}else{
+			FAIL(1, __LINE__, "Directory not found.")
+		}
+	}elsif($ARGV[0] =~ /^-/){
+		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}else{
+		last
+	}
+
+	shift(@ARGV)
+}
+
+unless($ARGV[0] && $ARGV[1]){
+	FAIL(1, __LINE__, "Both a genre and page number are required.")
+}
+
+my @GENRES = (
+	"blues", "classical", "country", "electronic", "experimental", "folk",
+	"hip-hop", "instrumental", "international", "jazz", "novelty", "historic",
+	"pop", "rock", "soul-rnb", "spoken"
+);
+
+my $UA = LWP::UserAgent->new();
+$UA->max_redirect(1);
+$UA->protocols_allowed(['http', 'https']);
+$UA->agent('Mozilla/5.0');
+
+my $TMP;
+my $GENRE_EXISTS = "False";
+
+foreach(@GENRES){
+	if($_ eq $ARGV[0]){
+		my $SORT = 'sort=track_date_published&d=1&';
+		my $LINK = "$DOM/genre/$ARGV[0]/?${SORT}page=$ARGV[1]";
+
+		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '.tmp');
+		$TMP = $FH->filename();
+		print($FH $UA->get($LINK)->decoded_content());
+
+		$GENRE_EXISTS = "True";
+		close($FH);
+		last
+	}
+}
+
+if($GENRE_EXISTS eq "False"){
+	FAIL(1, __LINE__, "Genre not found.")
+}
+
+open(my $FH, '<', $TMP);
+
+my $TRACK;
+my $PAD = '';
+my $COUNT = 0;
+my $TITLE = '';
+while(<$FH>){
+	chomp($_);
+
+	if($NAME_FORMAT eq "title"){
+		if($_ =~ /class="ptxt-track"/ and $_ !~ /class="sortarr-up"/){
+			my @TITLE_LINE = split('/', $_);
+			$TITLE = $TITLE_LINE[6] =~ s/(.*">|<$|\s\([iI][dD]\s[0-9]{4}\))//gr
+		}
+	}
+
+	if($_ =~ m{$DOM/music/download\/}){
+		my @LINE = split(" ", $_);
+		my $LINK = $LINE[1] =~ s/(href=|\")//gr;
+
+		if($NAME_FORMAT eq "id"){
+			my $ID = $LINK =~ s/^.*\///gr;
+			$TRACK = "$ID";
+			print($TRACK)
+		}elsif($NAME_FORMAT eq "title"){
+			if(not $TITLE){
+				next
+			}else{
+				$TRACK = "${TITLE}.mp3";
+				print($TRACK)
+			}
+		}elsif($NAME_FORMAT eq "generic"){
+			$COUNT += 1;
+			if($COUNT < 10){$COUNT = '0' . $COUNT}
+			$TRACK = "Track_#$PAD$COUNT.mp3";
+			print($TRACK)
+		}
+
+		if($OUTPUT_ONLY eq "True"){
+			print("\n")
+		}else{
+			open(my $AUDIO, '>', "$DEST$TRACK");
+
+			my $BUFFER = $UA->get($LINK);
+			if($BUFFER->is_success()){
+				print($AUDIO $BUFFER->decoded_content);
+				print(" [OK]\n")
+			}else{
+				unlink("$DEST$TRACK");
+				print(" [ERROR]\n")
+			}
+
+			close($AUDIO)
+		}
+	}
+}
+
+close($FH);
+unlink($TMP)
