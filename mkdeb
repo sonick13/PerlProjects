@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Wed  8 May 08:44:18 BST 2019
+# Last Change       - Wed  8 May 08:45:52 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -87,12 +87,9 @@ TFL::DepChk('/usr/bin/dpkg-deb', 1, __LINE__);
 #TFL::FAIL(1, __LINE__, "Root access via sudo is required.")
 #	if $> != 0 and not defined($ENV{SUDO_UID});
 
-my @KEY_LIST = (
-	'BASE', 'NAME', 'VERS', 'SECT', 'ESSE', 'DEPS',
-	'SIZE', 'SHDE', 'LODE', 'PRIO', 'ARCH', 'REPO'
-);
-
+my @KEY_LIST = (qw{BASE NAME VERS SECT ESSE DEPS SIZE SHDE LODE PRIO ARCH REPO});
 my %KEYS;
+
 while($ARGV[0]){
 	last() if $ARGV[0] =~ /^\//; # <-- Ensure there are arguments left for FILES.
 
