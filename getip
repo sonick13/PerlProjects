@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - getip/getip.pl
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Wed  8 May 22:43:31 BST 2019
+# Last Change       - Wed  8 May 22:48:24 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use File::Basename 'basename';
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
 my $_VERSION_ = "2019-05-08";
-my $_PROJECT_ = @{[basename($0)]};
+my $_PROJECT_ = basename($0);
 
 my $DOM = "https://whatismyipaddress.com";
 
