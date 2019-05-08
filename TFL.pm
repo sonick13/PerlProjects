@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Tue  7 May 20:32:08 BST 2019
+# Last Change       - Wed  8 May 14:53:32 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,13 +16,13 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-07";
+my $_VERSION_ = "2019-05-08";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
 # $_[1] = Integer (expected $#_) for the current total number of arguments.
 # $_[2] = Integer for the required number of function arguments.
-sub _ArgChk{die "TFL::$_[0]() requires $_[2] arguments" if $_[1] + 1 != $_[2]}
+sub _ArgChk{die("TFL::$_[0]() requires $_[2] arguments") if $_[1] + 1 != $_[2]}
 
 # Example: TFL::FAIL(1, __LINE__, "Text for error goes here.")
 # $_[0] = Boolean integer for whether to exit 1 (1) or not (0).
@@ -54,7 +54,7 @@ sub UpdChk{
 				)
 			}
 		}else{
-			FAIL(1, __LINE__, "Failed to check for available updates.")
+			die("Failed to check for updates")
 		}
 
 		exit(0)
@@ -84,13 +84,13 @@ sub Defined{
 			if($KEY_VIABLE eq $KEY){
 				$COUNT++;
 
-				FAIL(1, __LINE__, "Value for '$KEY' key not defined.")
+				die("Value for '$KEY' key not defined.")
 					unless defined(${$_[0]}{$KEY})
 			}
 		}
 
 		if($COUNT == 0){
-			FAIL(0, __LINE__, "Key '$KEY_VIABLE' not defined.");
+			die("Key '$KEY_VIABLE' not defined");
 			$FAILED++
 		}
 	}
@@ -100,12 +100,10 @@ sub Defined{
 
 # Example: TFL::DepChk()
 # $_[0] = Executable file path for which to be checked.
-# $_[1] = Same as first argument in FAIL().
-# $_[2] = Same as second argument in FAIL().
 sub DepChk{
-	_ArgChk('DepChk', $#_, 3);
+	_ArgChk('DepChk', $#_, 1);
 
-	FAIL($_[1], $_[2], "Missing required '$_[0]' executable.")
+	die("Missing required '$_[0]' executable")
 		unless -f $_[0] and -x $_[0];
 }
 
