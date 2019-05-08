@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue  7 May 12:41:36 BST 2019
+# Last Change       - Wed  8 May 08:27:27 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,13 +14,9 @@ use autodie;
 use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
+use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-07";
-
-sub FAIL{
-	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
-	exit(1) if $_[0]
-}
+my $_VERSION_ = "2019-05-08";
 
 my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
 
@@ -102,12 +98,14 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^--db-file$/){
 		shift(@ARGV);
 
-		FAIL(1, __LINE__, "No database file specified.") if not $ARGV[0];
+		TFL::FAIL(1, __LINE__, "No database file specified.")
+			if not $ARGV[0];
+
 		$DATABASE = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--user|-u)$/){
 		shift(@ARGV);
 
-		FAIL(1, __LINE__, "No user specified.") if not $ARGV[0];
+		TFL::FAIL(1, __LINE__, "No user specified.") if not $ARGV[0];
 		$IFUSER = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
 		$BORING = 1
@@ -116,7 +114,7 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^--raw-output$/){
 		$RAW_OUTPUT = 1
 	}elsif($ARGV[0] =~ /^-.*/){
-		FAIL(1, __LINE__, "Incorrect argument(s) specified.")
+		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified.")
 	}else{
 		last
 	}
@@ -124,30 +122,30 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-if(not $ARGV[0] and not $ARGV[1]){$ARGLESS = 1}
+if(not defined($ARGV[0]) and not defined($ARGV[1])){$ARGLESS = 1}
 
 unless($UPDATE_DB or $IFUSER or ($SHOW_ALL and $ARGLESS)){
-	if($SHOW_ALL and not $ARGV[0]){
-		FAIL(1, __LINE__, "Missing package name.")
+	if($SHOW_ALL and not defined($ARGV[0])){
+		TFL::FAIL(1, __LINE__, "Missing package name.")
 	}
 
 	if($ARGV[1]){
 		if($SHOW_ALL and $ARGV[1] !~ /^[1-5]{1}$/){
-			FAIL(1, __LINE__, "Invalid rating provided.")
+			TFL::FAIL(1, __LINE__, "Invalid rating provided.")
 		}elsif($SHOW_ALL){
-			FAIL(1, __LINE__, "Told to show all, but provided a rating.")
+			TFL::FAIL(1, __LINE__, "Told to show all, but provided a rating.")
 		}
 	}else{
 		unless($SHOW_ALL){
-			FAIL(1, __LINE__, "A rating is by default required.")
+			TFL::FAIL(1, __LINE__, "A rating is by default required.")
 		}
 	}
 }
 
 if(not(-f $DATABASE and -r $DATABASE) and $UPDATE_DB){
-	FAIL(1, __LINE__, "Database file missing or inaccessible.")
+	TFL::FAIL(1, __LINE__, "Database file missing or inaccessible.")
 }elsif(-z $DATABASE and $UPDATE_DB){
-	FAIL(1, __LINE__, "Database file is empty.")
+	TFL::FAIL(1, __LINE__, "Database file is empty.")
 }elsif($UPDATE_DB){
 	open(my $FH, '>', $DATABASE);
 
