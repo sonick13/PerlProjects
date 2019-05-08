@@ -1,0 +1,63 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------------
+# Project Name      - wcdl/completion
+# Started On        - Mon 29 Jan 18:47:58 GMT 2018
+# Last Change       - Wed  1 May 10:40:15 BST 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# This is the bash completion script for wcdl.
+#----------------------------------------------------------------------------------
+
+_arg_list_wcdl(){
+	local X
+
+	while read -a X; do
+		if [ "$IS_OPTS_LINE" == "true" ]\
+		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
+			break
+		fi
+
+		case "${X[0]}" in
+			OPTS:)
+				local IS_OPTS_LINE="true"
+				printf "%s " "${X[1]//|/ }" ;;
+			-*)
+				printf "%s " "${X[0]//|/ }" ;;
+		esac
+
+		local OLD="${X[0]/OPTS:}"
+	done <<< "$(/usr/bin/wcdl -h)"
+}
+
+_list_wcdl(){
+	while read -a X; do
+		if [ "${X[0]}" -a "${X[0]}" != "CATEGORY" ]; then
+			printf "%s " "${X[0]}"
+		fi
+	done <<< "$(/usr/bin/wcdl --show-categories)"
+}
+
+_res_wcdl(){
+	/usr/bin/wcdl --show-resolutions
+}
+
+_option_wcdl(){
+	local CUR="${COMP_WORDS[$COMP_CWORD]}"
+	local PRE="${COMP_WORDS[$COMP_CWORD - 1]}"
+
+	if [[ "$PRE" =~ ^(--resolution|-r)$ ]]; then
+		COMPREPLY=($(compgen -W "$(_res_wcdl)" -- "$2"))
+	elif [[ "$CUR" == -* ]]; then
+		COMPREPLY=($(compgen -W "$(_arg_list_wcdl)" -- "$2"))
+	elif [[ "$PRE" =~ ^(--dest|-D)$ ]]; then
+		COMPREPLY=($(compgen -o default -- "$2"))
+	else
+		COMPREPLY=($(compgen -W "$(_list_wcdl)" -- "$2"))
+	fi
+}
+
+complete -F _option_wcdl wcdl
+
+# vim: noexpandtab colorcolumn=84 tabstop=8 noswapfile nobackup
