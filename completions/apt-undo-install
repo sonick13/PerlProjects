@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------------
+# Project Name      - apt-undo-install/completion
+# Started On        - Mon 29 Jan 18:47:58 GMT 2018
+# Last Change       - Tue 30 Jan 13:21:59 GMT 2018
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# This is the bash completion script for apt-undo-install.
+#----------------------------------------------------------------------------------
+
+_arg_list_apt-undo-install(){
+	local X
+
+	while read -a X; do
+		if [ "$IS_OPTS_LINE" == "true" ]\
+		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
+			break
+		fi
+
+		case "${X[0]}" in
+			OPTS:)
+				IS_OPTS_LINE="true"
+				printf -v WORD "%s " "${X[1]//|/ }" ;;
+			-*)
+				printf -v WORD "%s " "${X[0]//|/ }" ;;
+		esac
+
+		if [ "$WORD" == "--output-only:F " ]; then
+			printf "%s " --output-only:{col,list,desc}
+		else
+			printf "%s " "$WORD"
+		fi
+
+		local OLD="${X[0]/OPTS:}"
+	done <<< "$(/usr/bin/apt-undo-install -h)"
+}
+
+_option_apt-undo-install(){
+	COMPREPLY=($(compgen -W "$(_arg_list_apt-undo-install)" -- "$2"))
+}
+
+complete -F _option_apt-undo-install -o default apt-undo-install
+
+# vim: noexpandtab colorcolumn=84 tabstop=8 noswapfile nobackup
