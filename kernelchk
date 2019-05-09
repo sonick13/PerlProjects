@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - perlmisc/kernelchk
+# Project Name      - PerlProjects/kernelchk
 # Started On        - Sun  5 May 13:15:29 BST 2019
-# Last Change       - Wed  8 May 23:15:18 BST 2019
+# Last Change       - Thu  9 May 13:01:55 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ use File::Basename 'basename';
 use Gtk2::Notify -init, 'kernelchk'; # <-- libgtk2-notify-perl
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-08";
+my $_VERSION_ = "2019-05-09";
 my $_PROJECT_ = basename($0);
 
 my $FILE = '/proc/version';
