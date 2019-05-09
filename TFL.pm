@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Wed  8 May 14:53:32 BST 2019
+# Last Change       - Thu  9 May 13:12:22 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-08";
+my $_VERSION_ = "2019-05-09";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
@@ -98,7 +98,7 @@ sub Defined{
 	exit(1) if $FAILED
 }
 
-# Example: TFL::DepChk()
+# Example: TFL::DepChk('/usr/bin/man')
 # $_[0] = Executable file path for which to be checked.
 sub DepChk{
 	_ArgChk('DepChk', $#_, 1);
