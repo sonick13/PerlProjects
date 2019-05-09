@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - getip/getip.pl
+# Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Wed  8 May 22:48:24 BST 2019
+# Last Change       - Thu  9 May 13:00:58 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ use autodie;
 use File::Basename 'basename';
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-08";
+my $_VERSION_ = "2019-05-09";
 my $_PROJECT_ = basename($0);
 
 my $DOM = "https://whatismyipaddress.com";
@@ -29,7 +29,6 @@ sub USAGE{
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
-		            --update|-U             - Check for updates to $_PROJECT_.
 		            --internal|-i           - Show only the internal IP address.
 		            --external|-e           - Show only the external IP address.
 		            --ip-only|-I            - Show only the IP address.
@@ -40,7 +39,6 @@ sub USAGE{
 	print($INFO =~ tr/\t//dr)
 }
 
-my $UPDATE = 0;
 my $INTERNAL = 1;
 my $EXTERNAL = 1;
 my $INTEXT_DETECTED = 0;
@@ -52,8 +50,6 @@ while(defined($ARGV[0])){
 		USAGE(); exit 0
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
 		print("$_VERSION_\n"); exit 0
-	}elsif($ARGV[0] =~ /^(--update|-U)$/){
-		$UPDATE = 1
 	}elsif($ARGV[0] =~ /^(--internal|-i)$/){
 		$INTEXT_DETECTED++;
 		$INTERNAL = 1; $EXTERNAL = 0
@@ -71,9 +67,6 @@ while(defined($ARGV[0])){
 
 TFL::FAIL(1, __LINE__, "Either '--internal|-i' or '--external|-e'.")
 	if $INTEXT_DETECTED == 2;
-
-my $GH_URL = "https://github.com/terminalforlife/getip/raw/master/version";
-TFL::UpdChk($UPDATE, $GH_URL, $_VERSION_);
 
 if($INTERNAL){
 	use Net::Address::IP::Local; # <-- libnet-address-ip-local-perl
