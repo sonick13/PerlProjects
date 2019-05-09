@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Thu  9 May 12:58:51 BST 2019
+# Last Change       - Thu  9 May 14:21:43 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -32,7 +32,6 @@ sub USAGE{
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
 		            --quiet|-q              - Pass this flag over to apt-get.
-		            --update|-U             - Check for updates to $_PROJECT_.
 		            --count|-c N            - Execute this N many of install undos. Will
 		                                      work in reverse, from the latest to oldest.
 		            --output-only:F         - Only show package name(s), if installed; -
@@ -75,7 +74,6 @@ my $VIEW_LOGFILE = 0;
 my $TIMES_TO_EXEC = 1;
 my $TO_ROOT = 1;
 my $TO_SIMULATE = "";
-my $UPDATE = 0;
 my $FILTADATE;
 my $FILTATIME;
 my $TO_AUTOREMOVE = "";
@@ -92,8 +90,6 @@ while(defined($ARGV[0])){
 		print($_VERSION_ . "\n"); exit(0)
 	}elsif($ARGV[0] =~ /^(--quiet|-q)$/){
 		$TO_QUIET = "--quiet"
-	}elsif($ARGV[0] =~ /^(--update|-U)$/){
-		$UPDATE = 1
 	}elsif($ARGV[0] =~ /^(--logfile|-l)$/){
 		shift(@ARGV);
 		$APT_LOGFILE = $ARGV[0];
@@ -147,8 +143,6 @@ while(defined($ARGV[0])){
 
 	shift(@ARGV)
 }
-
-TFL::UpdChk($UPDATE, $VERSION_URL, $_VERSION_);
 
 if($VIEW_LOGFILE){
 	system(qq{less "$APT_LOGFILE"});
