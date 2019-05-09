@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 #----------------------------------------------------------------------------------
-# Project Name      - perlmisc/previewer
+# Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Wed  8 May 08:27:27 BST 2019
+# Last Change       - Thu  9 May 14:30:31 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -11,22 +11,24 @@
 use strict;
 use warnings;
 use autodie;
+use File::Basename 'basename';
 use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-08";
+my $_VERSION_ = "2019-05-09";
+my $_PROJECT_ = basename($0);
 
 my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
 
 sub USAGE{
-	my $HELP = qq{	            PREVIEWER ($_VERSION_)
+	my $HELP = qq{	            @{[uc($_PROJECT_)]} ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
 		            Perl program to pretty-print Linux Mint package reviews.
 
-		SYNTAX:     previewer [OPTS] [PACKAGE] [RATING]
+		SYNTAX:     $_PROJECT_ [OPTS] [PACKAGE] [RATING]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -39,12 +41,12 @@ sub USAGE{
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
 
-		NOTE:       Although previewer uses Linux Mint's review and rating database, it can
+		NOTE:       Although $_PROJECT_ uses Linux Mint's review and rating database, it can
 		            still prove useful in Debian, Ubuntu, and their other derivatives, -
 		            albeit with inaccuracies.
 
 		            If you specifiy your own database file, it MUST adhere to the same
-		            formatting as the official one, lest previewer wind up a buggy mess.
+		            formatting as the official one, lest $_PROJECT_ wind up a buggy mess.
 
 		            For example:
 
@@ -57,9 +59,9 @@ sub USAGE{
 		            Previewer is a Perl fork of and vast improvement over the original -
 		            shell program, 'reviewer', written also by 'terminalforlife'.
 
-		EXAMPLE:    previewer -b -a --summary firefox
-		            previewer --no-reviews -S vim 2
-		            previewer --user 'Velimor' mintstick 4
+		EXAMPLE:    $_PROJECT_ -b -a --summary firefox
+		            $_PROJECT_ --no-reviews -S vim 2
+		            $_PROJECT_ --user 'Velimor' mintstick 4
 
 		FILE:       Unless told otherwise, the database is stored here:
 
