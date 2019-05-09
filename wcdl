@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Sat  4 May 23:52:17 BST 2019
+# Last Change       - Thu  9 May 14:12:43 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -19,41 +19,37 @@ use LWP::Simple;
 use LWP::UserAgent;
 use Image::Magick; # <-- libimage-magick-perl
 use List::MoreUtils 'uniq';
-use File::Basename 'dirname';
+use File::Basename qw{dirname basename};
 use File::Path 'make_path';
 use File::Temp;
 use POSIX 'ceil';
 use Term::ANSIColor qw{GREEN RED BOLD RESET YELLOW};
+use TFL; # <-- libtfl-perl (>= 2019-05-07)
 #use sigtrap qw{handler my_handler normal-signals error-signals};
 
 #no warnings 'uninitialized';
 
-my $_VERSION_ = "2019-05-04";
-
-sub FAIL{
-	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
-	exit(1) if $_[0] == 1
-}
+my $_VERSION_ = "2019-05-09";
+my $_PROJECT_ = basename($0);
 
 my $DOM = 'https://wallpaperscraft.com';
-my $GH_URL = 'https://github.com/terminalforlife/wcdl/raw/master/version';
-my $LOCAL_DIR = $ENV{HOME} . '/.local/share/wcdl';
+my $GH_URL = "https://github.com/terminalforlife/$_PROJECT_/raw/master/version";
+my $LOCAL_DIR = $ENV{HOME} . "/.local/share/$_PROJECT_";
 my $CACHE_DIR = $LOCAL_DIR . '/cache';
 my $CACHE_CATS = $CACHE_DIR . '/categories';
 my $CACHE_PAGES = $CACHE_DIR . '/pages';
 my $HOMEPAGE = $CACHE_DIR . '/homepage';
 
 sub USAGE{
-	my $INFO = qq{            WCDL ($_VERSION_)
+	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
 		            Extensive Perl downloader for Wallpaperscraft.
 
-		SYNTAX:     wcdl [OPTS] CATEGORY PAGE
+		SYNTAX:     $_PROJECT_ [OPTS] CATEGORY PAGE
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
-		            --update|-U             - Check for updates to wcdl.
 		            --colorless             - Don't color output with escape sequences.
 		            --links-only|-O         - Just output the direct download links.
 		            --show-categories       - List categories, images, and pages.
@@ -68,7 +64,7 @@ sub USAGE{
 
 		NOTE:       Page numbers can be given in ranges, or single digits, as shown below.
 
-		DISPLAY:    By default, wcdl will try to detect the current display resolution.
+		DISPLAY:    By default, $_PROJECT_ will try to detect the current display resolution.
 
 		            If you're using a multi-monitor setup, only the first discovered
 		            (connected) display will be processed; in this case, you might be
@@ -78,10 +74,10 @@ sub USAGE{
 		            Resolution detection is done using xrandr, so this feature will only
 		            work if xrandr is found.
 
-		EXAMPLE:    wcdl -D ~/Downloads -N nature '2 8 10'
-		            wcdl --links-only abstract '1 3 8 10-24 105'
-		            wcdl --repopulate --clobber -O cars 1-5
-		            wcdl -O -f cat -f snow animals 1-100
+		EXAMPLE:    $_PROJECT_ -D ~/Downloads -N nature '2 8 10'
+		            $_PROJECT_ --links-only abstract '1 3 8 10-24 105'
+		            $_PROJECT_ --repopulate --clobber -O cars 1-5
+		            $_PROJECT_ -O -f cat -f snow animals 1-100
 
 		SITE:       $DOM
 	};
@@ -98,7 +94,6 @@ my $REPOPULATE = 0;
 my $LINKS_ONLY = 0;
 my $LIST_CATS = 0;
 my $NO_CACHE = 0;
-my $UPDATE = 0;
 my $FILTER = 0;
 my @FILTER_MATCH;
 my $SHOW_RES = 0;
@@ -110,8 +105,6 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
 		print("$_VERSION_\n");
 		exit 0
-	}elsif($ARGV[0] =~ /^(--update|-U)$/){
-		$UPDATE = 1
 	}elsif($ARGV[0] =~ /^--colorless$/){
 		$COLOR = 0
 	}elsif($ARGV[0] =~ /^(--links-only|-O)$/){
@@ -126,7 +119,7 @@ while($ARGV[0]){
 		if($ARGV[0] =~ /^[0-9]+x[0-9]+$/){
 			$RES = $ARGV[0]
 		}else{
-			FAIL(1, __LINE__, "Invalid resolution chosen.")
+			TFL::FAIL(1, __LINE__, "Invalid resolution chosen.")
 		}
 	}elsif($ARGV[0] =~ /^(--filter|-f)$/){
 		shift(@ARGV);
@@ -145,7 +138,7 @@ while($ARGV[0]){
 				$DEST = $ARGV[0]
 			}
 		}else{
-			FAIL(1, __LINE__, "Directory not found.")
+			TFL::FAIL(1, __LINE__, "Directory not found.")
 		}
 	}elsif($ARGV[0] =~ /^--repopulate$/){
 		$REPOPULATE = 1
@@ -154,28 +147,12 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^(--no-cache|-N)$/){
 		$NO_CACHE = 1
 	}elsif($ARGV[0] =~ /^-/){
-		FAIL(1, __LINE__, "Incorrect argument(s) specified")
+		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified")
 	}else{
 		last
 	}
 
 	shift(@ARGV)
-}
-
-#-------------------------------------------------------------------UPDATE CHECKING
-
-if($UPDATE){
-	my $REMOTE_VERSION = get($GH_URL);
-	if(($REMOTE_VERSION) and ($_VERSION_ ne $REMOTE_VERSION)){
-		print(
-			"New version available:    $REMOTE_VERSION" .
-			"Current version:          $_VERSION_\n"
-		)
-	}elsif(not $REMOTE_VERSION){
-		FAIL(1, __LINE__, "Failed to check for available updates.")
-	}
-
-	exit 0
 }
 
 #--------------------------------------------------------------------------UA SETUP
@@ -207,7 +184,7 @@ sub DL_PAGE{
 				print($FH $DATA->decoded_content())
 			}else{
 				unlink($_[0]);
-				FAIL(1, __LINE__, "Unable to fetch and cache page data.")
+				TFL::FAIL(1, __LINE__, "Unable to fetch and cache page data.")
 			}
 
 			close($FH)
@@ -216,10 +193,10 @@ sub DL_PAGE{
 		# Ignoring the first index to ensure no cache overwrites.
 
 		if($REPOPULATE){
-			FAIL(1, __LINE__, "Told to repopulate, but '--no-cache|N' is enabled")
+			TFL::FAIL(1, __LINE__, "Told to repopulate, but '--no-cache|N' is enabled")
 		}
 
-		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_wcdl.tmp');
+		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_{$_PROJECT_}.tmp');
 		binmode($FH, ':utf8'); # <-- Ensure temp file uses UTF-8 encoding.
 		$TMP = $FH->filename();
 
@@ -228,7 +205,7 @@ sub DL_PAGE{
 			print($FH $DATA->decoded_content())
 		}else{
 			unlink($_[1]);
-			FAIL(1, __LINE__, "Unable to fetch page data.")
+			TFL::FAIL(1, __LINE__, "Unable to fetch page data.")
 		}
 
 		close($FH)
@@ -266,7 +243,9 @@ sub DL_IMAGE{
 
 #--------------------------------------------------------------RESOLUTION DETECTION
 
-if(length($RES) == 0 and -x '/usr/bin/xrandr'){
+if(length($RES) == 0){
+	TFL::DepChk('/usr/bin/xrandr');
+
 	# Seems to be the most portable, aside from the absolute path, but is slow.
 	my @IN = readpipe('/usr/bin/xrandr --query');
 
@@ -341,14 +320,14 @@ if($LIST_CATS){
 }
 
 if(($ARGV[0]) and not(exists($CATNUMS{$ARGV[0]}))){
-	FAIL(1, __LINE__, "Invalid category provided.")
+	TFL::FAIL(1, __LINE__, "Invalid category provided.")
 }
 
 #--------------------------------------------------------------PROCESS PAGE NUMBERS
 
 my @PAGES;
 unless($ARGV[1]){
-	FAIL(1, __LINE__, "At least one (non-0) page must be provided.")
+	TFL::FAIL(1, __LINE__, "At least one (non-0) page must be provided.")
 }else{
 	my @PAGE_NUM_LIST = split(' ', $ARGV[1]);
 	foreach(@PAGE_NUM_LIST){
@@ -360,7 +339,7 @@ unless($ARGV[1]){
 			my @NUMS = ($START..$END);
 			push(@PAGES, $_) foreach @NUMS
 		}else{
-			FAIL(1, __LINE__, "Invalid page number detected.")
+			TFL::FAIL(1, __LINE__, "Invalid page number detected.")
 		}
 	}
 }
@@ -377,7 +356,7 @@ foreach(@PAGES){
 	# round up with ceil() (POSIX), as the final page may display 1-15 images.
 	my $TOTAL_IMAGES_INTO_PAGES = ceil($CATNUMS{$ARGV[0]} / 15);
 	if($_ > $TOTAL_IMAGES_INTO_PAGES){
-		FAIL(1, __LINE__, "Page '$_' is out of range.")
+		TFL::FAIL(1, __LINE__, "Page '$_' is out of range.")
 	}
 
 	if(length($RES) > 0){
@@ -390,7 +369,7 @@ foreach(@PAGES){
 		}
 
 		unless($FOUND_RESOLUTION){
-			FAIL(1, __LINE__, "Resolution not supported.")
+			TFL::FAIL(1, __LINE__, "Resolution not supported.")
 		}
 	}
 
