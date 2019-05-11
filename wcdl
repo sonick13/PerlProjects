@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Sat 11 May 23:24:19 BST 2019
+# Last Change       - Sat 11 May 23:40:42 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -19,6 +19,7 @@ use LWP::Simple;
 use LWP::UserAgent;
 use Image::Magick; # <-- libimage-magick-perl
 use List::MoreUtils 'uniq';
+use X11::Protocol;
 use File::Basename qw{dirname basename};
 use File::Path 'make_path';
 use File::Temp;
@@ -31,11 +32,11 @@ my $_PROJECT_ = basename($0);
 
 my $DOM = 'https://wallpaperscraft.com';
 my $GH_URL = "https://github.com/terminalforlife/$_PROJECT_/raw/master/version";
-my $LOCAL_DIR = $ENV{HOME} . "/.local/share/$_PROJECT_";
-my $CACHE_DIR = $LOCAL_DIR . '/cache';
-my $CACHE_CATS = $CACHE_DIR . '/categories';
-my $CACHE_PAGES = $CACHE_DIR . '/pages';
-my $HOMEPAGE = $CACHE_DIR . '/homepage';
+my $LOCAL_DIR = "$ENV{HOME}/.local/share/$_PROJECT_";
+my $CACHE_DIR = "$LOCAL_DIR/cache";
+my $CACHE_CATS = "$CACHE_DIR/categories";
+my $CACHE_PAGES = "$CACHE_DIR/pages";
+my $HOMEPAGE = "$CACHE_DIR/homepage";
 
 sub USAGE{
 	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
@@ -67,9 +68,6 @@ sub USAGE{
 		            (connected) display will be processed; in this case, you might be
 		            better off picking your resolution manually, with the
 		            '--resolution|-r' flags.
-
-		            Resolution detection is done using xrandr, so this feature will only
-		            work if xrandr is found.
 
 		EXAMPLE:    $_PROJECT_ -D ~/Downloads -N nature '2 8 10'
 		            $_PROJECT_ --links-only abstract '1 3 8 10-24 105'
@@ -164,7 +162,7 @@ my $TMP; # <-- Set scope here, for later cleanup.
 sub DL_PAGE{
 	if(not $NO_CACHE){
 		if((not $REPOPULATE) && (-f $_[0])){
-			return 1
+			return(1)
 		}elsif($REPOPULATE or not -f $_[0]){
 			my $DIR = dirname($_[0]);
 			make_path($DIR) unless -d $DIR;
@@ -208,7 +206,7 @@ sub DL_PAGE{
 }
 
 sub DL_IMAGE{
-	return 1 if -f $_[0] and not $CLOBBER;
+	return(1) if -f $_[0] and not $CLOBBER;
 
 	open(my $FH, '>', $_[0]);
 
@@ -223,7 +221,7 @@ sub DL_IMAGE{
 		}
 
 		unlink($_[0]);
-		return 1
+		return(1)
 	}
 
 	close($FH);
@@ -239,20 +237,10 @@ sub DL_IMAGE{
 #--------------------------------------------------------------RESOLUTION DETECTION
 
 if(length($RES) == 0){
-	TFL::DepChk('/usr/bin/xrandr');
-
-	# Seems to be the most portable, aside from the absolute path, but is slow.
-	my @IN = readpipe('/usr/bin/xrandr --query');
-
-	foreach(@IN){
-		chomp($_);
-
-		if($_ =~ /\sconnected\s/){
-			my @LINE = split(' ', $_);
-			$RES = $LINE[2] =~ s/\+.*$//gr;
-			last # Only count the first connected display.
-		}
-	}
+	my $X11 = X11::Protocol->new();
+	my $X = $X11->{screens}[0]{width_in_pixels};
+	my $Y = $X11->{screens}[0]{height_in_pixels};
+	$RES = $X . 'x' . $Y
 }
 
 #------------------------------------------------------CATEGORY & HOMEPAGE HANDLING
