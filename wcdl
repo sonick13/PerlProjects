@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Thu  9 May 14:12:43 BST 2019
+# Last Change       - Sat 11 May 23:24:19 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -25,11 +25,8 @@ use File::Temp;
 use POSIX 'ceil';
 use Term::ANSIColor qw{GREEN RED BOLD RESET YELLOW};
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
-#use sigtrap qw{handler my_handler normal-signals error-signals};
 
-#no warnings 'uninitialized';
-
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-05-11";
 my $_PROJECT_ = basename($0);
 
 my $DOM = 'https://wallpaperscraft.com';
@@ -98,13 +95,11 @@ my $FILTER = 0;
 my @FILTER_MATCH;
 my $SHOW_RES = 0;
 
-while($ARGV[0]){
+while(defined($ARGV[0])){
 	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		USAGE;
-		exit 0
+		USAGE(); exit 0
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
-		print("$_VERSION_\n");
-		exit 0
+		print("$_VERSION_\n"); exit 0
 	}elsif($ARGV[0] =~ /^--colorless$/){
 		$COLOR = 0
 	}elsif($ARGV[0] =~ /^(--links-only|-O)$/){
