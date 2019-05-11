@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Wed  8 May 08:45:52 BST 2019
+# Last Change       - Sat 11 May 10:13:03 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,15 +22,16 @@ use File::Path 'make_path';
 use File::Basename 'dirname', 'basename';
 use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-08";
+my $_VERSION_ = "2019-05-11";
+my $_PROJECT_ = basename($0);
 
 sub USAGE{
-	my $INFO = qq{            @{[uc($0)]} ($_VERSION_)
+	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
 		            Written by terminalforlife (terminalforlife\@yahoo.com)
 
 		            Build a DEB package more easily. (non-compiling languages)
 
-		SYNTAX:     $0 [OPTS] CMDS FILES
+		SYNTAX:     $_PROJECT_ [OPTS] CMDS FILES
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -61,7 +62,7 @@ sub USAGE{
 
 		            The longer description for the 'LODE' key, as the rest of the keys, can
 		            be a variable assigned to the associated data, for easier building.
-		            This inconvenience will be addressed in future versions of mkdeb.
+		            This inconvenience will be addressed in future versions of $_PROJECT_.
 	};
 
 	print($INFO =~ tr/\t//dr)
