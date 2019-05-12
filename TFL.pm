@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sun 12 May 17:25:05 BST 2019
+# Last Change       - Sun 12 May 17:33:12 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ sub DepChk{
 sub UnderLine{
 	_ArgChk('UnderLine', $#_, 1);
 
-	print($_[0] . "\n" . '-' x length($_[0]))
+	return($_[0] . "\n" . '-' x length($_[0]))
 }
 
 # Example: TFL::i3Do(100000, 'workspace 1')
