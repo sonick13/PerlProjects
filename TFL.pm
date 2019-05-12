@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu  9 May 13:12:22 BST 2019
+# Last Change       - Sun 12 May 01:32:04 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-05-12";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
@@ -105,6 +105,14 @@ sub DepChk{
 
 	die("Missing required '$_[0]' executable")
 		unless -f $_[0] and -x $_[0];
+}
+
+# Example: TFL::UnderLine('This is an underlined string.')
+# $_[0] = The string to underline, such as an important message.
+sub UnderLine{
+	_ArgChk('UnderLine', $#_, 1);
+
+	print($_[0] . "\n" . '-' x length($_[0]))
 }
 
 return(1)
