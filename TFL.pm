@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sun 12 May 01:32:04 BST 2019
+# Last Change       - Sun 12 May 17:25:05 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -113,6 +113,27 @@ sub UnderLine{
 	_ArgChk('UnderLine', $#_, 1);
 
 	print($_[0] . "\n" . '-' x length($_[0]))
+}
+
+# Example: TFL::i3Do(100000, 'workspace 1')
+# $_[0] = Microseconds pause before the command.
+# $_[1] = The 'TYPE_COMMAND' (akin to i3-msg) for i3-wm to execute.
+sub i3Do{
+	_ArgChk('i3Do', $#_, 2);
+
+	use Time::HiRes 'usleep';
+	use AnyEvent::I3 qw{TYPE_COMMAND i3}; # <-- libanyevent-i3-perl
+
+	my $I3 = AnyEvent::I3->new();
+	die "Unable to estalish a connection to i3-wm"
+		if not $I3->connect->recv;
+
+	die "Invalid usleep() argument -- integer required."
+		if $_[0] !~ /^[0-9]+$/;
+
+	usleep($_[0]);
+
+	$I3->message(TYPE_COMMAND, $_[1])
 }
 
 return(1)
