@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu  9 May 14:30:31 BST 2019
+# Last Change       - Mon 13 May 18:14:21 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize';
 use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-05-13";
 my $_PROJECT_ = basename($0);
 
 my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
@@ -144,11 +144,7 @@ unless($UPDATE_DB or $IFUSER or ($SHOW_ALL and $ARGLESS)){
 	}
 }
 
-if(not(-f $DATABASE and -r $DATABASE) and $UPDATE_DB){
-	TFL::FAIL(1, __LINE__, "Database file missing or inaccessible.")
-}elsif(-z $DATABASE and $UPDATE_DB){
-	TFL::FAIL(1, __LINE__, "Database file is empty.")
-}elsif($UPDATE_DB){
+if($UPDATE_DB){
 	open(my $FH, '>', $DATABASE);
 
 	my $UA = LWP::UserAgent->new();
@@ -162,6 +158,10 @@ if(not(-f $DATABASE and -r $DATABASE) and $UPDATE_DB){
 }
 
 $Text::Wrap::columns = @{[GetTerminalSize]}[0];
+
+if(not -f $DATABASE){
+	TFL::FAIL(1, __LINE__, "Database missing -- have you used '--db-update' yet?")
+}
 
 open(my $FH, '<', $DATABASE);
 my @FILE_DATA = <$FH>;
