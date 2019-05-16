@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/redshifter.pl
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Thu  9 May 12:50:24 BST 2019
+# Last Change       - Thu 16 May 14:15:47 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use warnings;
 use autodie;
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-05-16";
 
 my $TEMP;
 my $GAMMAS_NOW;
@@ -24,7 +24,7 @@ my $BUFFER = "$HOME/.config/redshifter.tmp";
 
 mkdir("$HOME/.config") unless -d "$HOME/.config";
 
-TFL::DepChk('/usr/bin/redshift');
+TFL::DepChkPortable('redshift');
 
 # Example: MAIN('>', 6500) | MAIN('<')
 # $_[0] = Whether to read ('<') or write ('>') to the file.
