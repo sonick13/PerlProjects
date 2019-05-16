@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sun 12 May 17:43:45 BST 2019
+# Last Change       - Thu 16 May 12:27:48 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,13 +16,20 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-12";
+my $_VERSION_ = "2019-05-16";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
 # $_[1] = Integer (expected $#_) for the current total number of arguments.
 # $_[2] = Integer for the required number of function arguments.
 sub _ArgChk{die("TFL::$_[0]() requires $_[2] arguments") if $_[1] + 1 != $_[2]}
+
+# Example: my ($Year, $Month, $Day) = TFL::PKGVersion()
+sub PKGVersion{
+	_ArgChk('PKGVersion', $#_, 0);
+
+	return(split('-', $_VERSION_)) # <-- Year [0], Month [1], Day [2]
+}
 
 # Example: TFL::FAIL(1, __LINE__, "Text for error goes here.")
 # $_[0] = Boolean integer for whether to exit 1 (1) or not (0).
@@ -103,8 +110,27 @@ sub Defined{
 sub DepChk{
 	_ArgChk('DepChk', $#_, 1);
 
-	die("Missing required '$_[0]' executable")
+	die("Dependency '$_[0]' not met.")
 		unless -f $_[0] and -x $_[0];
+}
+
+# Example: TFL::DepChkPortable('/usr/bin/man')
+# $_[0] = Executable file name for which to be checked.
+sub DepChkPortable{
+	_ArgChk('DepChkPortable', $#_, 1);
+
+	use File::Basename 'basename';
+
+	my $COUNT;
+	foreach(split(':', $ENV{PATH})){
+		foreach(glob($_ . '/*')){
+			if($_[0] eq basename($_) and -x $_){
+				$COUNT++; return(1)
+			}
+		};
+	}
+
+	die("Dependency '$_[0]' not met") unless $COUNT
 }
 
 # Example: TFL::UnderLine('This is an underlined string.')
