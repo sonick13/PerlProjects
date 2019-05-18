@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Thu  9 May 16:11:13 BST 2019
+# Last Change       - Thu 16 May 14:16:56 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,9 +13,9 @@ use warnings;
 use autodie;
 use File::Basename 'basename';
 use List::MoreUtils 'uniq';
-use TFL; # <-- libtfl-perl (>= 2019-05-07)
+use TFL; # <-- libtfl-perl (>= 2019-05-16)
 
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-05-16";
 my $_PROJECT_ = basename($0);
 
 while($ARGV[0]){
@@ -33,7 +33,7 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-TFL::DepChk('/usr/bin/man');
+TFL::DepChkPortable('man');
 
 my @EXECS;
 foreach(split(':', $ENV{PATH})){
