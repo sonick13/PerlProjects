@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sat 18 May 01:14:20 BST 2019
+# Last Change       - Sat 18 May 01:16:41 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -54,10 +54,10 @@ sub UpdChk{
 
 		my $REMOTE = get($_[1]);
 		if(defined($REMOTE)){
-			if($_VERSION_ ne $REMOTE){
+			if($_[2] ne $REMOTE){
 				print(
 					"Remote:     @{[$REMOTE =~ tr/\n//dr]}\n" .
-					"Local:      $_VERSION_\n"
+					"Local:      $_[2]\n"
 				)
 			}
 		}else{
