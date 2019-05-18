@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/redshifter.pl
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Thu 16 May 14:15:47 BST 2019
+# Last Change       - Sat 18 May 01:18:12 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,9 +13,9 @@
 use strict;
 use warnings;
 use autodie;
-use TFL; # <-- libtfl-perl (>= 2019-05-07)
+use TFL; # <-- libtfl-perl (>= 2019-05-16)
 
-my $_VERSION_ = "2019-05-16";
+my $_VERSION_ = "2019-05-18";
 
 my $TEMP;
 my $GAMMAS_NOW;
