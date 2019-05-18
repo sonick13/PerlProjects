@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Sat 11 May 10:13:03 BST 2019
+# Last Change       - Sat 18 May 01:09:24 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -20,9 +20,9 @@ use POSIX 'setuid', 'setgid';
 use File::Copy 'copy';
 use File::Path 'make_path';
 use File::Basename 'dirname', 'basename';
-use TFL; # <-- libTFL-perl (>= 2019-05-07)
+use TFL; # <-- libTFL-perl (>= 2019-05-16)
 
-my $_VERSION_ = "2019-05-11";
+my $_VERSION_ = "2019-05-18";
 my $_PROJECT_ = basename($0);
 
 sub USAGE{
@@ -82,11 +82,11 @@ while(defined($ARGV[0])){
 	shift(@ARGV)
 }
 
-TFL::DepChk('/usr/bin/md5sum', 1, __LINE__);
-TFL::DepChk('/usr/bin/dpkg-deb', 1, __LINE__);
+TFL::DepChkPortable('md5sum');
+TFL::DepChkPortable('dpkg-deb');
 
-#TFL::FAIL(1, __LINE__, "Root access via sudo is required.")
-#	if $> != 0 and not defined($ENV{SUDO_UID});
+TFL::FAIL(1, __LINE__, "Root access via sudo is required.")
+	if $> != 0 and not defined($ENV{SUDO_UID});
 
 my @KEY_LIST = (qw{BASE NAME VERS SECT ESSE DEPS SIZE SHDE LODE PRIO ARCH REPO});
 my %KEYS;
