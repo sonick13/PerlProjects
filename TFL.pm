@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu 16 May 12:27:48 BST 2019
+# Last Change       - Sat 18 May 01:14:20 BST 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-16";
+my $_VERSION_ = "2019-05-18";
 
 # Example: TFL::_ArgChk('FAIL', 2)
 # $_[0] = Function name to display in die() message.
@@ -133,12 +133,13 @@ sub DepChkPortable{
 	die("Dependency '$_[0]' not met") unless $COUNT
 }
 
-# Example: TFL::UnderLine('This is an underlined string.')
-# $_[0] = The string to underline, such as an important message.
+# Example: TFL::UnderLine('-', 'This is an underlined string.')
+# $_[0] = A single character to repeat for each on the line above.
+# $_[1] = The string to underline, such as an important message.
 sub UnderLine{
-	_ArgChk('UnderLine', $#_, 1);
+	_ArgChk('UnderLine', $#_, 2);
 
-	return($_[0] . "\n" . '-' x length($_[0]))
+	return($_[1] . "\n" . $_[0] x length($_[1]))
 }
 
 # Example: TFL::i3Do(100000, 'workspace 1')
