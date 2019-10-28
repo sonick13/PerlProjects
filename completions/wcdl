@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/wcdl
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Thu  9 May 12:57:54 BST 2019
+# Last Change       - Mon 28 Oct 14:49:41 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ _list_wcdl(){
 		if [ "${X[0]}" -a "${X[0]}" != "CATEGORY" ]; then
 			printf "%s " "${X[0]}"
 		fi
-	done <<< "$(/usr/bin/wcdl --show-categories)"
+	done <<< "$(/usr/bin/wcdl --colorless --show-categories)"
 }
 
 _res_wcdl(){
