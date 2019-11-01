@@ -3,9 +3,11 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/clean-locales
 # Started On        - Thu  9 May 21:32:57 BST 2019
-# Last Change       - Sat 18 May 02:01:22 BST 2019
+# Last Change       - Fri  1 Nov 19:39:01 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# NOTE: You may need also to install the 'libanyevent-i3-perl' DEB package.
 #----------------------------------------------------------------------------------
 
 use strict;
@@ -15,7 +17,7 @@ use File::Basename 'basename';
 use File::Path 'remove_tree';
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-18";
+my $_VERSION_ = "2019-11-01";
 my $_PROJECT_ = basename($0);
 
 my $DIR = '/usr/share/locale';
