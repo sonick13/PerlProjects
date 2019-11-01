@@ -3,11 +3,13 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Thu  9 May 14:21:43 BST 2019
+# Last Change       - Fri  1 Nov 13:56:29 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This program was written with Perl version v5.22.1
+#
+# NOTE: You may need to install the 'libanyevent-i3-perl' package.
 #----------------------------------------------------------------------------------
 
 use strict;
@@ -16,7 +18,7 @@ use autodie;
 use File::Basename 'basename';
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
 
-my $_VERSION_ = "2019-05-09";
+my $_VERSION_ = "2019-11-01";
 my $_PROJECT_ = basename($0);
 
 my $DOMAIN = 'https://github.com';
@@ -233,7 +235,7 @@ if(not $OUTPUT_ONLY){
 	)
 }else{
 	if($OUTPUT_FORMAT =~ /^desc$/){
-		use AptPkg::Cache;
+		use AptPkg::Cache; # <-- libapt-pkg-perl
 
 		my $CACHE = AptPkg::Cache->new();
 		my $DESCS = $CACHE->packages("DescriptionList");
