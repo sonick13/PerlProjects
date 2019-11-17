@@ -60,4 +60,3 @@ _option_wcdl(){
 
 complete -F _option_wcdl wcdl
 
-# vim: noexpandtab colorcolumn=84 tabstop=8 noswapfile nobackup
