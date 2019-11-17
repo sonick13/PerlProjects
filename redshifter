@@ -72,4 +72,3 @@ if($ARGV[0] =~ /^(--version|-v)$/){
 	system("/usr/bin/redshift -o -O ${TEMP}K")
 }
 
-# vim: noexpandtab colorcolumn=84 tabstop=8 noswapfile nobackup
