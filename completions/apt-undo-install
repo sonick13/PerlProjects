@@ -43,4 +43,3 @@ _option_apt-undo-install(){
 
 complete -F _option_apt-undo-install -o default apt-undo-install
 
-# vim: noexpandtab colorcolumn=84 tabstop=8 noswapfile nobackup
