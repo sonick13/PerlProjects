@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Thu 16 May 14:16:56 BST 2019
+# Last Change       - Sun  1 Dec 16:00:13 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -48,10 +48,9 @@ foreach(split(':', $ENV{PATH})){
 
 my @MANS;
 if(-d '/usr/share/man'){
-	@MANS = glob('/usr/share/man/man[1-8]/*.[1-8].gz')
+	# I really don't want to do this, but any method I try with Perl is very slow.
+	@MANS = glob('/usr/share/man/man[1-8]/*.[1-8].gz');
+	print(readpipe("man -f @EXECS 2> /dev/null") =~ s/\([0-8]\)\s+//gr)
 }else{
 	TFL::FAIL(1, __LINE__, "Unable to find the man pages.")
 }
-
-# I really don't want to do this, but any method I try with Perl is very slow.
-print(readpipe("/usr/bin/man -f @EXECS 2> /dev/null") =~ s/\([0-8]\)\s+//gr);
