@@ -3,14 +3,14 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitbrov (Git Branch Overview)
 # Started On        - Sun  1 Dec 16:01:38 GMT 2019
-# Last Change       - Sun  1 Dec 21:16:25 GMT 2019
+# Last Change       - Sun  1 Dec 21:19:38 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # Unfinished! Need to:
 #
 #   * Sort the output on a per-repository basis to get the newest branch.
-#	* Ascertain and set the maximum width for the E-Mail field.
+#   * Ascertain and set the maximum width for the E-Mail field.
 #   * Add proper argument processing, usage output, and the version stuff.
 #
 # Despite the above mentioned author writing this short Perl program, it would not
