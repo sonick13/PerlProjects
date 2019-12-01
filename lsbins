@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Sun  1 Dec 16:00:13 GMT 2019
+# Last Change       - Sun  1 Dec 21:25:42 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,15 +15,15 @@ use File::Basename 'basename';
 use List::MoreUtils 'uniq';
 use TFL; # <-- libtfl-perl (>= 2019-05-16)
 
-my $_VERSION_ = "2019-05-16";
-my $_PROJECT_ = basename($0);
+my $CurVer = "2019-12-01";
+my $Progrm = basename($0);
 
 while($ARGV[0]){
 	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		print("USAGE: lsbins [[--help|-h|-?] | [--version|-v]]\n");
+		print("Usage: lsbins [--help|-h|-? | --version|-v]\n");
 		exit(0)
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
-		print("$_VERSION_\n"); exit 0
+		print("$CurVer\n"); exit 0
 	}elsif($ARGV[0] =~ /^-.*/){
 		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified")
 	}else{
@@ -35,22 +35,22 @@ while($ARGV[0]){
 
 TFL::DepChkPortable('man');
 
-my @EXECS;
+my @Execs;
 foreach(split(':', $ENV{PATH})){
 	foreach(glob("$_/*")){
 		if(-f $_ and -x $_ and -r $_){
-			push(@EXECS, basename($_, '/'))
+			push(@Execs, basename($_, '/'))
 		}
 	}
 }
 
-@EXECS = uniq(sort({lc($a) cmp lc($b)} @EXECS));
+@Execs = uniq(sort({lc($a) cmp lc($b)} @Execs));
 
-my @MANS;
+my @Mans;
 if(-d '/usr/share/man'){
 	# I really don't want to do this, but any method I try with Perl is very slow.
-	@MANS = glob('/usr/share/man/man[1-8]/*.[1-8].gz');
-	print(readpipe("man -f @EXECS 2> /dev/null") =~ s/\([0-8]\)\s+//gr)
+	@Mans = glob('/usr/share/man/man[1-8]/*.[1-8].gz');
+	print(readpipe("man -f @Execs 2> /dev/null") =~ s/\([0-8]\)\s+//gr)
 }else{
 	TFL::FAIL(1, __LINE__, "Unable to find the man pages.")
 }
