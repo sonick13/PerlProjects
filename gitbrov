@@ -1,0 +1,109 @@
+#!/usr/bin/env perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/gitbrov (Git Branch Overview)
+# Started On        - Sun  1 Dec 16:01:38 GMT 2019
+# Last Change       - Sun  1 Dec 21:04:45 GMT 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Unfinished! Need to:
+#
+#   * Sort the output on a per-repository basis to get the newest branch.
+#	* Ascertain and set the maximum width for the E-Mail field.
+#   * Add proper argument processing, usage output, and the version stuff.
+#
+# Despite the above mentioned author writing this short Perl program, it would not
+# have came to be were it not for:
+#
+#   https://github.com/inferont/shell-scripts
+#
+# Usage: gitbrov [REPOSITORY_1 [REPOSITORY_2] ...]
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use Git::Repository; # <-- libgit-repository-perl
+use File::Basename 'basename';
+use Date::Format 'strftime';
+use List::Util;
+
+sub Main{
+	our $Repo;
+
+	sub GetBranches{
+		my @Branches;
+		my $MaxWidth = 0;
+		foreach ($Repo->run('branch', '-r')){
+			my $CurBranch = @{[split(' ', $_)]}[0];
+			my $Length = length($CurBranch);
+			$MaxWidth = $Length if $Length > $MaxWidth;
+
+			push(@Branches, $CurBranch)
+		}
+
+		return($MaxWidth, @Branches)
+	}
+
+	sub GetLatest{ # Usage: GetLatest [BRANCH]
+		my(@SplitLine, $TSFormat, @CMD, $EMail, $LineCount);
+		@CMD = ('rev-list', '--format="%ae"', '--timestamp', '--left-right');
+
+		$LineCount = 0;
+		foreach ($Repo->run(@CMD, $_[0])){
+			$LineCount++;
+			if ($LineCount == 1){
+				@SplitLine = split(' ', $_)
+			}elsif ($LineCount == 2){
+				$EMail = $_;
+				last # <-- Just need first two lines.
+			}
+		}
+
+		# Return the branch's latest commit time (seconds since Epoch).
+		return($EMail, $SplitLine[0])
+	}
+
+	# User can specify the location(s), rather than the default CWD.
+	$ARGV[0] = './' if not defined($ARGV[0]);
+
+	my $First = 1;
+	foreach my $CurArg (@ARGV){
+		if (not $First){
+			print("\n")
+		}else{
+			undef($First)
+		}
+
+		$Repo = Git::Repository->new(work_tree => $CurArg);
+
+		my $CurArgBase = "'" . $CurArg =~ s/^.*\///dr . "'";
+		$CurArgBase = "the current" if length($CurArgBase) == 2;
+		printf("Branches for %s repository:\n\n", $CurArgBase);
+
+		# Pre-process branches to get max width.
+		my @BranchList = GetBranches();
+		my $BranchMaxLen = shift(@BranchList);
+
+		foreach (@BranchList){
+			my @HashData = GetLatest($_);
+
+			my $EMail = substr($HashData[0], 1, length($HashData[0]) - 2);
+			my @LocalTime = localtime($HashData[1]);
+			my @TimeStamp = split(' ', strftime("%Y-%m-%d %T", @LocalTime));
+
+			printf(
+				"  %-*s  %-*s  %s  %s\n",
+				$BranchMaxLen, $_, 0, $EMail, $TimeStamp[0], $TimeStamp[1]
+			)
+		}
+	}
+}
+
+# By default use the CWD.
+if (scalar(@ARGV) == 0){
+	Main('./')
+}else{
+	Main(@ARGV)
+}
