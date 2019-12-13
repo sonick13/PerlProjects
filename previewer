@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 13 May 18:14:21 BST 2019
+# Last Change       - Fri 13 Dec 21:09:21 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ my $DB_SITE = 'https://community.linuxmint.com/data/reviews.list';
 
 sub USAGE{
 	my $HELP = qq{	            @{[uc($_PROJECT_)]} ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Perl program to pretty-print Linux Mint package reviews.
 

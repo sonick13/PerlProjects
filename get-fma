@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/get-fma
 # Started On        - Fri 26 Apr 16:13:18 BST 2019
-# Last Change       - Thu  9 May 12:59:14 BST 2019
+# Last Change       - Fri 13 Dec 21:08:26 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ my $DOM = 'https://freemusicarchive.org';
 
 sub USAGE{
 	my $INFO = qq{            GET-FMA ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Perl downloader for MP3s discovered on Free Music Archive.
 

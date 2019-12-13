@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Sat 11 May 23:40:42 BST 2019
+# Last Change       - Fri 13 Dec 21:09:42 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ my $HOMEPAGE = "$CACHE_DIR/homepage";
 
 sub USAGE{
 	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Extensive Perl downloader for Wallpaperscraft.
 

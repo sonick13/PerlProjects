@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Fri  1 Nov 13:56:29 GMT 2019
+# Last Change       - Fri 13 Dec 21:07:50 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ my $DOMAIN = 'https://github.com';
 
 sub USAGE{
 	my $HELP = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            A Perl solution to undo recent APT installations.
 

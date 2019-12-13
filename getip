@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Thu  9 May 13:00:58 BST 2019
+# Last Change       - Fri 13 Dec 21:08:33 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ my $DOM = "https://whatismyipaddress.com";
 
 sub USAGE{
 	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            View your internal and/or external IP address.
 

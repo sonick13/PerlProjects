@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - perlmisc/mkdeb
 # Started On        - Wed  1 May 23:27:08 BST 2019
-# Last Change       - Sat 18 May 01:09:24 BST 2019
+# Last Change       - Fri 13 Dec 21:09:15 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ my $_PROJECT_ = basename($0);
 
 sub USAGE{
 	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
-		            Written by terminalforlife (terminalforlife\@yahoo.com)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Build a DEB package more easily. (non-compiling languages)
 
