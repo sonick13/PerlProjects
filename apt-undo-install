@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Fri 13 Dec 21:07:50 GMT 2019
+# Last Change       - Sat 14 Dec 18:46:43 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,24 +12,28 @@
 # NOTE: You may need to install the 'libanyevent-i3-perl' package.
 #----------------------------------------------------------------------------------
 
+use v5.22.1;
 use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
 use TFL; # <-- libtfl-perl (>= 2019-05-07)
+use AptPkg::Cache; # <-- libapt-pkg-perl (>= 0.1.29build7)
 
-my $_VERSION_ = "2019-11-01";
-my $_PROJECT_ = basename($0);
+no warnings 'uninitialized';
 
-my $DOMAIN = 'https://github.com';
+my $CurVer = "2019-12-14";
+my $Progrm = basename($0);
 
-sub USAGE{
-	my $HELP = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
+my $Domain = 'https://github.com';
+
+sub Usage{
+	my $Help = qq{            @{[uc($Progrm)]} ($CurVer)
 		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            A Perl solution to undo recent APT installations.
 
-		SYNTAX:     $_PROJECT_ [OPTS]
+		SYNTAX:     $Progrm [OPTS]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -54,91 +58,88 @@ sub USAGE{
 		                                      precedence over the 'yes' option.
 
 		NOTE:       The standard alternative apt-get long-format flags for some of the
-		            options listed above are also available with $_PROJECT_.
+		            options listed above are also available with $Progrm.
 
 		            The --date and --time flags may fail to work with your APT logfile if
 		            you're using non-standard localisation settings for an English-speaker.
 		            These flags should also not be used with the --count flag.
 
-		EXAMPLE:    $_PROJECT_ --purge --autoremove -c 2
-		            $_PROJECT_ --logfile /tmp/history.log --output-only:list
-		            $_PROJECT_ --date 2017-00-00 --time 20:00:00 --simulate
+		EXAMPLE:    $Progrm --purge --autoremove -c 2
+		            $Progrm --logfile /tmp/history.log --output-only:list
+		            $Progrm --date 2017-00-00 --time 20:00:00 --simulate
 
 		FILE:       /var/log/apt/history.log
 	};
 
-	print($HELP =~ tr/\t//dr)
+	print($Help =~ tr/\t//dr)
 }
 
-my $VERSION_URL = "$DOMAIN/terminalforlife/$_PROJECT_/raw/master/version";
-my $APT_LOGFILE = '/var/log/apt/history.log';
-my $VIEW_LOGFILE = 0;
-my $TIMES_TO_EXEC = 1;
-my $TO_ROOT = 1;
-my $TO_SIMULATE = "";
-my $FILTADATE;
-my $FILTATIME;
-my $TO_AUTOREMOVE = "";
-my $TO_ASSUME = "";
-my $TO_PURGE = "";
-my $OUTPUT_ONLY = 0;
-my $OUTPUT_FORMAT;
-my $TO_QUIET = "";
+my $VerURL = "$Domain/terminalforlife/$Progrm/raw/master/version";
+my $AptLogFile = '/var/log/apt/history.log';
+my $ViewLog = 0;
+my $TimesExec = 1;
+my $ToRoot = 1;
+my $OutOnly = 0;
 
-while(defined($ARGV[0])){
+my (
+	$OutputFormat, $ToAssume, $ToPurge, $ToAutoRemove,
+	$BeQuiet, $ToSim, $FiltaDate, $FiltaTime
+);
+
+while($ARGV[0]){
 	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		USAGE(); exit(0)
+		Usage(); exit(0)
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
-		print($_VERSION_ . "\n"); exit(0)
+		print($CurVer . "\n"); exit(0)
 	}elsif($ARGV[0] =~ /^(--quiet|-q)$/){
-		$TO_QUIET = "--quiet"
+		$BeQuiet = "--quiet"
 	}elsif($ARGV[0] =~ /^(--logfile|-l)$/){
 		shift(@ARGV);
-		$APT_LOGFILE = $ARGV[0];
 
-		unless(-f $APT_LOGFILE && -r $APT_LOGFILE){
-			TFL::FAIL(1, __LINE__, "Unable to find or read APT's logfile.")
-		}
+		TFL::FAIL(1, __LINE__, "Option '--logfile|-l' requires a file.")
+			if length($ARGV[0]) == 0;
+
+		TFL::FAIL(1, __LINE__, "Unable to find or read APT's logfile.")
+			unless -f $ARGV[0] and -r $ARGV[0];
+
+		$AptLogFile = $ARGV[0]
 	}elsif($ARGV[0] =~ /^--autoremove$/){
-		$TO_AUTOREMOVE = "--autoremove"
+		$ToAutoRemove = "--autoremove"
 	}elsif($ARGV[0] =~ /^--view$/){
-		$VIEW_LOGFILE = 1
+		$ViewLog = 1
 	}elsif($ARGV[0] =~ /^--assume-yes$/){
-		$TO_ASSUME = "--assume-yes"
+		$ToAssume = "--assume-yes"
 	}elsif($ARGV[0] =~ /^--assume-no$/){
-		$TO_ASSUME = "--assume-no"
+		$ToAssume = "--assume-no"
 	}elsif($ARGV[0] =~ /^--purge$/){
-		$TO_PURGE = "--purge"
+		$ToPurge = "--purge"
 	}elsif($ARGV[0] =~ /^(--date|-d)$/){
 		shift(@ARGV);
 
-		if($ARGV[0] =~ /^[0-9]+-[0-9]+-[0-9]+$/){
-			$FILTADATE = $ARGV[0]
-		}else{
-			TFL::FAIL(1, __LINE__, "Invalid date specified.")
-		}
+		TFL::FAIL(1, __LINE__, "Invalid date specified.")
+			if not $ARGV[0] =~ /^[0-9]+-[0-9]+-[0-9]+$/;
+
+		$FiltaDate = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--time|-t)$/){
 		shift(@ARGV);
 
-		if($ARGV[0] =~ /^[0-9]+:[0-9]+:[0-9]+$/){
-			$FILTATIME = $ARGV[0]
-		}else{
-			TFL::FAIL(1, __LINE__, "Invalid time specified.")
-		}
+		TFL::FAIL(1, __LINE__, "Invalid time specified.")
+			if not $ARGV[0] =~ /^[0-9]+:[0-9]+:[0-9]+$/;
+
+		$FiltaTime = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--count|-c)$/){
 		shift(@ARGV);
 
-		if($ARGV[0] =~ /^[0-9]+$/){
-			$TIMES_TO_EXEC = $ARGV[0]
-		}else{
-			TFL::FAIL(1, __LINE__, "Invalid count specified.")
-		}
+		TFL::FAIL(1, __LINE__, "Invalid count specified.")
+			if not $ARGV[0] =~ /^[0-9]+$/;
+
+		$TimesExec = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--simulate|-s)$/){
-		$TO_SIMULATE = "--simulate"; $TO_ROOT = 0
+		$ToSim = "--simulate"; $ToRoot = 0
 	}elsif($ARGV[0] =~ /^--output-only:(desc|list|col)/){
-		$OUTPUT_ONLY = 1;
-		$TO_ROOT = 0; # <-- Already the default, but just in-case.
-		$OUTPUT_FORMAT = substr($ARGV[0], 14)
+		$OutOnly = 1;
+		$ToRoot = 0; # <-- Already the default, but just in-case.
+		$OutputFormat = substr($ARGV[0], 14)
 	}else{
 		TFL::FAIL(1, __LINE__, "Incorrect argument(s) given")
 	}
@@ -146,62 +147,62 @@ while(defined($ARGV[0])){
 	shift(@ARGV)
 }
 
-if($VIEW_LOGFILE){
-	system(qq{less "$APT_LOGFILE"});
+if($ViewLog){
+	system(qq{less "$AptLogFile"});
 	exit(0)
 }
 
 # $> is Perl's builtin variable assigned to the value of the user's EUID.
-if($TO_ROOT && $> != 0){
+if($ToRoot && $> != 0){
 	TFL::FAIL(1, __LINE__, "Root access is required.")
 }
 
-open(my $FH, '<', $APT_LOGFILE);
-my @DATA = <$FH>;
+open(my $FH, '<', $AptLogFile);
+my @Data = <$FH>;
 close($FH);
 
 # This loop is an improvement over the shell version; it's more concise.
-my $INSTALLWC = 0;
-my @INSTALL_ONLY_LINES;
-foreach (@DATA){
+my $InstallWC = 0;
+my @InstallOnlyLines;
+foreach (@Data){
 	# Put only the install lines into the above array.
 	if($_ =~ /^Install:/){
-		push(@INSTALL_ONLY_LINES, $_);
-		$INSTALLWC += 1
+		push(@InstallOnlyLines, $_);
+		$InstallWC += 1
 	}
 
 	shift(@_)
 }
 
-if($TIMES_TO_EXEC > $INSTALLWC){
-	TFL::FAIL(1, __LINE__, "Cannot undo greater than the available $INSTALLWC time(s).")
+if($TimesExec > $InstallWC){
+	TFL::FAIL(1, __LINE__, "Cannot undo greater than the available $InstallWC time(s).")
 }
 
-my @INSTALLED_PKGS;
-if($FILTADATE && $FILTATIME){
-	my $SEEN_DATE = "False";
-	my $COUNT = 0;
-	my @LINE;
+my @InstalledPKGs;
+if($FiltaDate && $FiltaTime){
+	my $SeenDate = "False";
+	my $Count = 0;
+	my @CurLine;
 
-	foreach my $BUFFER (@DATA){
-		if(length($BUFFER) <= 1){next}
-		@LINE = split(" ", $BUFFER);
+	foreach my $Buffer (@Data){
+		next if length($Buffer) <= 1;
+		@CurLine = split(" ", $Buffer);
 
-		if($LINE[0] eq "Start-Date:"){
-			if($LINE[1] eq $FILTADATE && $LINE[2] eq $FILTATIME){
-				$SEEN_DATE = "True";
-				$COUNT = 0
+		if($CurLine[0] eq "Start-Date:"){
+			if($CurLine[1] eq $FiltaDate && $CurLine[2] eq $FiltaTime){
+				$SeenDate = "True";
+				$Count = 0
 			}
 		}
 
-		if($SEEN_DATE eq "True"){$COUNT += 1}
+		if($SeenDate eq "True"){$Count += 1}
 
-		#TODO - See if this $COUNT default set is even needed.
-		$COUNT //= 5; # Mimics the shell: ${COUNT:-5}
-		if($COUNT == 4 && $LINE[0] eq "Install:"){
-			foreach my $WORD (@LINE){
-				unless($WORD =~ /^(Install:|.*[\(\)].*)/){
-					push(@INSTALLED_PKGS, $WORD);
+		#TODO - See if this $Count default set is even needed.
+		$Count //= 5; # Mimics the shell: ${Count:-5}
+		if($Count == 4 && $CurLine[0] eq "Install:"){
+			foreach my $Word (@CurLine){
+				unless($Word =~ /^(Install:|.*[\(\)].*)/){
+					push(@InstalledPKGs, $Word);
 				}
 			}
 
@@ -209,46 +210,44 @@ if($FILTADATE && $FILTATIME){
 		}
 	}
 
-	if(not @INSTALLED_PKGS){
+	if(not @InstalledPKGs){
 		TFL::FAIL(1, __LINE__, "Invalid --time and/or --date specified.")
 	}
-}elsif(not($FILTADATE && $FILTATIME) and ($FILTADATE || $FILTATIME)){
+}elsif(not($FiltaDate && $FiltaTime) and ($FiltaDate || $FiltaTime)){
 	TFL::FAIL(1, __LINE__, "Flags --date and --time must be used together.")
 }else{
-	my $DESIRED_INDICES = $INSTALLWC - $TIMES_TO_EXEC;
-	foreach my $INDEX ($DESIRED_INDICES..$INSTALLWC){
-		if($INSTALL_ONLY_LINES[$INDEX]){ # <-- Avoids empty line errors.
-			foreach my $WORD (split(" ", $INSTALL_ONLY_LINES[$INDEX])){
-				if($WORD !~ /^(Install:|.*[\)\(].*|automatic)$/){
-					push(@INSTALLED_PKGS, $WORD)
+	my $DesiredIndices = $InstallWC - $TimesExec;
+	foreach my $Index ($DesiredIndices..$InstallWC){
+		if($InstallOnlyLines[$Index]){ # <-- Avoids empty line errors.
+			foreach my $Word (split(" ", $InstallOnlyLines[$Index])){
+				if($Word !~ /^(Install:|.*[\)\(].*|automatic)$/){
+					push(@InstalledPKGs, $Word)
 				}
 			}
 		}
 	}
 }
 
-if(not $OUTPUT_ONLY){
+if(not $OutOnly){
 	system(
-		qq{/usr/bin/apt-get $TO_QUIET $TO_SIMULATE $TO_ASSUME remove } .
-		qq{$TO_PURGE $TO_AUTOREMOVE -o Dpkg::Progress-Fancy=true -o } .
-		qq{Dpkg::Progress=true @INSTALLED_PKGS}
+		qq{/usr/bin/apt-get $BeQuiet $ToSim $ToAssume remove } .
+		qq{$ToPurge $ToAutoRemove -o Dpkg::Progress-Fancy=true -o } .
+		qq{Dpkg::Progress=true @InstalledPKGs}
 	)
 }else{
-	if($OUTPUT_FORMAT =~ /^desc$/){
-		use AptPkg::Cache; # <-- libapt-pkg-perl
-
-		my $CACHE = AptPkg::Cache->new();
-		my $DESCS = $CACHE->packages("DescriptionList");
-		foreach(@INSTALLED_PKGS){
-			my $GETS = $CACHE->get("$_");
-			my $NAME = $GETS->{"FullName"};
-			my $DESC = $DESCS->lookup("$_")->{"ShortDesc"};
-			printf("%s - %s\n", $NAME, $DESC)
+	if($OutputFormat =~ /^desc$/){
+		my $Cache = AptPkg::Cache->new();
+		my $Descs = $Cache->packages("DescriptionList");
+		foreach(@InstalledPKGs){
+			my $Gets = $Cache->get("$_");
+			my $Name = $Gets->{"FullName"};
+			my $Desc = $Descs->lookup("$_")->{"ShortDesc"};
+			printf("%s - %s\n", $Name, $Desc)
 		}
-	}elsif($OUTPUT_FORMAT =~ /^col$/){
-		system(qq{printf "%s\n" @INSTALLED_PKGS | /usr/bin/column})
-	}elsif($OUTPUT_FORMAT =~ /^list$/){
-		foreach(@INSTALLED_PKGS){
+	}elsif($OutputFormat =~ /^col$/){
+		system(qq{printf "%s\n" @InstalledPKGs | /usr/bin/column})
+	}elsif($OutputFormat =~ /^list$/){
+		foreach(@InstalledPKGs){
 			print("$_\n")
 		}
 	}
