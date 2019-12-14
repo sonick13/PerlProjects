@@ -1,0 +1,103 @@
+#!/usr/bin/env perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/git-tudu
+# Started On        - Sat 14 Dec 19:42:12 GMT 2019
+# Last Change       - Sat 14 Dec 22:23:47 GMT 2019
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+
+#TODO - This is a test.
+#TODO - This is a test.ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+
+use v5.22.1;
+use strict;
+use warnings;
+use autodie;
+use TFL; # <-- libtfl-perl (>= 2019-12-14)
+use File::Basename 'basename', 'dirname';
+use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
+use File::Find;
+
+no warnings 'uninitialized';
+
+my $GHDir = "$ENV{HOME}/GitHub/terminalforlife/Personal";
+
+TFL::Err(1, 'GitHub directory not found.') unless -d $GHDir;
+TFL::Err(1, 'GitHub directory inaccessible.') unless -r -x $GHDir;
+
+my $MainDir = "$ENV{HOME}/.config/tudu";
+my $ExcludeFile = "$MainDir/exclude";
+my $GitDirFile = "$MainDir/git-dir";
+
+my $TodoStr = '#TODO - ';
+
+sub ReadFile{
+	return(1) unless -f -r $_[0];
+
+	open(my $FH, '<', $_[0]);
+	chomp(my @FileData = <$FH>);
+	close($FH);
+
+	return(@FileData)
+}
+
+sub Display{ # Usage: Display [MAX_COLS]
+	my $TermCols = $_[0];
+
+	# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
+	sub GetTodo{
+		my $File = $_[0] =~ s/$GHDir\///dr;
+
+		my @TodoList;
+		my $LineCount = 1;
+		foreach (ReadFile($_[0])){
+			my @LineArr = split(' ', $_);
+
+			if ($LineArr[0] eq '#TODO' and $LineArr[1] eq '-'){
+				my $Todo = substr($_ =~ s/^[[:space:]]+//dr, 8, length($_));
+				my $TodoLen = length($Todo);
+
+				# If entry is too long, snip it with three periods suffixed.
+				$Todo = substr($Todo, 0, $TodoLen - 18) . '...'
+					unless $TodoLen <= $TermCols;
+
+				push(@TodoList, sprintf(" %-7d  * %s", $LineCount, $Todo))
+			}
+
+			$LineCount++
+		}
+
+		return(1) unless scalar(@TodoList) > 0;
+
+		printf("%s\n\n", $File);
+		printf("%s\n", $_) foreach @TodoList;
+		printf("\n")
+	}
+
+
+	my @FileArr;
+
+	sub Conditions{
+		return(1) unless -f $_ and -r _;
+
+		my @SplitName = split('/', $File::Find::name);
+		my $SplitNameLen = scalar(@SplitName);
+
+		foreach (@SplitName){
+			return(1) if $_ eq '.git'
+		}
+
+		push(@FileArr, $File::Find::name)
+	}
+
+	# Recursive search for files in `GHDir` per `Conditions()`.
+	find(\&Conditions, glob("$GHDir/*"));
+
+	foreach (@FileArr){
+		GetTodo($_)
+	}
+}
+
+Display(@{[GetTerminalSize()]}[0])
