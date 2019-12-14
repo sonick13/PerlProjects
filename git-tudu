@@ -3,9 +3,42 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sat 14 Dec 23:30:16 GMT 2019
+# Last Change       - Sat 14 Dec 23:52:10 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# What to test it out for me?
+#
+#   1. Make sure you have the dependencies:
+#
+#     * perl (>= 5.22.1)
+#
+#     * libtfl-perl (>= 2019-12-14)
+#     * libterm-readkey-perl (>= 2.33-1build1)
+#     * libfile-listing-perl (>= 6.04-1)
+#
+#     The versions may not need to be precise; just a guideline.
+#
+#   2. Open a terminal, then change to the directory in which git-tudu resides.
+#
+#   3. Run the following command (sans dollar):
+#
+#     $ perl git-tudu
+#
+#   Nothing will show, since it's temporarily set to my location, so either edit
+#   the code yourself, or create a file with only the path to your GitHub
+#   directory.
+#
+#     $ mkdir -p ~/.config/git-tudu
+#     $ printf '%s\n' > ~/.config/git-tudu/git-dir
+#
+#   Now try git-tudu again.
+#
+#   When telling me about bugs or submitting an issue on GitHub, be sure to tell me
+#   your Distribution of Linux (or if on Mac, BSD, etc), Perl version (`perl -v`)
+#   and whatever else you might think would be useful, like errors or odd output.
+#
+#   Thanks!
 #----------------------------------------------------------------------------------
 
 #TODO - This is a test.
@@ -18,7 +51,7 @@ use autodie;
 use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Basename 'basename', 'dirname';
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
-use File::Find;
+use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 
 no warnings 'uninitialized';
 
