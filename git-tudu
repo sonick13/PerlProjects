@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sat 14 Dec 22:23:47 GMT 2019
+# Last Change       - Sat 14 Dec 23:30:16 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ my $GHDir = "$ENV{HOME}/GitHub/terminalforlife/Personal";
 TFL::Err(1, 'GitHub directory not found.') unless -d $GHDir;
 TFL::Err(1, 'GitHub directory inaccessible.') unless -r -x $GHDir;
 
-my $MainDir = "$ENV{HOME}/.config/tudu";
+my $MainDir = "$ENV{HOME}/.config/git-tudu";
 my $ExcludeFile = "$MainDir/exclude";
 my $GitDirFile = "$MainDir/git-dir";
 
@@ -44,7 +44,7 @@ sub ReadFile{
 }
 
 sub Display{ # Usage: Display [MAX_COLS]
-	my $TermCols = $_[0];
+	our $TermCols = $_[0];
 
 	# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
 	sub GetTodo{
@@ -77,7 +77,7 @@ sub Display{ # Usage: Display [MAX_COLS]
 	}
 
 
-	my @FileArr;
+	our @FileArr;
 
 	sub Conditions{
 		return(1) unless -f $_ and -r _;
