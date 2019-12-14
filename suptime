@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/suptime
 # Started On        - Wed 17 Apr 13:13:34 BST 2019
-# Last Change       - Thu  9 May 14:39:59 BST 2019
+# Last Change       - Sat 14 Dec 18:47:39 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------

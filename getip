@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Fri 13 Dec 21:08:33 GMT 2019
+# Last Change       - Sat 14 Dec 18:47:08 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/get-fma
 # Started On        - Fri 26 Apr 16:13:18 BST 2019
-# Last Change       - Fri 13 Dec 21:08:26 GMT 2019
+# Last Change       - Sat 14 Dec 18:47:04 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------

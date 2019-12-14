@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Sun  1 Dec 21:25:42 GMT 2019
+# Last Change       - Sat 14 Dec 18:47:19 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use File::Basename 'basename';
 use List::MoreUtils 'uniq';
 use TFL; # <-- libtfl-perl (>= 2019-05-16)
 
-my $CurVer = "2019-12-01";
+my $CurVer = "2019-12-14";
 my $Progrm = basename($0);
 
 while($ARGV[0]){
