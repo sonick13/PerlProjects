@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sat 18 May 01:16:41 BST 2019
+# Last Change       - Sat 14 Dec 19:14:20 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -16,64 +16,35 @@ use autodie;
 
 package TFL;
 
-my $_VERSION_ = "2019-05-18";
-
-# Example: TFL::_ArgChk('FAIL', 2)
-# $_[0] = Function name to display in die() message.
-# $_[1] = Integer (expected $#_) for the current total number of arguments.
-# $_[2] = Integer for the required number of function arguments.
-sub _ArgChk{die("TFL::$_[0]() requires $_[2] arguments") if $_[1] + 1 != $_[2]}
+my $CurVer = '2019-12-14';
 
 # Example: my ($Year, $Month, $Day) = TFL::PKGVersion()
 sub PKGVersion{
-	_ArgChk('PKGVersion', $#_, 0);
-
-	return(split('-', $_VERSION_)) # <-- Year [0], Month [1], Day [2]
+	return(split('-', $CurVer)) # <-- Year [0], Month [1], Day [2]
 }
 
+# Old method, as of 2019-12-14.
 # Example: TFL::FAIL(1, __LINE__, "Text for error goes here.")
 # $_[0] = Boolean integer for whether to exit 1 (1) or not (0).
 # $_[1] = Line number; an integer, or, preferably, '__LINE__'.
 # $_[2] = The error message string itself, sans newline character.
 sub FAIL{
-	_ArgChk('FAIL', $#_, 3);
-
 	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
 	exit(1) if $_[0]
 }
 
-# Example: TFL::UpdChk($UPDATE, $GH_URL, $_VERSION_)
-# $_[0] = Boolean integer for whether an update check should commence.
-# $_[1] = A URL string recognisable by 'LWP::Simple'.
-# $_[2] = The program's current version, preferably 0000-00-00 format.
-sub UpdChk{
-	_ArgChk('UpdChk', $#_, 3);
-
-	if($_[0]){
-		use LWP::Simple;
-
-		my $REMOTE = get($_[1]);
-		if(defined($REMOTE)){
-			if($_[2] ne $REMOTE){
-				print(
-					"Remote:     @{[$REMOTE =~ tr/\n//dr]}\n" .
-					"Local:      $_[2]\n"
-				)
-			}
-		}else{
-			die("Failed to check for updates")
-		}
-
-		exit(0)
-	}
+# Example: TFL::Err(1, "Text for error goes here.")
+# $_[0] = Boolean integer for whether to exit 1 (1) or not (0).
+# $_[1] = The error message string itself, sans newline character.
+sub Err{
+	printf("ERROR: %s\n", $_[1]);
+	exit(1) if $_[0]
 }
 
 # Example: TFL::KeyVal($ARGV[0], 0)
 # $_[0] = String 'key=value' to split.
 # $_[1] = Index to return; 0 (key) or 1 (value).
 sub KeyVal{
-	_ArgChk('KeyVal', $#_, 2);
-
 	return(@{[split('=', $_[0])]}[$_[1]])
 }
 
@@ -81,8 +52,6 @@ sub KeyVal{
 # $_[0] = A hash reference whose keys are to be tested by defined().
 # $_[1] = An array reference whose indices contain viable key choices.
 sub Defined{
-	_ArgChk('Defined', $#_, 2);
-
 	my $FAILED = 0;
 	foreach my $KEY_VIABLE (@{($_[1])}){
 		my $COUNT = 0;
@@ -105,62 +74,66 @@ sub Defined{
 	exit(1) if $FAILED
 }
 
-# Example: TFL::DepChk('/usr/bin/man')
-# $_[0] = Executable file path for which to be checked.
+# Example: TFL::DepChk('/usr/bin/man') | TFL::DepChk('man')
+# @_ = Executable file for which to search in PATH; basename or absolute path.
 sub DepChk{
-	_ArgChk('DepChk', $#_, 1);
+	my $DepCount = 0;
 
-	die("Dependency '$_[0]' not met.")
-		unless -f $_[0] and -x $_[0];
-}
+	foreach my $CurDep (@_){
+		my $Found = 'false';
 
-# Example: TFL::DepChkPortable('/usr/bin/man')
-# $_[0] = Executable file name for which to be checked.
-sub DepChkPortable{
-	_ArgChk('DepChkPortable', $#_, 1);
+		if ($CurDep !~ '/'){
+			foreach my $CurDir (split(':', $ENV{'PATH'})){
+				foreach my $CurFile ((glob("$CurDir/*"))){
+					next if not -f $CurFile and not -x $CurFile;
 
-	use File::Basename 'basename';
-
-	my $COUNT;
-	foreach(split(':', $ENV{PATH})){
-		foreach(glob($_ . '/*')){
-			if($_[0] eq basename($_) and -x $_){
-				$COUNT++; return(1)
+					if ($CurFile =~ "/$CurDep\$"){
+						$Found = 'true';
+						last
+					}
+				}
 			}
-		};
+		}else{
+			$Found = 'true' if -f $CurDep and -x $CurDep
+		}
+
+		if ($Found ne 'true'){
+			printf(STDERR "ERROR: Dependency '%s' not met.\n", $CurDep);
+			exit(1)
+		}else{
+			$DepCount++
+		}
 	}
 
-	die("Dependency '$_[0]' not met") unless $COUNT
+	exit(1) unless $DepCount > 0
 }
 
 # Example: TFL::UnderLine('-', 'This is an underlined string.')
 # $_[0] = A single character to repeat for each on the line above.
 # $_[1] = The string to underline, such as an important message.
 sub UnderLine{
-	_ArgChk('UnderLine', $#_, 2);
-
 	return($_[1] . "\n" . $_[0] x length($_[1]))
 }
 
-# Example: TFL::i3Do(100000, 'workspace 1')
-# $_[0] = Microseconds pause before the command.
-# $_[1] = The 'TYPE_COMMAND' (akin to i3-msg) for i3-wm to execute.
-sub i3Do{
-	_ArgChk('i3Do', $#_, 2);
+# Example: TFL::UsageCPU('cpu') | TFL::UsageCPU('cpu2')
+# $_[0] = The CPU to grab the percentage (integer) of its usage. {cpu | cpu[INT]}
+sub UsageCPU{
+	my $StatFile = '/proc/stat';
 
-	use Time::HiRes 'usleep';
-	use AnyEvent::I3 qw{TYPE_COMMAND i3}; # <-- libanyevent-i3-perl
+	exit(1) if not -f $StatFile or not -r $StatFile;
 
-	my $I3 = AnyEvent::I3->new();
-	die "Unable to estalish a connection to i3-wm"
-		if not $I3->connect->recv;
+	open(my $FH, '<', $StatFile);
+	my @StatData = <$FH>;
+	close($FH);
 
-	die "Invalid usleep() argument -- integer required."
-		if $_[0] !~ /^[0-9]+$/;
+	foreach (@StatData){
+		chomp(my @Buf = split(' ', $_));
+		next if $Buf[0] ne $_[0];
 
-	usleep($_[0]);
+		my $Usage = ($Buf[1] + $Buf[3]) * 100 / ($Buf[1] + $Buf[3] + $Buf[4]);
 
-	$I3->message(TYPE_COMMAND, $_[1])
+		return(int($Usage))
+	}
 }
 
 return(1)
