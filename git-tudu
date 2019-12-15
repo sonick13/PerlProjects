@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 02:57:38 GMT 2019
+# Last Change       - Sun 15 Dec 13:32:26 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -35,7 +35,7 @@
 #----------------------------------------------------------------------------------
 
 #TODO: This is a test.
-#TODO: This is a test.ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#TODO: This is a teeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeest.
 #TODO: This is a test line which is too long so it needs to be dealt with the only way possible.
 
 use v5.22.1;
@@ -64,8 +64,9 @@ sub Usage{
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
 		            --alt-path|-P PATH      - Override prior-set path with PATH.
-
+		            --set-path|-s PATH      - Set and save the target PATH.
 		NOTE:       Signifying the end of OPTS with '--' is supported.
+
 
 		            When specifying an alternative PATH, it's possible and intended
 		            that the user could provide a file, instead of a directory.
@@ -80,9 +81,24 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my $LookHere;
+my $Target;
+
+# Tabs, whitespaces, and other characters prior to this will be ignored, except
+# the one space before and after the todo string. Don't want to get confused with
+# any code which happens to have this string in it. Must be one field.
+my $TodoStr = '#TODO:';
+
+# Snip the one whitespace before the todo entry.
+my $TodoStrLen = length($TodoStr) + 1;
+
+my $MainDir = "$ENV{HOME}/.config/$Progrm";
+mkdir($MainDir) unless -d $MainDir;
+
+my $TargetFile = "$MainDir/target";
+my $ExcludeFile = "$MainDir/exclude";
 
 while(defined($ARGV[0])){
+	#TODO: This is an indented test.
 	if($ARGV[0] =~ /^--$/){
 		last # <-- End of option processing.
 	}elsif($ARGV[0] =~ /^(--help|-h|-\?)$/){
@@ -95,7 +111,18 @@ while(defined($ARGV[0])){
 		TFL::Err(1, "Option '--alt-path|-P' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
-		$LookHere = $ARGV[0]
+		$Target = $ARGV[0]
+	}elsif($ARGV[0] =~ /^(--set-path|-s)$/){
+		shift(@ARGV);
+
+		TFL::Err(1, "Option '--set-path|-s' requires a PATH.")
+			unless length($ARGV[0]) > 0;
+
+		open(my $FH, '>', $TargetFile);
+		printf($FH "%s\n", $ARGV[0]);
+		close($FH);
+
+		exit(0)
 	}elsif($ARGV[0] =~ /^-/){
 		TFL::Err(1, "Incorrect argument(s) specified")
 	}else{
@@ -105,34 +132,14 @@ while(defined($ARGV[0])){
 	shift(@ARGV)
 }
 
-if (scalar(@ARGV) == 0){
-	$LookHere = "$ENV{HOME}/GitHub/terminalforlife/Personal"
-}else{
-	$LookHere = $ARGV[0]
-}
-
-TFL::Err(1, 'One alternative PATH is valid.') if scalar(@ARGV) > 1;
-
-my $MainDir = "$ENV{HOME}/.config/git-tudu";
-my $ExcludeFile = "$MainDir/exclude";
-my $GitDirFile = "$MainDir/git-dir";
-
-# Tabs, whitespaces, and other characters prior to this will be ignored, except
-# the one space before and after the todo string. Don't want to get confused with
-# any code which happens to have this string in it. Must be one field.
-my $TodoStr = '#TODO:';
-
-# Snip the one whitespace before the text.
-my $TodoStrLen = length($TodoStr) + 1;
-
-sub ReadFile{
-	return(1) unless -f -r $_[0];
-
-	open(my $FH, '<', $_[0]);
-	chomp(my @FileData = <$FH>);
+# If not overridden above, try user's pre-set.
+if (length($Target) == 0 and -f -r -T $TargetFile){
+	open(my $FH, '<', $TargetFile);
+	chomp($Target = <$FH>);
 	close($FH);
 
-	return(@FileData)
+	TFL::Err(1, "Reading file '~/.config/$Progrm/target' failed.")
+		if length($Target) == 0
 }
 
 sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
@@ -148,16 +155,16 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	# For now, we're dealing with one-liners only. Eventually, I'd like to see
 	# multi-line todo entries, but that will require some faffing about.
 	sub GetTodo{
-		my $File;
-		if (scalar(@ARGV) == 0){
-			$File = $_[0] =~ s/$LookHere\///dr;
-		}else{
-			$File = basename($_[0]);
-		}
+		open(my $FH, '<', $_[0]); #TODO: Test on-line, after code.
+		my $FileShown = $_[0] =~ s/$ENV{HOME}/\~/dr;
 
 		my @TodoList;
-		my $LineCount = 1;
-		foreach (ReadFile($_[0])){
+		while (<$FH>){
+			chomp($_);
+
+			# Skip empty lines, or lines with only trailing whitespaces, tabs, etc.
+			next if $_ =~ /^(|[[:space:]])$/;
+
 			my @LineArr = split(' ', $_);
 
 			if ($LineArr[0] eq $TodoStr){
@@ -172,50 +179,50 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				# Maximum line supported is 9,999,999. If an override feature is
 				# requested, I'll probably get to adding that. If you have one file
 				# of anything like that number, you probably should split it up.
-				push(@TodoList, sprintf(" %7d %s %s", $LineCount, $CharMid, $Todo))
+				push(@TodoList, sprintf(" %7d %s %s", $., $CharMid, $Todo))
 			}
-
-			$LineCount++
 		}
+
+		close($FH);
 
 		# Don't show anything if no todos were found.
 		return(1) unless scalar(@TodoList) > 0;
 
-		printf(" %s '%s'\n%10s\n", $CharBul, $File, $CharEnd);
+		printf(" %s %s\n%10s\n", $CharBul, $FileShown, $CharEnd);
 		printf("%s\n", $_) foreach @TodoList;
 		printf("%10s\n", $CharEnd)
 	}
 
-	if (-d $LookHere){
-		TFL::Err(1, 'Directory inaccessible.') unless -r -x $LookHere;
+	if (-d $Target){
+		TFL::Err(1, 'Directory inaccessible.') unless -r -x $Target;
 
 		our @FileArr;
 
 		sub Conditions{
-			# Must be a readable non-binary file.
-			return(1) unless -f -r -T $_;
+			my $Name = $File::Find::name;
 
-			my @SplitName = split('/', $File::Find::name);
+			# Must be a readable non-binary file.
+			return(1) unless -f -r -T $Name;
+
+			my @SplitName = split('/', $Name);
 			my $SplitNameLen = scalar(@SplitName);
 
 			foreach (@SplitName){
 				return(1) if $_ eq '.git'
 			}
 
-			push(@FileArr, $File::Find::name)
+			push(@FileArr, $Name)
 		}
 
-		# Recursive search for files in `LookHere` per `Conditions()`.
-		find(\&Conditions, glob("$LookHere/*"));
+		# Recursive search for files in `Target` per `Conditions()`.
+		find(\&Conditions, $Target);
 
-		foreach (@FileArr){
-			GetTodo($_)
-		}
-	}elsif (-f $LookHere){
-		TFL::Err(1, 'File unreadable.') unless -r $LookHere;
-		TFL::Err(1, 'File is binary.') if -r -B $LookHere;
+		foreach (@FileArr){GetTodo($_)}
+	}elsif (-f $Target){
+		TFL::Err(1, 'File unreadable.') unless -r $Target;
+		TFL::Err(1, 'File is binary.') if -r -B $Target;
 
-		GetTodo($LookHere)
+		GetTodo($Target)
 	}
 }
 
