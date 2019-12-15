@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 00:12:22 GMT 2019
+# Last Change       - Sun 15 Dec 00:22:41 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -43,8 +43,8 @@
 #   Thanks!
 #----------------------------------------------------------------------------------
 
-#TODO - This is a test.
-#TODO - This is a test.ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#TODO: This is a test.
+#TODO: This is a test.ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 use v5.22.1;
 use strict;
@@ -66,7 +66,13 @@ my $MainDir = "$ENV{HOME}/.config/git-tudu";
 my $ExcludeFile = "$MainDir/exclude";
 my $GitDirFile = "$MainDir/git-dir";
 
-my $TodoStr = '#TODO - ';
+# Tabs, whitespaces, and other characters prior to this will be ignored, except
+# the one space before and after the todo string. Don't want to get confused with
+# any code which happens to have this string in it. Must be one field.
+my $TodoStr = '#TODO:';
+
+# Snip the one whitespace before the text.
+my $TodoStrLen = length($TodoStr) + 1;
 
 sub ReadFile{
 	return(1) unless -f -r $_[0];
@@ -92,8 +98,9 @@ sub Display{ # Usage: Display [MAX_COLS]
 		foreach (ReadFile($_[0])){
 			my @LineArr = split(' ', $_);
 
-			if ($LineArr[0] eq '#TODO' and $LineArr[1] eq '-'){
-				my $Todo = substr($_ =~ s/^[[:space:]]+//dr, 8, length($_));
+			if ($LineArr[0] eq $TodoStr){
+				my $OmitLeadSpace = $_ =~ s/^[[:space:]]+//dr;
+				my $Todo = substr($OmitLeadSpace, $TodoStrLen, length($_));
 				my $TodoLen = length($Todo);
 
 				# If entry is too long, snip it with three periods suffixed.
