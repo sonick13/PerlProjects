@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 21:21:46 GMT 2019
+# Last Change       - Sun 15 Dec 21:43:09 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -145,7 +145,11 @@ while(defined($ARGV[0])){
 	shift(@ARGV)
 }
 
-TFL::Err(1, "Too many arguments -- see: $Progrm -h") if scalar(@ARGV) > 1;
+if (scalar(@ARGV) > 1){
+	TFL::Err(1, "Too many arguments -- see: $Progrm -h")
+}elsif ($DoCase eq 'i' and scalar(@ARGV) == 0){
+	TFL::Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
+}
 
 # If not overridden above, try user's pre-set.
 if (length($Target) == 0 and -f -r -T $TargetFile){
@@ -190,7 +194,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 
 				# If entry is too long, snip it with the overflow character.
 				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) . $CharOfl
-					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
+					if $TodoLen > $TermCols - 10;
 
 				# Look for user-provided REGEX in line, if one is given.
 				if (length($ARGV[0]) > 0){
