@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 14:05:51 GMT 2019
+# Last Change       - Sun 15 Dec 20:05:11 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -65,8 +65,9 @@ sub Usage{
 		            --version|-v            - Output only the version datestamp.
 		            --alt-path|-P PATH      - Override prior-set path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
-		NOTE:       Signifying the end of OPTS with '--' is supported.
+		            --boring|-b             - Omit the pretty ASCII characters.
 
+		NOTE:       Signifying the end of OPTS with '--' is supported.
 
 		            When specifying an alternative PATH, it's possible and intended
 		            that the user could provide a file, instead of a directory.
@@ -75,13 +76,12 @@ sub Usage{
 
 		            All binary files will be ignored, as will those for which
 		            needed permissions are lacking.
-
 	};
 
 	print($Info =~ tr/\t//dr)
 }
 
-my $Target;
+my ($Target, $Boring);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -123,14 +123,18 @@ while(defined($ARGV[0])){
 		close($FH);
 
 		exit(0)
+	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
+		$Boring = 'true'
 	}elsif($ARGV[0] =~ /^-/){
-		TFL::Err(1, "Incorrect argument(s) specified")
+		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
 		last
 	}
 
 	shift(@ARGV)
 }
+
+TFL::Err(1, "Too many arguments -- see: $Progrm -h") if scalar(@ARGV) > 1;
 
 # If not overridden above, try user's pre-set.
 if (length($Target) == 0 and -f -r -T $TargetFile){
@@ -173,7 +177,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				my $Todo = $_ =~ s/^.*$TodoStr //dr;
 				my $TodoLen = length($Todo);
 
-				# If entry is too long, snip it with three periods suffixed.
+				# If entry is too long, snip it with the overflow character.
 				$Todo = substr($Todo, 0, $TodoLen - 7) . $CharOfl
 					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
 
@@ -227,4 +231,8 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	}
 }
 
-Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '/')
+if ($Boring ne 'true'){
+	Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '/')
+}else{
+	Display(@{[GetTerminalSize()]}[0], ' ', ' ', ' ', ' ')
+}
