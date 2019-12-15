@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 13:51:22 GMT 2019
+# Last Change       - Sun 15 Dec 14:05:51 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -160,23 +160,17 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 
 		my (@TodoList, $Valid);
 		while (<$FH>){
+			undef($Valid);
 			chomp($_);
 
 			# Skip empty lines, or lines with only trailing whitespaces, tabs, etc.
 			next if $_ =~ /(^$|^#+ |^[[:space:]]+$)/;
 
-			# Parse each field, seeking the todo string.
-			$Valid = 'false';
-			foreach my $CurField (split(' ', $_)){
-				if ($CurField eq $TodoStr){
-					$Valid = 'true';
-					last # <-- Ignore remaining fields.
-				}
-			}
+			# Check each field in line for the todo string.
+			$Valid = 'true' if grep(m/^$TodoStr$/, split(' ', $_));
 
 			if ($Valid eq 'true'){
-				my $OmitLeadSpace = $_ =~ s/^[[:space:]]+//dr;
-				my $Todo = substr($OmitLeadSpace, $TodoStrLen, length($_));
+				my $Todo = $_ =~ s/^.*$TodoStr //dr;
 				my $TodoLen = length($Todo);
 
 				# If entry is too long, snip it with three periods suffixed.
