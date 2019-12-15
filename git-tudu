@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 02:31:14 GMT 2019
+# Last Change       - Sun 15 Dec 02:55:32 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -144,13 +144,14 @@ sub ReadFile{
 	return(@FileData)
 }
 
-sub Display{ # Usage: Display [MAX_COLS]
+sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	our $TermCols = $_[0];
 
 	# Sets up possible future expansion to allow user-provided choices.
 	our $CharEnd = $_[1]; # <-- Top and bottom (ends) of divider.
 	our $CharMid = $_[2]; # <-- Middle of divider, before todo entries.
 	our $CharBul = $_[3]; # <-- The bullet point character.
+	our $CharOfl = $_[4]; # <-- The column overflow character.
 
 	# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
 	# For now, we're dealing with one-liners only. Eventually, I'd like to see
@@ -163,7 +164,6 @@ sub Display{ # Usage: Display [MAX_COLS]
 			$File = basename($_[0]);
 		}
 
-
 		my @TodoList;
 		my $LineCount = 1;
 		foreach (ReadFile($_[0])){
@@ -175,7 +175,7 @@ sub Display{ # Usage: Display [MAX_COLS]
 				my $TodoLen = length($Todo);
 
 				# If entry is too long, snip it with three periods suffixed.
-				$Todo = substr($Todo, 0, $TodoLen - 10) . '...'
+				$Todo = substr($Todo, 0, $TodoLen - 7) . $CharOfl
 					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
 
 				# Maximum line supported is 9,999,999. If an override feature is
@@ -228,4 +228,4 @@ sub Display{ # Usage: Display [MAX_COLS]
 	}
 }
 
-Display(@{[GetTerminalSize()]}[0], '+', '|', '*')
+Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '/')
