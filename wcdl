@@ -10,7 +10,7 @@
 # NOTE: The web pages use UTF-8 encoding.
 #----------------------------------------------------------------------------------
 
-#TODO - Add a preview feature. Use ImageMagick.
+#TODO: Add a preview feature. Use ImageMagick.
 
 use strict;
 use warnings;

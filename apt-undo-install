@@ -197,7 +197,7 @@ if($FiltaDate && $FiltaTime){
 
 		if($SeenDate eq "True"){$Count += 1}
 
-		#TODO - See if this $Count default set is even needed.
+		#TODO: See if this $Count default set is even needed.
 		$Count //= 5; # Mimics the shell: ${Count:-5}
 		if($Count == 4 && $CurLine[0] eq "Install:"){
 			foreach my $Word (@CurLine){
