@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 20:41:00 GMT 2019
+# Last Change       - Sun 15 Dec 21:06:57 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -59,10 +59,11 @@ sub Usage{
 
 		            Get an overview of programming todos with this developer tool.
 
-		SYNTAX:     $Progrm [OPTS] [PATTERN]
+		SYNTAX:     $Progrm [OPTS] [REGEX]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
+		            --todo|-t STR           - Use STR to mark a TODO entry.
 		            --alt-path|-P PATH      - Override prior-set path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
 		            --boring|-b             - Omit the pretty ASCII characters.
@@ -72,7 +73,7 @@ sub Usage{
 		            When specifying an alternative PATH, it's possible and intended
 		            that the user could provide a file, instead of a directory.
 
-		            Where PATTERN is a REGEX string to use to filter todo entries.
+		            Where REGEX is a REGEX string to use to filter todo entries.
 
 		            All binary files will be ignored, as will those for which
 		            needed permissions are lacking.
@@ -105,6 +106,13 @@ while(defined($ARGV[0])){
 		Usage(1); exit 0
 	}elsif($ARGV[0] =~ /^(--version|-v)$/){
 		print("$CurVer\n"); exit 0
+	}elsif($ARGV[0] =~ /^(--todo|-t)$/){
+		shift(@ARGV);
+
+		TFL::Err(1, "Option '--todo|-t' requires a STRING.")
+			unless length($ARGV[0]) > 0;
+
+		$TodoStr = $ARGV[0]
 	}elsif($ARGV[0] =~ /^(--alt-path|-P)$/){
 		shift(@ARGV);
 
@@ -180,6 +188,11 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				# If entry is too long, snip it with the overflow character.
 				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) . $CharOfl
 					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
+
+				# Look for user-provided REGEX in line, if given.
+				if (length($ARGV[0]) > 0){
+					next unless grep(m/$ARGV[0]/, $Todo)
+				}
 
 				# Maximum line supported is 9,999,999. If an override feature is
 				# requested, I'll probably get to adding that. If you have one file
