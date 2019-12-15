@@ -3,10 +3,12 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sat 14 Dec 23:52:10 GMT 2019
+# Last Change       - Sun 15 Dec 00:07:48 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
+# Work-in-progress developer tool to get an overview of your programming todos.
+#
 # What to test it out for me?
 #
 #   1. Make sure you have the dependencies:
@@ -49,10 +51,10 @@ use strict;
 use warnings;
 use autodie;
 use TFL; # <-- libtfl-perl (>= 2019-12-14)
-use File::Basename 'basename', 'dirname';
-use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
+use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 
+# I'll disable it when this is actually needed.
 no warnings 'uninitialized';
 
 my $GHDir = "$ENV{HOME}/GitHub/terminalforlife/Personal";
@@ -80,6 +82,8 @@ sub Display{ # Usage: Display [MAX_COLS]
 	our $TermCols = $_[0];
 
 	# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
+	# For now, we're dealing with one-liners only. Eventually, I'd like to see
+	# multi-line todo entries, but that will require some faffing about.
 	sub GetTodo{
 		my $File = $_[0] =~ s/$GHDir\///dr;
 
@@ -96,6 +100,9 @@ sub Display{ # Usage: Display [MAX_COLS]
 				$Todo = substr($Todo, 0, $TodoLen - 18) . '...'
 					unless $TodoLen <= $TermCols;
 
+				# Maximum line supported is 9,999,999. If an override feature is
+				# requested, I'll probably get to adding that. If you have one file
+				# of anything like that number, you probably should split it up.
 				push(@TodoList, sprintf(" %-7d  * %s", $LineCount, $Todo))
 			}
 
