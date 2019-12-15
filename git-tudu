@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 20:05:11 GMT 2019
+# Last Change       - Sun 15 Dec 20:41:00 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ use v5.22.1;
 use strict;
 use warnings;
 use autodie;
-use File::Basename 'basename';
+use File::Basename 'basename', 'dirname';
 use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
@@ -178,7 +178,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				my $TodoLen = length($Todo);
 
 				# If entry is too long, snip it with the overflow character.
-				$Todo = substr($Todo, 0, $TodoLen - 7) . $CharOfl
+				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) . $CharOfl
 					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
 
 				# Maximum line supported is 9,999,999. If an override feature is
@@ -192,6 +192,11 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 
 		# Don't show anything if no todos were found.
 		return(1) unless scalar(@TodoList) > 0;
+
+		# To ensure the filenames don't flow over the coloumn limit.
+		my $DirName = dirname($FileShown) =~ s/.*\//...\//dr . '/';
+		$FileShown = $DirName . basename($FileShown)
+			if length($FileShown) > $TermCols - 2;
 
 		printf(" %s %s\n%10s\n", $CharBul, $FileShown, $CharEnd);
 		printf("%s\n", $_) foreach @TodoList;
