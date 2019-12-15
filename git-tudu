@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 21:06:57 GMT 2019
+# Last Change       - Sun 15 Dec 21:21:46 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -64,6 +64,7 @@ sub Usage{
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
 		            --todo|-t STR           - Use STR to mark a TODO entry.
+		            --ignore-case|-i        - Case-insensitive search for REGEX.
 		            --alt-path|-P PATH      - Override prior-set path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
 		            --boring|-b             - Omit the pretty ASCII characters.
@@ -82,7 +83,7 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Boring);
+my ($Target, $Boring, $DoCase);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -113,6 +114,8 @@ while(defined($ARGV[0])){
 			unless length($ARGV[0]) > 0;
 
 		$TodoStr = $ARGV[0]
+	}elsif($ARGV[0] =~ /^(--ignore-case|-i)$/){
+		$DoCase = 'i'
 	}elsif($ARGV[0] =~ /^(--alt-path|-P)$/){
 		shift(@ARGV);
 
@@ -189,9 +192,13 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) . $CharOfl
 					if $TodoLen > $TermCols - 7; # <-- Bit squishy; dunno why.
 
-				# Look for user-provided REGEX in line, if given.
+				# Look for user-provided REGEX in line, if one is given.
 				if (length($ARGV[0]) > 0){
-					next unless grep(m/$ARGV[0]/, $Todo)
+					if ($DoCase eq 'i'){
+						next unless grep(m/$ARGV[0]/i, $Todo)
+					}else{
+						next unless grep(m/$ARGV[0]/, $Todo)
+					}
 				}
 
 				# Maximum line supported is 9,999,999. If an override feature is
