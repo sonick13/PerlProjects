@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 02:55:32 GMT 2019
+# Last Change       - Sun 15 Dec 02:57:38 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -25,16 +25,7 @@
 #
 #   3. Run the following command (sans dollar):
 #
-#     $ perl git-tudu
-#
-#   Nothing will show, since it's temporarily set to my location, so either edit
-#   the code yourself, or create a file with only the path to your GitHub
-#   directory.
-#
-#     $ mkdir -p ~/.config/git-tudu
-#     $ printf '%s\n' > ~/.config/git-tudu/git-dir
-#
-#   Now try git-tudu again.
+#     $ perl git-tudu -P /path/to/your/code
 #
 #   When telling me about bugs or submitting an issue on GitHub, be sure to tell me
 #   your Distribution of Linux (or if on Mac, BSD, etc), Perl version (`perl -v`)
