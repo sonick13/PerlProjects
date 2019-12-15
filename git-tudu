@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 00:22:41 GMT 2019
+# Last Change       - Sun 15 Dec 00:46:27 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -50,12 +50,43 @@ use v5.22.1;
 use strict;
 use warnings;
 use autodie;
+use File::Basename 'basename';
 use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
+
+my $CurVer = "2019-12-15";
+my $Progrm = basename($0);
+
+sub Usage{
+	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
+		            Written by terminalforlife (terminalforlife\@yahoo.com)
+
+		            ...
+
+		SYNTAX:     $Progrm [OPTS]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+	};
+
+	print($Info =~ tr/\t//dr)
+}
+
+while(defined($ARGV[0])){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		Usage(1); exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$CurVer\n"); exit 0
+	}else{
+		TFL::Err(1, "Incorrect argument(s) specified")
+	}
+
+	shift(@ARGV)
+}
 
 my $GHDir = "$ENV{HOME}/GitHub/terminalforlife/Personal";
 
