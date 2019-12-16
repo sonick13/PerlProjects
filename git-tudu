@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 01:16:23 GMT 2019
+# Last Change       - Mon 16 Dec 01:34:13 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ sub Usage{
 		            --alt-path|-P PATH      - Override user-saved path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
 		            --colors|-c PATH        - Override default file with PATH.
-		            --boring|-b             - Omit pretty ASCII characters.
+		            --pretty|-p             - Pretty-print with ASCII characters.
 		            --list=ckeys            - List available color keys for colors.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
@@ -61,12 +61,13 @@ sub Usage{
 		FILE:       ~/.config/git-tudu/target
 		            ~/.config/git-tudu/exclude
 		            ~/.config/git-tudu/colors
+		            ~/.config/git-tudu/settings
 	};
 
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Boring, $DoCase, %CHash);
+my ($Target, $Pretty, $DoCase, %CHash);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -82,6 +83,7 @@ mkdir($MainDir) unless -d $MainDir;
 my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
 my $ColorsFile = "$MainDir/colors";
+my $SettingsFile = "$MainDir/settings";
 
 my @ValidCKeys = (
 	'TodoBody', 'Bullet', 'EOL', 'MidChar',
@@ -134,8 +136,8 @@ while(defined($ARGV[0])){
 			unless length($ARGV[0]) > 0;
 
 		$ColorsFile = $ARGV[0]
-	}elsif($ARGV[0] =~ '^(--boring|-b)$'){
-		$Boring = 'true'
+	}elsif($ARGV[0] =~ '^(--pretty|-p)$'){
+		$Pretty = 'true'
 	}elsif($ARGV[0] =~ '^(--list|--list=)'){
 		my ($Key, $Value) = split('=', $ARGV[0]);
 
@@ -317,7 +319,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	}
 }
 
-if ($Boring ne 'true'){
+if ($Pretty eq 'true'){
 	Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '/')
 }else{
 	Display(@{[GetTerminalSize()]}[0], ' ', ' ', ' ', ' ')
