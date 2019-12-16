@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 02:40:59 GMT 2019
+# Last Change       - Mon 16 Dec 02:48:14 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Pretty, $DoCase, %CHash);
+my ($Target, $Pretty, $DoCase, %CHash, $SolidTarget);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -98,7 +98,8 @@ while(defined($ARGV[0])){
 		TFL::Err(1, "Option '--alt-path|-P' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
-		$Target = $ARGV[0]
+		$Target = $ARGV[0];
+		$SolidTarget = 'true'
 	}elsif($ARGV[0] =~ '^(--config|-c)$'){
 		shift(@ARGV);
 
@@ -154,7 +155,7 @@ if (-f -r -T $ConfigFile){
 			if ($Key eq 'Pretty'){
 				$Pretty = $Value
 			}elsif ($Key eq 'Target'){
-				$Target = $Value
+				$Target = $Value unless $SolidTarget eq 'true'
 			}elsif ($Key eq 'TodoStr'){
 				$TodoStr = $Value
 			}else{
@@ -304,6 +305,8 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 		TFL::Err(1, 'File is binary.') if -r -B $Target;
 
 		GetTodo($Target)
+	}else{
+		TFL::Err(1, 'Non-existent or invalid target specified.')
 	}
 }
 
