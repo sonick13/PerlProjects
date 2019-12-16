@@ -1,0 +1,11 @@
+#----------------------------------------------------------------------------------
+# Theme 'TFL_Dark' written by terminalforlife <terminalforlife@yahoo.com>
+#----------------------------------------------------------------------------------
+
+Bullet=bright_white
+EOL=bright_black
+EndChar=bright_black
+FileName=bright_black
+MidChar=bright_black
+Numbers=red
+TodoBody=bright_white
