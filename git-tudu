@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 01:54:59 GMT 2019
+# Last Change       - Mon 16 Dec 02:36:42 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
-use Term::ANSIColor 'color';
+use Term::ANSIColor 'color', 'colorvalid';
 
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
@@ -35,13 +35,9 @@ sub Usage{
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
-		            --todo|-t STR           - Use STR to mark a TODO entry.
 		            --ignore-case|-i        - Case-insensitive search for REGEX.
-		            --alt-path|-P PATH      - Override user-saved path with PATH.
-		            --set-path|-s PATH      - Set and save the target PATH.
-		            --theme|-c PATH        - Override default file with PATH.
-		            --pretty|-p             - Pretty-print with ASCII characters.
-		            --list=ckeys            - List available color keys for theme.
+		            --alt-path|-P PATH      - Override value in config with PATH.
+		            --config PATH           - Override default file with PATH.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
 
@@ -53,15 +49,13 @@ sub Usage{
 		            All binary files will be ignored, as will those for which
 		            needed permissions are lacking.
 
-		COLORS:     Used to customize the theme used when executing $Progrm.
-		            There are a few keys set to value (key=value), as shown below.
+		CONFIG:     A user configuration file (see below) will be generated when
+		            the program is executed without such a file existing.
 
-		            Use the '--list=ckeys' option to show a list of valid keys.
+		            The default 'Target' is the current working directory, and the
+		            default TODO string is '#TODO:', where '#' indicates a comment.
 
-		FILE:       ~/.config/git-tudu/target
-		            ~/.config/git-tudu/exclude
-		            ~/.config/git-tudu/theme
-		            ~/.config/git-tudu/settings
+		FILE:       ~/.config/git-tudu/config
 	};
 
 	print($Info =~ tr/\t//dr)
@@ -82,17 +76,11 @@ mkdir($MainDir) unless -d $MainDir;
 
 my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
-my $ThemeFile = "$MainDir/theme";
-my $SettingsFile = "$MainDir/settings";
+my $ConfigFile = "$MainDir/config";
 
-my @ValidCKeys = (
-	'TodoBody', 'Bullet', 'EOL', 'MidChar',
-	'EndChar', 'FileName', 'Numbers'
-);
-
-my @ValidColors = (
-	'black', 'white', 'yellow', 'red',
-	'blue', 'pink', 'purple', 'green', 'orange'
+my @ValidKeys = (
+	'TodoBody', 'Bullet', 'EOL', 'MidChar', 'Target',
+	'EndChar', 'FileName', 'Numbers', 'Pretty', 'TodoStr'
 );
 
 while(defined($ARGV[0])){
@@ -102,13 +90,6 @@ while(defined($ARGV[0])){
 		Usage(1); exit 0
 	}elsif($ARGV[0] =~ '^(--version|-v)$'){
 		print("$CurVer\n"); exit 0
-	}elsif($ARGV[0] =~ '^(--todo|-t)$'){
-		shift(@ARGV);
-
-		TFL::Err(1, "Option '--todo|-t' requires a STRING.")
-			unless length($ARGV[0]) > 0;
-
-		$TodoStr = $ARGV[0]
 	}elsif($ARGV[0] =~ '^(--ignore-case|-i)$'){
 		$DoCase = 'i'
 	}elsif($ARGV[0] =~ '^(--alt-path|-P)$'){
@@ -118,41 +99,13 @@ while(defined($ARGV[0])){
 			unless length($ARGV[0]) > 0;
 
 		$Target = $ARGV[0]
-	}elsif($ARGV[0] =~ '^(--set-path|-s)$'){
+	}elsif($ARGV[0] =~ '^(--config|-c)$'){
 		shift(@ARGV);
 
-		TFL::Err(1, "Option '--set-path|-s' requires a PATH.")
+		TFL::Err(1, "Option '--config|-c' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
-		open(my $FH, '>', $TargetFile);
-		printf($FH "%s\n", $ARGV[0]);
-		close($FH);
-
-		exit(0)
-	}elsif($ARGV[0] =~ '^(--theme|-c)$'){
-		shift(@ARGV);
-
-		TFL::Err(1, "Option '--theme|-c' requires a PATH.")
-			unless length($ARGV[0]) > 0;
-
-		$ThemeFile = $ARGV[0]
-	}elsif($ARGV[0] =~ '^(--pretty|-p)$'){
-		$Pretty = 'true'
-	}elsif($ARGV[0] =~ '^(--list|--list=)'){
-		my ($Key, $Value) = split('=', $ARGV[0]);
-
-		TFL::Err(1, "Option '$Key' requires a value.")
-			unless length($Value) > 0;
-
-		if ($Value eq 'ckeys'){
-			printf('[');
-			printf("'%s', ", $_) foreach sort(@ValidCKeys);
-			printf("\b\b]\n")
-		}else{
-			TFL::Err(1, "Value '$Value' is invalid.")
-		}
-
-		exit(0)
+		$ConfigFile = $ARGV[0]
 	}elsif($ARGV[0] =~ '^-'){
 		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
@@ -178,9 +131,9 @@ if (length($Target) == 0 and -f -r -T $TargetFile){
 		if length($Target) == 0
 }
 
-# Read the `theme` file, if found, then populate the theme hash.
-if (-f -r -T $ThemeFile){
-	open(my $FH, '<', $ThemeFile);
+# Read the `config` file, if found, then populate the config hash.
+if (-f -r -T $ConfigFile){
+	open(my $FH, '<', $ConfigFile);
 	my @Data = <$FH>;
 	close($FH);
 
@@ -190,7 +143,7 @@ if (-f -r -T $ThemeFile){
 
 		# Iterate over ckeys to check they're valid.
 		my $IsFound;
-		foreach (@ValidCKeys){
+		foreach (@ValidKeys){
 			if ($Key eq $_){
 				$IsFound = 'true';
 				last
@@ -198,25 +151,45 @@ if (-f -r -T $ThemeFile){
 		}
 
 		if ($IsFound eq 'true'){
-			$CHash{$Key} = lc($Value) =~ tr/['"]//dr
+			if ($Key eq 'Pretty'){
+				$Pretty = $Value
+			}elsif ($Key eq 'Target'){
+				$Target = $Value
+			}elsif ($Key eq 'TodoStr'){
+				$TodoStr = $Value
+			}else{
+				TFL::Err(1, "Invalid color '$Value' detected.")
+					unless colorvalid($Value);
+			}
+
+			$CHash{$Key} = $Value =~ tr/['"]//dr
 		}else{
-			TFL::Err(0, "Invalid color key '$Key' detected.")
+			TFL::Err(1, "Invalid key '$Key' detected.")
 		}
 	}
 }else{
-	# Generate the default TFL_Dark theme.
-	open(my $FH, '>', $ThemeFile);
-	printf($FH "#" . "-"x82 . "\n");
-	printf($FH "# Theme 'TFL_Dark' written by terminalforlife <terminalforlife\@yahoo.com>\n");
-	printf($FH "#" . "-"x82 . "\n");
-	printf($FH "Bullet=bright_white\n");
-	printf($FH "EOL=bright_black\n");
-	printf($FH "EndChar=bright_black\n");
-	printf($FH "FileName=bright_black\n");
-	printf($FH "MidChar=bright_black\n");
-	printf($FH "Numbers=red\n");
-	printf($FH "TodoBody=bright_white\n");
-	close($FH)
+	# Generate the default config.
+	open(my $FH, '>', $ConfigFile);
+
+	my $Contents = qq{# User configuration file for `git-tudu`
+
+		Target=./
+		TodoStr=#TODO:
+		Pretty=false
+
+		Bullet=bright_white
+		EOL=bright_black
+		EndChar=bright_black
+		FileName=bright_black
+		MidChar=bright_black
+		Numbers=red
+		TodoBody=bright_white};
+
+	printf($FH "%s\n", $Contents =~ tr/\t//dr);
+
+	close($FH);
+	printf("File '~/.config/git-tudu/config' generated -- please restart.\n");
+	exit(0)
 }
 
 sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
