@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 02:48:14 GMT 2019
+# Last Change       - Mon 16 Dec 02:55:04 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -172,12 +172,20 @@ if (-f -r -T $ConfigFile){
 	# Generate the default config.
 	open(my $FH, '>', $ConfigFile);
 
-	my $Contents = qq{# User configuration file for `git-tudu`
+	my $Contents = qq{# User configuration file for `$Progrm` ($CurVer)
 
+		# Specify the location (file or directory) for $Progrm to use.
 		Target=./
+
+		# This string, assumed to have a whitespace either side of it, will be
+		# looked for in each applicable line.
 		TodoStr=#TODO:
+
+		# Enable to output various pretty (colorable) ASCII characters.
 		Pretty=false
 
+		# Various color keys and their values. To disable color support, simply
+		# set each of these to null, by removing all of their values.
 		Bullet=bright_white
 		EOL=bright_black
 		EndChar=bright_black
