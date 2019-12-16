@@ -3,40 +3,10 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 15 Dec 21:43:09 GMT 2019
+# Last Change       - Mon 16 Dec 01:16:23 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-# Work-in-progress developer tool to get an overview of your programming todos.
-#
-# What to test it out for me?
-#
-#   1. Make sure you have the dependencies:
-#
-#     * perl (>= 5.22.1)
-#
-#     * libtfl-perl (>= 2019-12-14)
-#     * libterm-readkey-perl (>= 2.33-1build1)
-#     * libfile-listing-perl (>= 6.04-1)
-#
-#     The versions may not need to be precise; just a guideline.
-#
-#   2. Open a terminal, then change to the directory in which git-tudu resides.
-#
-#   3. Run the following command (sans dollar):
-#
-#     $ perl git-tudu -P /path/to/your/code
-#
-#   When telling me about bugs or submitting an issue on GitHub, be sure to tell me
-#   your Distribution of Linux (or if on Mac, BSD, etc), Perl version (`perl -v`)
-#   and whatever else you might think would be useful, like errors or odd output.
-#
-#   Thanks!
-#----------------------------------------------------------------------------------
-
-#TODO: This is a test.
-#TODO: This is a teeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeest.
-#TODO: This is a test line which is too long so it needs to be dealt with the only way possible.
 
 use v5.22.1;
 use strict;
@@ -45,12 +15,14 @@ use autodie;
 use File::Basename 'basename', 'dirname';
 use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
+use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
+use Term::ANSIColor;
 
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-15";
+my $CurVer = "2019-12-16";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -65,9 +37,11 @@ sub Usage{
 		            --version|-v            - Output only the version datestamp.
 		            --todo|-t STR           - Use STR to mark a TODO entry.
 		            --ignore-case|-i        - Case-insensitive search for REGEX.
-		            --alt-path|-P PATH      - Override prior-set path with PATH.
+		            --alt-path|-P PATH      - Override user-saved path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
-		            --boring|-b             - Omit the pretty ASCII characters.
+		            --colors|-c PATH        - Override default file with PATH.
+		            --boring|-b             - Omit pretty ASCII characters.
+		            --list=ckeys            - List available color keys for colors.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
 
@@ -78,12 +52,21 @@ sub Usage{
 
 		            All binary files will be ignored, as will those for which
 		            needed permissions are lacking.
+
+		COLORS:     Used to customize the colors used when executing $Progrm.
+		            There are a few keys set to value (key=value), as shown below.
+
+		            Use the '--list=ckeys' option to show a list of valid keys.
+
+		FILE:       ~/.config/git-tudu/target
+		            ~/.config/git-tudu/exclude
+		            ~/.config/git-tudu/colors
 	};
 
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Boring, $DoCase);
+my ($Target, $Boring, $DoCase, %CHash);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -98,32 +81,42 @@ mkdir($MainDir) unless -d $MainDir;
 
 my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
+my $ColorsFile = "$MainDir/colors";
+
+my @ValidCKeys = (
+	'TodoBody', 'Bullet', 'EOL', 'MidChar',
+	'EndChar', 'FileName', 'Numbers'
+);
+
+my @ValidColors = (
+	'black', 'white', 'yellow', 'red',
+	'blue', 'pink', 'purple', 'green', 'orange'
+);
 
 while(defined($ARGV[0])){
-	#TODO: This is an indented test.
 	if($ARGV[0] =~ /^--$/){
 		last # <-- End of option processing.
-	}elsif($ARGV[0] =~ /^(--help|-h|-\?)$/){
+	}elsif($ARGV[0] =~ '^(--help|-h|-\?)$'){
 		Usage(1); exit 0
-	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+	}elsif($ARGV[0] =~ '^(--version|-v)$'){
 		print("$CurVer\n"); exit 0
-	}elsif($ARGV[0] =~ /^(--todo|-t)$/){
+	}elsif($ARGV[0] =~ '^(--todo|-t)$'){
 		shift(@ARGV);
 
 		TFL::Err(1, "Option '--todo|-t' requires a STRING.")
 			unless length($ARGV[0]) > 0;
 
 		$TodoStr = $ARGV[0]
-	}elsif($ARGV[0] =~ /^(--ignore-case|-i)$/){
+	}elsif($ARGV[0] =~ '^(--ignore-case|-i)$'){
 		$DoCase = 'i'
-	}elsif($ARGV[0] =~ /^(--alt-path|-P)$/){
+	}elsif($ARGV[0] =~ '^(--alt-path|-P)$'){
 		shift(@ARGV);
 
 		TFL::Err(1, "Option '--alt-path|-P' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
 		$Target = $ARGV[0]
-	}elsif($ARGV[0] =~ /^(--set-path|-s)$/){
+	}elsif($ARGV[0] =~ '^(--set-path|-s)$'){
 		shift(@ARGV);
 
 		TFL::Err(1, "Option '--set-path|-s' requires a PATH.")
@@ -134,9 +127,31 @@ while(defined($ARGV[0])){
 		close($FH);
 
 		exit(0)
-	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
+	}elsif($ARGV[0] =~ '^(--colors|-c)$'){
+		shift(@ARGV);
+
+		TFL::Err(1, "Option '--colors|-c' requires a PATH.")
+			unless length($ARGV[0]) > 0;
+
+		$ColorsFile = $ARGV[0]
+	}elsif($ARGV[0] =~ '^(--boring|-b)$'){
 		$Boring = 'true'
-	}elsif($ARGV[0] =~ /^-/){
+	}elsif($ARGV[0] =~ '^(--list|--list=)'){
+		my ($Key, $Value) = split('=', $ARGV[0]);
+
+		TFL::Err(1, "Option '$Key' requires a value.")
+			unless length($Value) > 0;
+
+		if ($Value eq 'ckeys'){
+			printf('[');
+			printf("'%s', ", $_) foreach sort(@ValidCKeys);
+			printf("\b\b]\n")
+		}else{
+			TFL::Err(1, "Value '$Value' is invalid.")
+		}
+
+		exit(0)
+	}elsif($ARGV[0] =~ '^-'){
 		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
 		last
@@ -161,6 +176,32 @@ if (length($Target) == 0 and -f -r -T $TargetFile){
 		if length($Target) == 0
 }
 
+# Read the `colors` file, if found, then populate the colors hash.
+if (-f -r -T $ColorsFile){
+	open(my $FH, '<', $ColorsFile);
+	my @Data = <$FH>;
+	close($FH);
+
+	foreach (@Data){
+		chomp(my ($Key, $Value) = split('=', $_));
+
+		# Iterate over ckeys to check they're valid.
+		my $IsFound;
+		foreach (@ValidCKeys){
+			if ($Key eq $_){
+				$IsFound = 'true';
+				last
+			}
+		}
+
+		if ($IsFound eq 'true'){
+			$CHash{$Key} = lc($Value) =~ tr/['"]//dr
+		}else{
+			TFL::Err(0, "Invalid color key '$Key' detected.")
+		}
+	}
+}
+
 sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	our $TermCols = $_[0];
 
@@ -174,7 +215,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 	# For now, we're dealing with one-liners only. Eventually, I'd like to see
 	# multi-line todo entries, but that will require some faffing about.
 	sub GetTodo{
-		open(my $FH, '<', $_[0]); #TODO: Test on-line, after code.
+		open(my $FH, '<', $_[0]);
 		my $FileShown = $_[0] =~ s/$ENV{HOME}/\~/dr;
 
 		my (@TodoList, $Valid);
@@ -193,8 +234,10 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				my $TodoLen = length($Todo);
 
 				# If entry is too long, snip it with the overflow character.
-				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) . $CharOfl
-					if $TodoLen > $TermCols - 10;
+				if ($TodoLen > $TermCols - 10){
+					$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) .
+						color($CHash{EOL}) . $CharOfl . color('reset')
+				}
 
 				# Look for user-provided REGEX in line, if one is given.
 				if (length($ARGV[0]) > 0){
@@ -208,7 +251,15 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 				# Maximum line supported is 9,999,999. If an override feature is
 				# requested, I'll probably get to adding that. If you have one file
 				# of anything like that number, you probably should split it up.
-				push(@TodoList, sprintf(" %7d %s %s", $., $CharMid, $Todo))
+				push(
+					@TodoList,
+					sprintf(
+						color($CHash{Numbers}) . " %7d " . color('reset') .
+						color($CHash{MidChar}) . "%s" . color('reset') .
+						color($CHash{TodoBody}) . " %s" . color('reset'),
+						$., $CharMid, $Todo
+					)
+				)
 			}
 		}
 
@@ -222,9 +273,15 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 		$FileShown = $DirName . basename($FileShown)
 			if length($FileShown) > $TermCols - 2;
 
-		printf(" %s %s\n%10s\n", $CharBul, $FileShown, $CharEnd);
-		printf("%s\n", $_) foreach @TodoList;
-		printf("%10s\n", $CharEnd)
+		printf(
+			color($CHash{Bullet}) . " %s " . color('reset') .
+			color($CHash{FileName}) . "%s" . color('reset') .
+			color($CHash{EndChar}) . "\n%10s\n" . color('reset'),
+			$CharBul, ${FileShown}, $CharEnd
+		);
+
+		printf(color($CHash{MidChar}) . "%s\n" . color('reset'), $_) foreach @TodoList;
+		printf(color($CHash{EndChar}) . "%10s\n" . color('reset'), $CharEnd)
 	}
 
 	if (-d $Target){
