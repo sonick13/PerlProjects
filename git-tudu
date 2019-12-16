@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/git-tudu
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 02:36:42 GMT 2019
+# Last Change       - Mon 16 Dec 02:40:59 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
