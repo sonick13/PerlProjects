@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 01:34:13 GMT 2019
+# Last Change       - Mon 16 Dec 01:54:59 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ use TFL; # <-- libtfl-perl (>= 2019-12-14)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
-use Term::ANSIColor;
+use Term::ANSIColor 'color';
 
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
@@ -39,9 +39,9 @@ sub Usage{
 		            --ignore-case|-i        - Case-insensitive search for REGEX.
 		            --alt-path|-P PATH      - Override user-saved path with PATH.
 		            --set-path|-s PATH      - Set and save the target PATH.
-		            --colors|-c PATH        - Override default file with PATH.
+		            --theme|-c PATH        - Override default file with PATH.
 		            --pretty|-p             - Pretty-print with ASCII characters.
-		            --list=ckeys            - List available color keys for colors.
+		            --list=ckeys            - List available color keys for theme.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
 
@@ -53,14 +53,14 @@ sub Usage{
 		            All binary files will be ignored, as will those for which
 		            needed permissions are lacking.
 
-		COLORS:     Used to customize the colors used when executing $Progrm.
+		COLORS:     Used to customize the theme used when executing $Progrm.
 		            There are a few keys set to value (key=value), as shown below.
 
 		            Use the '--list=ckeys' option to show a list of valid keys.
 
 		FILE:       ~/.config/git-tudu/target
 		            ~/.config/git-tudu/exclude
-		            ~/.config/git-tudu/colors
+		            ~/.config/git-tudu/theme
 		            ~/.config/git-tudu/settings
 	};
 
@@ -82,7 +82,7 @@ mkdir($MainDir) unless -d $MainDir;
 
 my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
-my $ColorsFile = "$MainDir/colors";
+my $ThemeFile = "$MainDir/theme";
 my $SettingsFile = "$MainDir/settings";
 
 my @ValidCKeys = (
@@ -129,13 +129,13 @@ while(defined($ARGV[0])){
 		close($FH);
 
 		exit(0)
-	}elsif($ARGV[0] =~ '^(--colors|-c)$'){
+	}elsif($ARGV[0] =~ '^(--theme|-c)$'){
 		shift(@ARGV);
 
-		TFL::Err(1, "Option '--colors|-c' requires a PATH.")
+		TFL::Err(1, "Option '--theme|-c' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
-		$ColorsFile = $ARGV[0]
+		$ThemeFile = $ARGV[0]
 	}elsif($ARGV[0] =~ '^(--pretty|-p)$'){
 		$Pretty = 'true'
 	}elsif($ARGV[0] =~ '^(--list|--list=)'){
@@ -178,13 +178,14 @@ if (length($Target) == 0 and -f -r -T $TargetFile){
 		if length($Target) == 0
 }
 
-# Read the `colors` file, if found, then populate the colors hash.
-if (-f -r -T $ColorsFile){
-	open(my $FH, '<', $ColorsFile);
+# Read the `theme` file, if found, then populate the theme hash.
+if (-f -r -T $ThemeFile){
+	open(my $FH, '<', $ThemeFile);
 	my @Data = <$FH>;
 	close($FH);
 
 	foreach (@Data){
+		next if length($_) <= 1 or $_ =~ '^#';
 		chomp(my ($Key, $Value) = split('=', $_));
 
 		# Iterate over ckeys to check they're valid.
@@ -202,6 +203,20 @@ if (-f -r -T $ColorsFile){
 			TFL::Err(0, "Invalid color key '$Key' detected.")
 		}
 	}
+}else{
+	# Generate the default TFL_Dark theme.
+	open(my $FH, '>', $ThemeFile);
+	printf($FH "#" . "-"x82 . "\n");
+	printf($FH "# Theme 'TFL_Dark' written by terminalforlife <terminalforlife\@yahoo.com>\n");
+	printf($FH "#" . "-"x82 . "\n");
+	printf($FH "Bullet=bright_white\n");
+	printf($FH "EOL=bright_black\n");
+	printf($FH "EndChar=bright_black\n");
+	printf($FH "FileName=bright_black\n");
+	printf($FH "MidChar=bright_black\n");
+	printf($FH "Numbers=red\n");
+	printf($FH "TodoBody=bright_white\n");
+	close($FH)
 }
 
 sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
@@ -320,7 +335,7 @@ sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
 }
 
 if ($Pretty eq 'true'){
-	Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '/')
+	Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '#')
 }else{
-	Display(@{[GetTerminalSize()]}[0], ' ', ' ', ' ', ' ')
+	Display(@{[GetTerminalSize()]}[0], ' ', ' ', ' ', '#')
 }
