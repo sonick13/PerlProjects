@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Wed 18 Dec 20:57:32 GMT 2019
+# Last Change       - Wed 18 Dec 21:22:24 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -38,6 +38,7 @@ sub Usage{
 		            --ignore-case|-i        - Case-insensitive search for REGEX.
 		            --alt-path|-P PATH      - Override value in config with PATH.
 		            --config PATH           - Override default file with PATH.
+		            --force-reset           - Force regeneration of user's config.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
 
@@ -61,7 +62,10 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Pretty, $DoCase, %ColorHash, %CharHash, $SolidTarget, $DoZPNums);
+my (
+	$Target, $Pretty, $DoCase, %ColorHash, %CharHash,
+	$SolidTarget, $DoZPNums, $ForceReset
+);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -109,6 +113,8 @@ while(defined($ARGV[0])){
 			unless length($ARGV[0]) > 0;
 
 		$ConfigFile = $ARGV[0]
+	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
+		$ForceReset = 'true'
 	}elsif($ARGV[0] =~ '^-'){
 		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
@@ -126,8 +132,15 @@ if (scalar(@ARGV) > 1){
 
 my $TermCols = @{[GetTerminalSize()]}[0];
 
+unlink($ConfigFile) if $ForceReset eq 'true';
+
 # Read the `config` file, if found, then populate the config hash.
 if (-f -r -T $ConfigFile){
+	sub Boolean{
+		TFL::Err(1, "Invalid boolean '$_[0]' detected.")
+			unless $_[0] eq 'true' or $_[0] eq 'false'
+	}
+
 	open(my $FH, '<', $ConfigFile);
 	my @Data = <$FH>;
 	close($FH);
@@ -147,12 +160,14 @@ if (-f -r -T $ConfigFile){
 
 		if ($IsFound eq 'true'){
 			if ($Key eq 'Pretty'){
+				Boolean($Value);
 				$Pretty = $Value
 			}elsif ($Key eq 'Target'){
 				$Target = $Value unless $SolidTarget eq 'true'
 			}elsif ($Key eq 'TodoStr'){
 				$TodoStr = $Value
 			}elsif ($Key eq 'DoZPNums'){
+				Boolean($Value);
 				$DoZPNums = $Value
 			}elsif ($Key =~ '^Char_.*'){
 				$CharHash{$Key} = $Value
@@ -310,8 +325,6 @@ if (-d $Target){
 		return(1) unless -f -r -T $Name;
 
 		my @SplitName = split('/', $Name);
-		my $SplitNameLen = scalar(@SplitName);
-
 		foreach (@SplitName){
 			return(1) if $_ eq '.git'
 		}
