@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Mon 16 Dec 02:55:04 GMT 2019
+# Last Change       - Wed 18 Dec 20:57:32 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-16";
+my $CurVer = "2019-12-18";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -61,7 +61,7 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Target, $Pretty, $DoCase, %CHash, $SolidTarget);
+my ($Target, $Pretty, $DoCase, %ColorHash, %CharHash, $SolidTarget, $DoZPNums);
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
 # the one space before and after the todo string. Don't want to get confused with
@@ -78,9 +78,11 @@ my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
 my $ConfigFile = "$MainDir/config";
 
+# Except TYPE_* keys, which are in hashes of their own.
 my @ValidKeys = (
-	'TodoBody', 'Bullet', 'EOL', 'MidChar', 'Target',
-	'EndChar', 'FileName', 'Numbers', 'Pretty', 'TodoStr'
+	'Target', 'Pretty', 'TodoStr', 'Char_End', 'Char_Mid', 'Char_Bul', 'DoZPNums',
+	'Color_Bullet', 'Color_EOL', 'Color_EndChar', 'Color_FileName', 'Char_Ofl',
+	'Color_MidChar', 'Color_Numbers', 'Color_TodoBody',
 );
 
 while(defined($ARGV[0])){
@@ -122,15 +124,7 @@ if (scalar(@ARGV) > 1){
 	TFL::Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
-# If not overridden above, try user's pre-set.
-if (length($Target) == 0 and -f -r -T $TargetFile){
-	open(my $FH, '<', $TargetFile);
-	chomp($Target = <$FH>);
-	close($FH);
-
-	TFL::Err(1, "Reading file '~/.config/$Progrm/target' failed.")
-		if length($Target) == 0
-}
+my $TermCols = @{[GetTerminalSize()]}[0];
 
 # Read the `config` file, if found, then populate the config hash.
 if (-f -r -T $ConfigFile){
@@ -158,17 +152,24 @@ if (-f -r -T $ConfigFile){
 				$Target = $Value unless $SolidTarget eq 'true'
 			}elsif ($Key eq 'TodoStr'){
 				$TodoStr = $Value
+			}elsif ($Key eq 'DoZPNums'){
+				$DoZPNums = $Value
+			}elsif ($Key =~ '^Char_.*'){
+				$CharHash{$Key} = $Value
+			}elsif ($Key =~ '^Color_.*'){
+				$ColorHash{$Key} = $Value =~ tr/['"]//dr
 			}else{
 				TFL::Err(1, "Invalid color '$Value' detected.")
 					unless colorvalid($Value);
 			}
-
-			$CHash{$Key} = $Value =~ tr/['"]//dr
 		}else{
 			TFL::Err(1, "Invalid key '$Key' detected.")
 		}
 	}
 }else{
+	TFL::Err(1, "User configuration file could not be generated.")
+		unless -w -x dirname($ConfigFile);
+
 	# Generate the default config.
 	open(my $FH, '>', $ConfigFile);
 
@@ -181,18 +182,29 @@ if (-f -r -T $ConfigFile){
 		# looked for in each applicable line.
 		TodoStr=#TODO:
 
-		# Enable to output various pretty (colorable) ASCII characters.
+		# Zero-pad line numbers of each discovered todo entry.
+		DoZPNums=false
+
+		# When enabled, enable the display of extra ASCII characters. (see below)
 		Pretty=false
+
+		# Adjust the superfluous characters used, especially when 'Pretty=true'.
+		Char_Bul=*
+		Char_End=+
+		Char_Mid=|
+
+		# This will always be shown, unless specifically disabled.
+		Char_Ofl=#
 
 		# Various color keys and their values. To disable color support, simply
 		# set each of these to null, by removing all of their values.
-		Bullet=bright_white
-		EOL=bright_black
-		EndChar=bright_black
-		FileName=bright_black
-		MidChar=bright_black
-		Numbers=red
-		TodoBody=bright_white};
+		Color_Bullet=white
+		Color_EOL=bright_black
+		Color_EndChar=white
+		Color_FileName=bright_black
+		Color_MidChar=white
+		Color_Numbers=red
+		Color_TodoBody=bright_white};
 
 	printf($FH "%s\n", $Contents =~ tr/\t//dr);
 
@@ -201,125 +213,121 @@ if (-f -r -T $ConfigFile){
 	exit(0)
 }
 
-sub Display{ # Usage: Display [MAX_COLS] [C_END] [C_MID] [C_BUL] [C_OFL]
-	our $TermCols = $_[0];
+# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
+# For now, we're dealing with one-liners only. Eventually, I'd like to see
+# multi-line todo entries, but that will require some faffing about.
+sub GetTodo{
+	open(my $FH, '<', $_[0]);
+	my $FileShown = $_[0] =~ s/$ENV{HOME}/\~/dr;
 
-	# Sets up possible future expansion to allow user-provided choices.
-	our $CharEnd = $_[1]; # <-- Top and bottom (ends) of divider.
-	our $CharMid = $_[2]; # <-- Middle of divider, before todo entries.
-	our $CharBul = $_[3]; # <-- The bullet point character.
-	our $CharOfl = $_[4]; # <-- The column overflow character.
+	my (@TodoList, $Valid);
+	while (<$FH>){
+		undef($Valid);
+		chomp($_);
 
-	# Read file ($_[0]) then output pretty and column-mindful list of todo entries.
-	# For now, we're dealing with one-liners only. Eventually, I'd like to see
-	# multi-line todo entries, but that will require some faffing about.
-	sub GetTodo{
-		open(my $FH, '<', $_[0]);
-		my $FileShown = $_[0] =~ s/$ENV{HOME}/\~/dr;
+		# Skip empty lines, or lines with only trailing whitespaces, tabs, etc.
+		next if $_ =~ /(^$|^#+ |^[[:space:]]+$)/;
 
-		my (@TodoList, $Valid);
-		while (<$FH>){
-			undef($Valid);
-			chomp($_);
+		# Check each field in line for the todo string.
+		$Valid = 'true' if grep(m/^$TodoStr$/, split(' ', $_));
 
-			# Skip empty lines, or lines with only trailing whitespaces, tabs, etc.
-			next if $_ =~ /(^$|^#+ |^[[:space:]]+$)/;
+		if ($Valid eq 'true'){
+			my $Todo = $_ =~ s/^.*$TodoStr //dr;
+			my $TodoLen = length($Todo);
 
-			# Check each field in line for the todo string.
-			$Valid = 'true' if grep(m/^$TodoStr$/, split(' ', $_));
+			# If entry is too long, snip it with the overflow character.
+			if ($TodoLen > $TermCols - 10){
+				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) .
+					color($ColorHash{Color_EOL}) . $CharHash{Char_Ofl} .
+					color('reset')
+			}
 
-			if ($Valid eq 'true'){
-				my $Todo = $_ =~ s/^.*$TodoStr //dr;
-				my $TodoLen = length($Todo);
-
-				# If entry is too long, snip it with the overflow character.
-				if ($TodoLen > $TermCols - 10){
-					$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) .
-						color($CHash{EOL}) . $CharOfl . color('reset')
+			# Look for user-provided REGEX in line, if one is given.
+			if (length($ARGV[0]) > 0){
+				if ($DoCase eq 'i'){
+					next unless grep(m/$ARGV[0]/i, $Todo)
+				}else{
+					next unless grep(m/$ARGV[0]/, $Todo)
 				}
+			}
 
-				# Look for user-provided REGEX in line, if one is given.
-				if (length($ARGV[0]) > 0){
-					if ($DoCase eq 'i'){
-						next unless grep(m/$ARGV[0]/i, $Todo)
-					}else{
-						next unless grep(m/$ARGV[0]/, $Todo)
-					}
-				}
+			# Whether to zero-pad line numbers or not.
+			my $FNums;
+			if ($DoZPNums eq 'true'){
+				$FNums = ' %0.7d '
+			}else{
+				$FNums = ' %7d '
+			}
 
-				# Maximum line supported is 9,999,999. If an override feature is
-				# requested, I'll probably get to adding that. If you have one file
-				# of anything like that number, you probably should split it up.
-				push(
-					@TodoList,
-					sprintf(
-						color($CHash{Numbers}) . " %7d " . color('reset') .
-						color($CHash{MidChar}) . "%s" . color('reset') .
-						color($CHash{TodoBody}) . " %s" . color('reset'),
-						$., $CharMid, $Todo
-					)
+			# Maximum line supported is 9,999,999. If an override feature is
+			# requested, I'll probably get to adding that. If you have one file
+			# of anything like that number, you probably should split it up.
+			push(
+				@TodoList,
+				sprintf(
+					color($ColorHash{Color_Numbers}) . $FNums . color('reset') .
+					color($ColorHash{Color_MidChar}) . "%s" . color('reset') .
+					color($ColorHash{Color_TodoBody}) . " %s" . color('reset'),
+					$., $CharHash{Char_Mid}, $Todo
 				)
-			}
+			)
 		}
-
-		close($FH);
-
-		# Don't show anything if no todos were found.
-		return(1) unless scalar(@TodoList) > 0;
-
-		# To ensure the filenames don't flow over the coloumn limit.
-		my $DirName = dirname($FileShown) =~ s/.*\//...\//dr . '/';
-		$FileShown = $DirName . basename($FileShown)
-			if length($FileShown) > $TermCols - 2;
-
-		printf(
-			color($CHash{Bullet}) . " %s " . color('reset') .
-			color($CHash{FileName}) . "%s" . color('reset') .
-			color($CHash{EndChar}) . "\n%10s\n" . color('reset'),
-			$CharBul, ${FileShown}, $CharEnd
-		);
-
-		printf(color($CHash{MidChar}) . "%s\n" . color('reset'), $_) foreach @TodoList;
-		printf(color($CHash{EndChar}) . "%10s\n" . color('reset'), $CharEnd)
 	}
 
-	if (-d $Target){
-		TFL::Err(1, 'Directory inaccessible.') unless -r -x $Target;
+	close($FH);
 
-		our @FileArr;
+	# Don't show anything if no todos were found.
+	return(1) unless scalar(@TodoList) > 0;
 
-		sub Conditions{
-			my $Name = $File::Find::name;
+	# To ensure the filenames don't flow over the coloumn limit.
+	my $DirName = dirname($FileShown) =~ s/.*\//...\//dr . '/';
+	$FileShown = $DirName . basename($FileShown)
+		if length($FileShown) > $TermCols - 2;
 
-			# Must be a readable non-binary file.
-			return(1) unless -f -r -T $Name;
+	printf(
+		color($ColorHash{Color_Bullet}) . " %s " . color('reset') .
+		color($ColorHash{Color_FileName}) . "%s" . color('reset') .
+		color($ColorHash{Color_EndChar}) . "\n%10s\n" . color('reset'),
+		$CharHash{Char_Bul}, ${FileShown}, $CharHash{Char_End}
+	);
 
-			my @SplitName = split('/', $Name);
-			my $SplitNameLen = scalar(@SplitName);
+	printf(color($ColorHash{Color_MidChar}) . "%s\n" . color('reset'), $_)
+		foreach @TodoList;
 
-			foreach (@SplitName){
-				return(1) if $_ eq '.git'
-			}
-
-			push(@FileArr, $Name)
-		}
-
-		# Recursive search for files in `Target` per `Conditions()`.
-		find(\&Conditions, $Target);
-
-		foreach (@FileArr){GetTodo($_)}
-	}elsif (-f $Target){
-		TFL::Err(1, 'File unreadable.') unless -r $Target;
-		TFL::Err(1, 'File is binary.') if -r -B $Target;
-
-		GetTodo($Target)
-	}else{
-		TFL::Err(1, 'Non-existent or invalid target specified.')
-	}
+	printf(color($ColorHash{Color_EndChar}) . "%10s\n" .
+		color('reset'), $CharHash{Char_End})
 }
 
-if ($Pretty eq 'true'){
-	Display(@{[GetTerminalSize()]}[0], '+', '|', '*', '#')
+if (-d $Target){
+	TFL::Err(1, 'Directory inaccessible.') unless -r -x $Target;
+
+	our @FileArr;
+
+	sub Conditions{
+		my $Name = $File::Find::name;
+
+		# Must be a readable non-binary file.
+		return(1) unless -f -r -T $Name;
+
+		my @SplitName = split('/', $Name);
+		my $SplitNameLen = scalar(@SplitName);
+
+		foreach (@SplitName){
+			return(1) if $_ eq '.git'
+		}
+
+		push(@FileArr, $Name)
+	}
+
+	# Recursive search for files in `Target` per `Conditions()`.
+	find(\&Conditions, $Target);
+
+	foreach (@FileArr){GetTodo($_)}
+}elsif (-f $Target){
+	TFL::Err(1, 'File unreadable.') unless -r $Target;
+	TFL::Err(1, 'File is binary.') if -r -B $Target;
+
+	GetTodo($Target)
 }else{
-	Display(@{[GetTerminalSize()]}[0], ' ', ' ', ' ', '#')
+	TFL::Err(1, 'Non-existent or invalid target specified.')
 }
