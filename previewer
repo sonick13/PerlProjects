@@ -3,11 +3,9 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Sat 14 Dec 18:47:27 GMT 2019
+# Last Change       - Mon 16 Dec 03:00:40 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
-#----------------------------------------------------------------------------------
-# Package 'libanyevent-i3-perl' seems to be needed, for some reason.
 #----------------------------------------------------------------------------------
 
 use v5.22.1;
@@ -20,7 +18,7 @@ use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $CurVer = "2019-12-14";
+my $CurVer = "2019-12-16";
 my $Progrm = basename($0);
 
 my $DBSite = 'https://community.linuxmint.com/data/reviews.list';
