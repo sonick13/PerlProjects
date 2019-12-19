@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Wed 18 Dec 21:22:24 GMT 2019
+# Last Change       - Thu 19 Dec 21:33:44 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,14 +22,14 @@ use Term::ANSIColor 'color', 'colorvalid';
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-18";
+my $CurVer = "2019-12-19";
 my $Progrm = basename($0);
 
 sub Usage{
 	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
 		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
-		            Get an overview of programming todos with this developer tool.
+		            Configurable developer tool to overview projects' todos.
 
 		SYNTAX:     $Progrm [OPTS] [REGEX]
 
