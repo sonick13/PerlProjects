@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Thu 19 Dec 21:33:44 GMT 2019
+# Last Change       - Fri 20 Dec 05:52:48 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 # I'll disable it when this is actually needed.
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-19";
+my $CurVer = "2019-12-20";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -39,6 +39,7 @@ sub Usage{
 		            --alt-path|-P PATH      - Override value in config with PATH.
 		            --config PATH           - Override default file with PATH.
 		            --force-reset           - Force regeneration of user's config.
+		            --parseable             - Parseable output, similar to raw.
 
 		NOTE:       Signifying the end of OPTS with '--' is supported.
 
@@ -64,7 +65,7 @@ sub Usage{
 
 my (
 	$Target, $Pretty, $DoCase, %ColorHash, %CharHash,
-	$SolidTarget, $DoZPNums, $ForceReset
+	$SolidTarget, $DoZPNums, $ForceReset, $Parseable
 );
 
 # Tabs, whitespaces, and other characters prior to this will be ignored, except
@@ -82,11 +83,10 @@ my $TargetFile = "$MainDir/target";
 my $ExcludeFile = "$MainDir/exclude";
 my $ConfigFile = "$MainDir/config";
 
-# Except TYPE_* keys, which are in hashes of their own.
 my @ValidKeys = (
 	'Target', 'Pretty', 'TodoStr', 'Char_End', 'Char_Mid', 'Char_Bul', 'DoZPNums',
 	'Color_Bullet', 'Color_EOL', 'Color_EndChar', 'Color_FileName', 'Char_Ofl',
-	'Color_MidChar', 'Color_Numbers', 'Color_TodoBody',
+	'Color_MidChar', 'Color_Numbers', 'Color_TodoBody', 'Parseable'
 );
 
 while(defined($ARGV[0])){
@@ -115,6 +115,8 @@ while(defined($ARGV[0])){
 		$ConfigFile = $ARGV[0]
 	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
 		$ForceReset = 'true'
+	}elsif($ARGV[0] eq '--parseable'){
+		$Parseable = 'true'
 	}elsif($ARGV[0] =~ '^-'){
 		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
@@ -169,6 +171,11 @@ if (-f -r -T $ConfigFile){
 			}elsif ($Key eq 'DoZPNums'){
 				Boolean($Value);
 				$DoZPNums = $Value
+			}elsif ($Key eq 'Parseable'){
+				next if $Parseable eq 'true';
+
+				Boolean($Value);
+				$Parseable = $Value
 			}elsif ($Key =~ '^Char_.*'){
 				$CharHash{$Key} = $Value
 			}elsif ($Key =~ '^Color_.*'){
@@ -196,6 +203,9 @@ if (-f -r -T $ConfigFile){
 		# This string, assumed to have a whitespace either side of it, will be
 		# looked for in each applicable line.
 		TodoStr=#TODO:
+
+		# Display text in an easy-to-parse way, overriding pretty settings below.
+		Parseable=false
 
 		# Zero-pad line numbers of each discovered todo entry.
 		DoZPNums=false
@@ -251,7 +261,7 @@ sub GetTodo{
 			my $TodoLen = length($Todo);
 
 			# If entry is too long, snip it with the overflow character.
-			if ($TodoLen > $TermCols - 10){
+			if ($Parseable ne 'true' and $TodoLen > $TermCols - 10){
 				$Todo = substr($Todo, 0, $TermCols - ($TodoLen + 12)) .
 					color($ColorHash{Color_EOL}) . $CharHash{Char_Ofl} .
 					color('reset')
@@ -266,26 +276,31 @@ sub GetTodo{
 				}
 			}
 
-			# Whether to zero-pad line numbers or not.
-			my $FNums;
-			if ($DoZPNums eq 'true'){
-				$FNums = ' %0.7d '
-			}else{
-				$FNums = ' %7d '
-			}
+			if ($Parseable ne 'true'){
+				# Maximum line supported is 9,999,999. If an override feature is
+				# requested, I'll probably get to adding that. If you have one file
+				# of anything like that number, you probably should split it up.
+				my $FNums;
+				if ($DoZPNums eq 'true'){
+					$FNums = ' %0.7d '
+				}else{
+					$FNums = ' %7d '
+				}
 
-			# Maximum line supported is 9,999,999. If an override feature is
-			# requested, I'll probably get to adding that. If you have one file
-			# of anything like that number, you probably should split it up.
-			push(
-				@TodoList,
-				sprintf(
-					color($ColorHash{Color_Numbers}) . $FNums . color('reset') .
-					color($ColorHash{Color_MidChar}) . "%s" . color('reset') .
-					color($ColorHash{Color_TodoBody}) . " %s" . color('reset'),
-					$., $CharHash{Char_Mid}, $Todo
+				#TODO: Make it so the user can adjust the above number (padding).
+
+				push(
+					@TodoList,
+					sprintf(
+						color($ColorHash{Color_Numbers}) . $FNums . color('reset') .
+						color($ColorHash{Color_MidChar}) . "%s" . color('reset') .
+						color($ColorHash{Color_TodoBody}) . " %s" . color('reset'),
+						$., $CharHash{Char_Mid}, $Todo
+					)
 				)
-			)
+			}else{
+				push(@TodoList, sprintf("%s~~~%d~~~%s", $FileShown, $., $Todo))
+			}
 		}
 	}
 
@@ -294,23 +309,27 @@ sub GetTodo{
 	# Don't show anything if no todos were found.
 	return(1) unless scalar(@TodoList) > 0;
 
-	# To ensure the filenames don't flow over the coloumn limit.
-	my $DirName = dirname($FileShown) =~ s/.*\//...\//dr . '/';
-	$FileShown = $DirName . basename($FileShown)
-		if length($FileShown) > $TermCols - 2;
+	if ($Parseable ne 'true'){
+		# To ensure the filenames don't flow over the coloumn limit.
+		my $DirName = dirname($FileShown) =~ s/.*\//...\//dr . '/';
+		$FileShown = $DirName . basename($FileShown)
+			if length($FileShown) > $TermCols - 2;
 
-	printf(
-		color($ColorHash{Color_Bullet}) . " %s " . color('reset') .
-		color($ColorHash{Color_FileName}) . "%s" . color('reset') .
-		color($ColorHash{Color_EndChar}) . "\n%10s\n" . color('reset'),
-		$CharHash{Char_Bul}, ${FileShown}, $CharHash{Char_End}
-	);
+		printf(
+			color($ColorHash{Color_Bullet}) . " %s " . color('reset') .
+			color($ColorHash{Color_FileName}) . "%s" . color('reset') .
+			color($ColorHash{Color_EndChar}) . "\n%10s\n" . color('reset'),
+			$CharHash{Char_Bul}, ${FileShown}, $CharHash{Char_End}
+		);
 
-	printf(color($ColorHash{Color_MidChar}) . "%s\n" . color('reset'), $_)
-		foreach @TodoList;
+		printf(color($ColorHash{Color_MidChar}) . "%s\n" . color('reset'), $_)
+			foreach @TodoList;
 
-	printf(color($ColorHash{Color_EndChar}) . "%10s\n" .
-		color('reset'), $CharHash{Char_End})
+		printf(color($ColorHash{Color_EndChar}) . "%10s\n" .
+			color('reset'), $CharHash{Char_End})
+	}else{
+		printf("%s\n", $_) foreach @TodoList;
+	}
 }
 
 if (-d $Target){
