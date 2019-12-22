@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 22 Dec 20:54:08 GMT 2019
+# Last Change       - Sun 22 Dec 23:20:59 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ sub Usage{
 
 my (
 	$Target, $Pretty, $DoCase, %ColorHash, %CharHash, $SolidTarget,
-	$DoZPNums, $ForceReset, $Parseable, $FullPath, $TodoStr
+	$DoZPNums, $ForceReset, $Parseable, $FullPath, $TodoStr, $ShowTTL
 );
 
 # Snip the one whitespace before the todo entry.
@@ -84,7 +84,8 @@ my @ValidKeys = (
 	'Target', 'Pretty', 'TodoStr', 'Char_End', 'Char_Mid', 'Char_Bul',
 	'DoZPNums', 'Color_Bullet', 'Color_EOL', 'Color_EndChar', 'RegexStr',
 	'Color_FileName', 'Char_Ofl', 'Color_MidChar', 'Color_Numbers',
-	'Color_TodoBody', 'Parseable', 'FullPath'
+	'Color_TodoBody', 'Parseable', 'FullPath', 'ShowTTL', 'Color_TotalStr',
+	'Color_TotalNum'
 );
 
 while(defined($ARGV[0])){
@@ -168,6 +169,9 @@ if (-f -r -T $ConfigFile){
 			}elsif ($Key eq 'DoZPNums'){
 				Boolean($Value);
 				$DoZPNums = $Value
+			}elsif ($Key eq 'ShowTTL'){
+				Boolean($Value);
+				$ShowTTL = $Value
 			}elsif ($Key eq 'FullPath'){
 				Boolean($Value);
 				$FullPath = $Value
@@ -212,6 +216,9 @@ if (-f -r -T $ConfigFile){
 		# override any REGEX string otherwise set.
 		RegexStr=
 
+		# If enabled, a message, tallying up todo entries found, is displayed.
+		ShowTTL=true
+
 		# Display text in an easy-to-parse way, overriding pretty keys shown below.
 		Parseable=false
 
@@ -241,7 +248,9 @@ if (-f -r -T $ConfigFile){
 		Color_FileName=bright_black
 		Color_MidChar=white
 		Color_Numbers=red
-		Color_TodoBody=bright_white};
+		Color_TodoBody=bright_white
+		Color_TotalStr=white
+		Color_TotalNum=white};
 
 	printf($FH "%s\n", $Contents =~ tr/\t//dr);
 
@@ -249,6 +258,8 @@ if (-f -r -T $ConfigFile){
 	printf("File '~/.config/git-tudu/config' generated -- please restart.\n");
 	exit(0)
 }
+
+my $EntryTTL = 0;
 
 # Read file ($_[0]) then output pretty and column-mindful list of todo entries.
 # For now, we're dealing with one-liners only. Eventually, I'd like to see
@@ -271,6 +282,8 @@ sub GetTodo{
 		if ($Valid eq 'true'){
 			my $Todo = $_ =~ s/^.*$TodoStr //dr;
 			my $TodoLen = length($Todo);
+
+			$EntryTTL++;
 
 			# If entry is too long, snip it with the overflow character.
 			if ($Parseable ne 'true' and $TodoLen > $TermCols - 10){
@@ -377,3 +390,9 @@ if (-d $Target){
 }else{
 	TFL::Err(1, 'Non-existent or invalid target specified.')
 }
+
+printf(
+	"\n" . color($ColorHash{Color_TotalStr}) . " %s " .
+	color($ColorHash{Color_TotalNum}) . "%d" . color('reset'),
+	'Total:', $EntryTTL
+) unless $ShowTTL ne 'true'
