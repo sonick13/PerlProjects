@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 22 Dec 23:23:14 GMT 2019
+# Last Change       - Sun 22 Dec 23:29:53 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -391,8 +391,14 @@ if (-d $Target){
 	TFL::Err(1, 'Non-existent or invalid target specified.')
 }
 
-printf(
-	"\n" . color($ColorHash{Color_TotalStr}) . " %s " .
-	color($ColorHash{Color_TotalNum}) . "%d\n" . color('reset'),
-	'Total:', $EntryTTL
-) unless $ShowTTL ne 'true'
+if ($EntryTTL == 0){
+	printf("Wonderful -- you have exactly nothing to do here.\n");
+
+	exit(1)
+}else{
+	printf(
+		"\n" . color($ColorHash{Color_TotalStr}) . " %s " .
+		color($ColorHash{Color_TotalNum}) . "%d\n" . color('reset'),
+		'Total:', $EntryTTL
+	) unless $ShowTTL ne 'true'
+}
