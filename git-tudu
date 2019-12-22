@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 22 Dec 18:52:48 GMT 2019
+# Last Change       - Sun 22 Dec 20:54:08 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -57,6 +57,8 @@ sub Usage{
 		            The default 'Target' is the current working directory, and the
 		            default TODO string is '#TODO:', where '#' indicates a comment.
 
+		            Once the 'config' file has been generated, adjust as needed.
+
 		FILE:       ~/.config/git-tudu/config
 	};
 
@@ -64,14 +66,9 @@ sub Usage{
 }
 
 my (
-	$Target, $Pretty, $DoCase, %ColorHash, %CharHash,
-	$SolidTarget, $DoZPNums, $ForceReset, $Parseable
+	$Target, $Pretty, $DoCase, %ColorHash, %CharHash, $SolidTarget,
+	$DoZPNums, $ForceReset, $Parseable, $FullPath, $TodoStr
 );
-
-# Tabs, whitespaces, and other characters prior to this will be ignored, except
-# the one space before and after the todo string. Don't want to get confused with
-# any code which happens to have this string in it. Must be one field.
-my $TodoStr = '#TODO:';
 
 # Snip the one whitespace before the todo entry.
 my $TodoStrLen = length($TodoStr) + 1;
@@ -84,9 +81,10 @@ my $ExcludeFile = "$MainDir/exclude";
 my $ConfigFile = "$MainDir/config";
 
 my @ValidKeys = (
-	'Target', 'Pretty', 'TodoStr', 'Char_End', 'Char_Mid', 'Char_Bul', 'DoZPNums',
-	'Color_Bullet', 'Color_EOL', 'Color_EndChar', 'Color_FileName', 'Char_Ofl',
-	'Color_MidChar', 'Color_Numbers', 'Color_TodoBody', 'Parseable'
+	'Target', 'Pretty', 'TodoStr', 'Char_End', 'Char_Mid', 'Char_Bul',
+	'DoZPNums', 'Color_Bullet', 'Color_EOL', 'Color_EndChar', 'RegexStr',
+	'Color_FileName', 'Char_Ofl', 'Color_MidChar', 'Color_Numbers',
+	'Color_TodoBody', 'Parseable', 'FullPath'
 );
 
 while(defined($ARGV[0])){
@@ -132,6 +130,9 @@ if (scalar(@ARGV) > 1){
 	TFL::Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
+# Use of this function is to avoid escaping issues in REGEX.
+my $RegexStr = quotemeta($ARGV[0]);
+
 my $TermCols = @{[GetTerminalSize()]}[0];
 
 unlink($ConfigFile) if $ForceReset eq 'true';
@@ -152,13 +153,7 @@ if (-f -r -T $ConfigFile){
 		chomp(my ($Key, $Value) = split('=', $_));
 
 		# Iterate over ckeys to check they're valid.
-		my $IsFound;
-		foreach (@ValidKeys){
-			if ($Key eq $_){
-				$IsFound = 'true';
-				last
-			}
-		}
+		my $IsFound = 'true' if grep($Key, @ValidKeys);
 
 		if ($IsFound eq 'true'){
 			if ($Key eq 'Pretty'){
@@ -167,16 +162,23 @@ if (-f -r -T $ConfigFile){
 			}elsif ($Key eq 'Target'){
 				$Target = $Value unless $SolidTarget eq 'true'
 			}elsif ($Key eq 'TodoStr'){
-				$TodoStr = $Value
+				$TodoStr = quotemeta($Value)
+			}elsif ($Key eq 'RegexStr'){
+				$RegexStr = quotemeta($Value) unless length($Value) == 0
 			}elsif ($Key eq 'DoZPNums'){
 				Boolean($Value);
 				$DoZPNums = $Value
+			}elsif ($Key eq 'FullPath'){
+				Boolean($Value);
+				$FullPath = $Value
 			}elsif ($Key eq 'Parseable'){
 				next if $Parseable eq 'true';
 
 				Boolean($Value);
 				$Parseable = $Value
 			}elsif ($Key =~ '^Char_.*'){
+				next if $Pretty eq 'false' and $Key ne 'Char_Ofl';
+
 				$CharHash{$Key} = $Value
 			}elsif ($Key =~ '^Color_.*'){
 				$ColorHash{$Key} = $Value =~ tr/['"]//dr
@@ -197,15 +199,25 @@ if (-f -r -T $ConfigFile){
 
 	my $Contents = qq{# User configuration file for `$Progrm` ($CurVer)
 
-		# Specify the location (file or directory) for $Progrm to use.
+		# Specify the location (file or directory) for $Progrm to use. If the CWD
+		# is specified (the default value), the search is made non-recursively.
 		Target=./
 
 		# This string, assumed to have a whitespace either side of it, will be
 		# looked for in each applicable line.
 		TodoStr=#TODO:
 
-		# Display text in an easy-to-parse way, overriding pretty settings below.
+		# If set to a value, it will always be used as REGEX. This could be handy
+		# if you want to always view certain todo entries. This key, if used, will
+		# override any REGEX string otherwise set.
+		RegexStr=
+
+		# Display text in an easy-to-parse way, overriding pretty keys shown below.
 		Parseable=false
+
+		# Display the full (absolute or relative) path to the current file. This
+		# setting has no effect if the above `Parseable` key is enabled.
+		FullPath=true
 
 		# Zero-pad line numbers of each discovered todo entry.
 		DoZPNums=false
@@ -254,7 +266,7 @@ sub GetTodo{
 		next if $_ =~ /(^$|^#+ |^[[:space:]]+$)/;
 
 		# Check each field in line for the todo string.
-		$Valid = 'true' if grep(m/^$TodoStr$/, split(' ', $_));
+		$Valid = 'true' if grep(/^$TodoStr$/, split(' ', $_));
 
 		if ($Valid eq 'true'){
 			my $Todo = $_ =~ s/^.*$TodoStr //dr;
@@ -268,11 +280,11 @@ sub GetTodo{
 			}
 
 			# Look for user-provided REGEX in line, if one is given.
-			if (length($ARGV[0]) > 0){
+			if (length($RegexStr) > 0){
 				if ($DoCase eq 'i'){
-					next unless grep(m/$ARGV[0]/i, $Todo)
+					next unless grep(m/$RegexStr/i, $Todo)
 				}else{
-					next unless grep(m/$ARGV[0]/, $Todo)
+					next unless grep(m/$RegexStr/, $Todo)
 				}
 			}
 
@@ -288,6 +300,8 @@ sub GetTodo{
 				}
 
 				#TODO: Make it so the user can adjust the above number (padding).
+
+				$FileShown = basename($FileShown) if $FullPath eq 'false';
 
 				push(
 					@TodoList,
