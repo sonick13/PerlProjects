@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Fri 20 Dec 05:52:48 GMT 2019
+# Last Change       - Sun 22 Dec 18:52:48 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -20,9 +20,9 @@ use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1
 use Term::ANSIColor 'color', 'colorvalid';
 
 # I'll disable it when this is actually needed.
-no warnings 'uninitialized';
+no warnings 'uninitialized', 'File::Find';
 
-my $CurVer = "2019-12-20";
+my $CurVer = "2019-12-22";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -341,11 +341,11 @@ if (-d $Target){
 		my $Name = $File::Find::name;
 
 		# Must be a readable non-binary file.
-		return(1) unless -f -r -T $Name;
+		return unless -f -r -T $Name;
 
 		my @SplitName = split('/', $Name);
 		foreach (@SplitName){
-			return(1) if $_ eq '.git'
+			return if $_ eq '.git'
 		}
 
 		push(@FileArr, $Name)
