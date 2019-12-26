@@ -1,45 +1,42 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/apt-undo-install
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Thu  9 May 12:57:17 BST 2019
+# Last Change       - Thu 26 Dec 23:38:15 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This is the bash completion script for apt-undo-install.
 #----------------------------------------------------------------------------------
 
-_arg_list_apt-undo-install(){
-	local X
+_aptundoinstall(){
+	GetArgs(){
+		local CurLine Word
 
-	while read -a X; do
-		if [ "$IS_OPTS_LINE" == "true" ]\
-		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
-			break
-		fi
+		while read -a CurLine; do
+			if ! [[ "$IS_OPTS_LINE" == 'true' && "$Old" =~ ^[A-Z]+:$ ]]; then
+				case "${CurLine[0]}" in
+					OPTS:)
+						Word="${CurLine[1]//|/ } " ;;
+					-*)
+						Word="${CurLine[0]//|/ } " ;;
+				esac
 
-		case "${X[0]}" in
-			OPTS:)
-				IS_OPTS_LINE="true"
-				printf -v WORD "%s " "${X[1]//|/ }" ;;
-			-*)
-				printf -v WORD "%s " "${X[0]//|/ }" ;;
-		esac
+				if [ "$Word" == '--output-only:F ' ]; then
+					printf '%s ' --output-only:{col,list,desc}
+				else
+					printf '%s ' "$Word"
+				fi
 
-		if [ "$WORD" == "--output-only:F " ]; then
-			printf "%s " --output-only:{col,list,desc}
-		else
-			printf "%s " "$WORD"
-		fi
+				local Old=${CurLine[0]/OPTS:}
+			else
+				break
+			fi
+		done <<< "$(apt-undo-install -h)"
+	}
 
-		local OLD="${X[0]/OPTS:}"
-	done <<< "$(/usr/bin/apt-undo-install -h)"
+	COMPREPLY=($(compgen -W "$(GetArgs)" -- "$2"))
 }
 
-_option_apt-undo-install(){
-	COMPREPLY=($(compgen -W "$(_arg_list_apt-undo-install)" -- "$2"))
-}
-
-complete -F _option_apt-undo-install -o default apt-undo-install
-
+complete -F _aptundoinstall -o default apt-undo-install
