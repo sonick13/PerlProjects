@@ -3,12 +3,17 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lspkg
 # Started On        - Mon 23 Dec 15:26:46 GMT 2019
-# Last Change       - Thu 26 Dec 20:20:50 GMT 2019
+# Last Change       - Thu 26 Dec 20:26:19 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # A Perl rewrite of the shell project 'lspkg' and 'lspkg-set' written by TFL/LL.
 #----------------------------------------------------------------------------------
+
+#TODO: Add search feature, to allow the user to filter in/out package names.
+#TODO: Allow the user to also search through the short descriptions for something.
+#TODO: Distinguish and allow choice between case-(in)sensitive searches.
+#TODO: Add ability to display things like the currenty installed package version.
 
 use strict;
 use warnings;
