@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/cpufreq
 # Started On        - Sat  4 May 15:51:08 BST 2019
-# Last Change       - Sat 14 Dec 18:47:01 GMT 2019
+# Last Change       - Thu 26 Dec 20:56:08 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,47 +13,48 @@
 use strict;
 use warnings;
 use autodie;
+use File::Basename 'basename';
+use TFL; # <-- libtfl-perl (>= 2019-05-18)
 
 # Really not needed in cpufreq.
 no warnings 'uninitialized';
 
-my $_VERSION_ = "2019-05-09";
+my $CurVer = "2019-12-26";
+my $Progrm = basename($0);
 
-sub FAIL{
-	printf("[L%0.4d] ERROR: %s\n", $_[1], $_[2]);
-	if($_[0] == 1){exit 1}
-}
-
-FAIL(1, __LINE__, "Too many arguments provided.") if $#ARGV > 0;
-if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-	print("USAGE: cpufreq [[--help|-h|-?] | [--version|-v]]\n");
-	exit 0
-}elsif($ARGV[0] =~ /^(--version|-v)$/){
-	print("$_VERSION_\n");
-	exit 0
-}else{
-	FAIL(1, __LINE__, "Incorrect argument(s) specified") if defined($ARGV[0])
-}
-
-my $FILE = '/proc/cpuinfo';
-FAIL(1, __LINE__, "File '$FILE' not found.") if not -f $FILE;
-FAIL(1, __LINE__, "Read access for '$FILE' is denied.") if not -r $FILE;
-
-open(my $FH, '<', $FILE);
-
-my $NUM = 0;
-while(<$FH>){
-	chomp($_);
-
-	my @LINE = split(':', $_);
-	if($LINE[0] =~ /^cpu MHz/){
-		$NUM++;
-
-		printf(
-			"CORE_%d: %.3f\n",
-			$NUM, $LINE[1] =~ s/\s//gr
-		)
+while(defined($ARGV[0])){
+	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+		print("USAGE: $Progrm [[--help|-h|-?] | [--version|-v]]\n"); exit 0
+	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+		print("$CurVer\n"); exit 0
+	}else{
+		TFL::Err(1, "Incorrect argument(s) specified")
 	}
+
+	shift(@ARGV)
+}
+
+TFL::Err(1, "Too many arguments provided.") if $#ARGV > 0;
+if($ARGV[0] =~ /^(--help|-h|-\?)$/){
+}elsif($ARGV[0] =~ /^(--version|-v)$/){
+	print("$CurVer\n"); exit 0
+}else{
+	TFL::Err(1, "Incorrect argument(s) specified") if defined($ARGV[0])
+}
+
+my $ProcFile = '/proc/cpuinfo';
+TFL::Err(1, "File '$ProcFile' not found.") unless -f $ProcFile;
+TFL::Err(1, "Read access for '$ProcFile' is denied.") unless -r $ProcFile;
+
+open(my $FH, '<', $ProcFile);
+
+my $CoreCount = 0;
+while(<$FH>){
+	chomp(my @CurLine = split(':', $_));
+	next unless $CurLine[0] =~ '^cpu MHz';
+
+	$CoreCount++;
+	printf("CORE_%d: %.3f\n", $CoreCount, $CurLine[1] =~ s/\s//gr)
 }
 
 close($FH)
