@@ -3,60 +3,51 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/wcdl
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Mon 28 Oct 14:49:41 GMT 2019
+# Last Change       - Fri 27 Dec 22:00:08 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This is the bash completion script for wcdl.
 #----------------------------------------------------------------------------------
 
-_arg_list_wcdl(){
-	local X
+_wcdl(){
+	local Current=${COMP_WORDS[$COMP_CWORD]}
+	local Previous=${COMP_WORDS[$COMP_CWORD - 1]}
 
-	while read -a X; do
-		if [ "$IS_OPTS_LINE" == "true" ]\
-		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
-			break
-		fi
+	GetArgs(){
+		local IsOpts F1 F2 _
+		wcdl -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
 
-		case "${X[0]}" in
-			OPTS:)
-				local IS_OPTS_LINE="true"
-				printf "%s " "${X[1]//|/ }" ;;
-			-*)
-				printf "%s " "${X[0]//|/ }" ;;
-		esac
+	GetCats(){
+		while read -a X; do
+			if [ "${X[0]}" -a "${X[0]}" != "CATEGORY" ]; then
+				printf "%s " "${X[0]}"
+			fi
+		done <<< "$(wcdl --colorless --show-categories)"
+	}
 
-		local OLD="${X[0]/OPTS:}"
-	done <<< "$(/usr/bin/wcdl -h)"
-}
-
-_list_wcdl(){
-	while read -a X; do
-		if [ "${X[0]}" -a "${X[0]}" != "CATEGORY" ]; then
-			printf "%s " "${X[0]}"
-		fi
-	done <<< "$(/usr/bin/wcdl --colorless --show-categories)"
-}
-
-_res_wcdl(){
-	/usr/bin/wcdl --show-resolutions
-}
-
-_option_wcdl(){
-	local CUR="${COMP_WORDS[$COMP_CWORD]}"
-	local PRE="${COMP_WORDS[$COMP_CWORD - 1]}"
-
-	if [[ "$PRE" =~ ^(--resolution|-r)$ ]]; then
-		COMPREPLY=($(compgen -W "$(_res_wcdl)" -- "$2"))
-	elif [[ "$CUR" == -* ]]; then
-		COMPREPLY=($(compgen -W "$(_arg_list_wcdl)" -- "$2"))
-	elif [[ "$PRE" =~ ^(--dest|-D)$ ]]; then
+	if [[ $Previous =~ ^(--resolution|-r)$ ]]; then
+		COMPREPLY=($(compgen -W "$(wcdl --show-resolutions)" -- "$2"))
+	elif [[ "$Current" == -* ]]; then
+		COMPREPLY=($(compgen -W "$(GetArgs)" -- "$2"))
+	elif [[ $Previous =~ ^(--dest|-D)$ ]]; then
 		COMPREPLY=($(compgen -o default -- "$2"))
 	else
-		COMPREPLY=($(compgen -W "$(_list_wcdl)" -- "$2"))
+		COMPREPLY=($(compgen -W "$(GetCats)" -- "$2"))
 	fi
 }
 
-complete -F _option_wcdl wcdl
-
+complete -F _wcdl wcdl

@@ -1,38 +1,34 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/getip
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Thu  9 May 12:57:25 BST 2019
+# Last Change       - Fri 27 Dec 21:51:06 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This is the bash completion script for getip.
 #----------------------------------------------------------------------------------
 
-_arg_list_getip(){
-	local X
+_getip(){
+	GetArgs(){
+		local IsOpts F1 F2 _
+		getip -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
 
-	while read -a X; do
-		if [ "$IS_OPTS_LINE" == "true" ]\
-		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
-			break
-		fi
-
-		case "${X[0]}" in
-			OPTS:)
-				IS_OPTS_LINE="true"
-				printf  "%s " "${X[1]//|/ }" ;;
-			-*)
-				printf "%s " "${X[0]//|/ }" ;;
-		esac
-
-		local OLD="${X[0]/OPTS:}"
-	done <<< "$(/usr/bin/getip -h)"
+	COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`)
 }
 
-_option_getip(){
-	COMPREPLY=($(compgen -W "$(_arg_list_getip)" -- "$2"))
-}
-
-complete -F _option_getip getip
+complete -F _getip getip
