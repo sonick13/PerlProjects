@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#cito -M:644 -O:0 -G:0 -T:/usr/share/bash-completion/completions/previewer
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/previewer
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/previewer
 # Started On        - Sat 20 Apr 12:29:28 BST 2019
-# Last Change       - Fri 27 Dec 22:24:27 GMT 2019
+# Last Change       - Fri 27 Dec 22:29:06 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------

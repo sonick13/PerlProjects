@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#cito -M:644 -O:0 -G:0 -T:/usr/share/bash-completion/completions/getip
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/getip
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/getip
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Fri 27 Dec 22:24:07 GMT 2019
+# Last Change       - Fri 27 Dec 22:28:50 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
