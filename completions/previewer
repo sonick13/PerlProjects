@@ -3,36 +3,38 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/completions/previewer
 # Started On        - Sat 20 Apr 12:29:28 BST 2019
-# Last Change       - Thu  9 May 12:57:33 BST 2019
+# Last Change       - Fri 27 Dec 22:16:22 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This is the bash completion script for previewer.
 #----------------------------------------------------------------------------------
 
-_arg_list_previewer(){
-	local X
+_previewer(){
+	GetArgs(){
+		local IsOpts F1 F2 _
+		previewer -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
 
-	while read -a X; do
-		if [ "$IS_OPTS_LINE" == "true" ]\
-		&& [[ "$OLD" =~ ^[A-Z]+:$ ]]; then
-			break
-		fi
-
-		case "${X[0]}" in
-			OPTS:)
-				IS_OPTS_LINE="true"
-				printf "%s " "${X[1]//|/ }" ;;
-			-*)
-				printf "%s " "${X[0]//|/ }" ;;
-		esac
-
-		local OLD="${X[0]/OPTS:}"
-	done <<< "$(/usr/bin/previewer -h)"
+	case $2 in
+		-*)
+			COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`) ;;
+		*)
+			PKGList=(`_xfunc dpkg _comp_dpkg_installed_packages`)
+			COMPREPLY=(`compgen -W "${PKGList[*]}" -- "$2"`) ;;
+	esac
 }
 
-_option_previewer(){
-	COMPREPLY=($(compgen -W "$(_arg_list_previewer)" -- "$2"))
-}
-
-complete -F _option_previewer -o default previewer
+complete -F _previewer previewer
