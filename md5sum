@@ -14,8 +14,8 @@ c3e357718ce98ff6821f1203acfb8e30  previewer
 b1b6fd2ab546e45dddea0f265516ebc6  TFL.pm
 d8e1cdd8b3eb0a8b9e3ec3097063ee63  tozero
 4baff0d50f349f3c98af827c25195b65  wcdl
-b27f36127727b52d19016690e9ac2461  completions/apt-undo-install
-cf3f57d8491029a8cb6387a145953f8d  completions/getip
-acdf37eab5d0d73143a299e249b47503  completions/git-tudu
-97e9174d7bf92537ef18d3adc25f6cdd  completions/previewer
-8c16304caac5c11e426675280d5f4a5d  completions/wcdl
+a062d6746b454073d664dff75753ac54  completions/apt-undo-install
+481f0731c6054ec798cc83d269bc326b  completions/getip
+59bee0a7e7bf4699b1cc672f9db0b08c  completions/git-tudu
+a90f2c37e31705e7fe19cbdf45f56e44  completions/previewer
+2b482574a2ef1a3d50602d4d3aa5f498  completions/wcdl
