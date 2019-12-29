@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/lsbins
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Sat 14 Dec 18:47:19 GMT 2019
+# Last Change       - Sun 29 Dec 01:52:00 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,19 +13,19 @@ use warnings;
 use autodie;
 use File::Basename 'basename';
 use List::MoreUtils 'uniq';
-use TFL; # <-- libtfl-perl (>= 2019-05-16)
+use TFL; # <-- libtfl-perl (>= 2019-12-14)
 
-my $CurVer = "2019-12-14";
+my $CurVer = "2019-12-29";
 my $Progrm = basename($0);
 
 while($ARGV[0]){
-	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		print("Usage: lsbins [--help|-h|-? | --version|-v]\n");
+	if($ARGV[0] =~ '^(--help|-h|-\?)$'){
+		print("Usage: lsbins {[--help|-h|-?] | [--version|-v]}\n");
 		exit(0)
-	}elsif($ARGV[0] =~ /^(--version|-v)$/){
+	}elsif($ARGV[0] =~ '^(--version|-v)$'){
 		print("$CurVer\n"); exit 0
-	}elsif($ARGV[0] =~ /^-.*/){
-		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}elsif($ARGV[0] =~ '^-.*'){
+		TFL::Err(1, "Incorrect argument(s) specified")
 	}else{
 		last
 	}
@@ -33,24 +33,22 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-TFL::DepChkPortable('man');
-
-my @Execs;
-foreach(split(':', $ENV{PATH})){
-	foreach(glob("$_/*")){
-		if(-f $_ and -x $_ and -r $_){
-			push(@Execs, basename($_, '/'))
-		}
-	}
-}
-
-@Execs = uniq(sort({lc($a) cmp lc($b)} @Execs));
-
-my @Mans;
-if(-d '/usr/share/man'){
-	# I really don't want to do this, but any method I try with Perl is very slow.
-	@Mans = glob('/usr/share/man/man[1-8]/*.[1-8].gz');
-	print(readpipe("man -f @Execs 2> /dev/null") =~ s/\([0-8]\)\s+//gr)
-}else{
-	TFL::FAIL(1, __LINE__, "Unable to find the man pages.")
-}
+# This works, but it's slow as hell.
+#TFL::DepChk('man');
+#
+#my %DescribedExecs;
+#foreach (split(':', $ENV{PATH})){
+#	foreach(glob("$_/*")){
+#		my $Base = basename($_);
+#
+#		chomp(my @DescLines = `man -f $Base 2> /dev/null`);
+#		next unless scalar(@DescLines) > 0;
+#		my $Desc = $DescLines[0] =~ s/^.* - //gr;
+#
+#		$DescribedExecs{$Base} = $Desc if -f -x -r $_
+#	}
+#}
+#
+#foreach (uniq(sort({lc($a) cmp lc($b)} keys(%DescribedExecs)))){
+#	printf("%s - %s\n", $_, $DescribedExecs{$_})
+#}
