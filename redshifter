@@ -3,72 +3,63 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/redshifter.pl
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Sat 14 Dec 18:47:34 GMT 2019
+# Last Change       - Tue 31 Dec 00:25:26 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
-#----------------------------------------------------------------------------------
-# Perl rewrite of shell program redshifter.
 #----------------------------------------------------------------------------------
 
 use strict;
 use warnings;
 use autodie;
-use TFL; # <-- libtfl-perl (>= 2019-05-16)
+use TFL; # <-- libtfl-perl (>= 2019-12-14)
 
-my $_VERSION_ = "2019-05-18";
+no warnings 'uninitialized';
 
-my $TEMP;
-my $GAMMAS_NOW;
-my $HOME = $ENV{HOME};
-my $BUFFER = "$HOME/.config/redshifter.tmp";
+my $CurVer = "2019-12-31";
 
-mkdir("$HOME/.config") unless -d "$HOME/.config";
+my ($Temp, $GammasNow);
+my $Buffer = "$ENV{HOME}/.config/redshifter.tmp";
 
-TFL::DepChkPortable('redshift');
+mkdir("$ENV{HOME}/.config") unless -d "$ENV{HOME}/.config";
 
-# Example: MAIN('>', 6500) | MAIN('<')
+TFL::DepChk('redshift');
+
+TFL::Err(1, "At least one argument is required.") if $#ARGV == -1;
+
+# Example: GetSetValue('>', 6500) | GetSetValue('<')
 # $_[0] = Whether to read ('<') or write ('>') to the file.
 # $_[1] = The new gamma value (int) to set.
-sub MAIN{
-	open(my $FH, $_[0], $BUFFER);
+sub GetSetValue{
+	open(my $FH, $_[0], $Buffer);
 
 	print($FH "$_[1]\n") if $_[0] eq '>';
-	$GAMMAS_NOW = <$FH> if $_[0] eq '<';
+	chomp($GammasNow = <$FH>) if $_[0] eq '<';
 
 	close($FH)
 }
 
 # Get current value if file available, else set default value.
-if(-f $BUFFER and -r $BUFFER and -w $BUFFER){
-	MAIN('<')
-}else{
-	MAIN('>', 6500)
+GetSetValue('<') ? -f -r -w $Buffer : GetSetValue('>', 6500);
+
+if($ARGV[0] =~ '^(--version|-v)$'){
+	print("$CurVer\n")
+}elsif($ARGV[0] =~ '^(--reset|-r)$'){
+	GetSetValue('>', '6500');
+	system('redshift -o -O 6500K')
+}elsif($ARGV[0] =~ '^(--increment|-i)$'){
+	$Temp = $GammasNow + $ARGV[1];
+
+	TFL::Err(1, "Gamma setting '25000' is the highest.")
+		unless $Temp <= 25000;
+
+	GetSetValue('>', $Temp);
+	system("redshift -o -O ${Temp}K")
+}elsif($ARGV[0] =~ '^(--decrement|-d)$'){
+	$Temp = $GammasNow - $ARGV[1];
+
+	TFL::Err(1, "Gamma setting '1000' is the lowest.")
+		unless $Temp >= 1000;
+
+	GetSetValue('>', $Temp);
+	system("redshift -o -O ${Temp}K")
 }
-
-TFL::FAIL(1, __LINE__, "At least one argument is required.")
-	if $#ARGV == -1;
-
-if($ARGV[0] =~ /^(--version|-v)$/){
-	print("$_VERSION_\n")
-}elsif($ARGV[0] =~ /^(--reset|-r)$/){
-	MAIN('>', '6500');
-
-	system("/usr/bin/redshift -o -O 6500K")
-}elsif($ARGV[0] =~ /^(--increment|-i)$/){
-	$TEMP = $GAMMAS_NOW + $ARGV[1];
-	TFL::FAIL(1, __LINE__, "Gamma setting '25000' is the highest.")
-		unless $TEMP <= 25000;
-
-	MAIN('>', $TEMP);
-
-	system("/usr/bin/redshift -o -O ${TEMP}K")
-}elsif($ARGV[0] =~ /^(--decrement|-d)$/){
-	$TEMP = $GAMMAS_NOW - $ARGV[1];
-	TFL::FAIL(1, __LINE__, "Gamma setting '1000' is the lowest.")
-		unless $TEMP >= 1000;
-
-	MAIN('>', $TEMP);
-
-	system("/usr/bin/redshift -o -O ${TEMP}K")
-}
-
