@@ -3,10 +3,12 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Mon 16 Dec 03:00:40 GMT 2019
+# Last Change       - Tue 31 Dec 00:44:18 GMT 2019
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
+
+#TODO: Flag `-a` isn't working as intended.
 
 use v5.22.1;
 use strict;
@@ -18,7 +20,7 @@ use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $CurVer = "2019-12-16";
+my $CurVer = "2019-12-31";
 my $Progrm = basename($0);
 
 my $DBSite = 'https://community.linuxmint.com/data/reviews.list';
