@@ -3,20 +3,21 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sat 14 Dec 19:14:20 GMT 2019
+# Last Change       - Thu  2 Jan 18:59:38 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # Perl module for key features for TFL programs and general Perl scripts.
 #----------------------------------------------------------------------------------
 
+use v5.22.1;
 use strict;
 use warnings;
 use autodie;
 
 package TFL;
 
-my $CurVer = '2019-12-14';
+my $CurVer = '2020-01-02';
 
 # Example: my ($Year, $Month, $Day) = TFL::PKGVersion()
 sub PKGVersion{
@@ -52,40 +53,47 @@ sub KeyVal{
 # $_[0] = A hash reference whose keys are to be tested by defined().
 # $_[1] = An array reference whose indices contain viable key choices.
 sub Defined{
-	my $FAILED = 0;
-	foreach my $KEY_VIABLE (@{($_[1])}){
-		my $COUNT = 0;
+	my $Failed = 0;
+	foreach my $KeyViable (@{($_[1])}){
+		my $Count = 0;
 
-		foreach my $KEY (keys(%{$_[0]})){
-			if($KEY_VIABLE eq $KEY){
-				$COUNT++;
+		foreach my $Key (keys(%{$_[0]})){
+			if($KeyViable eq $Key){
+				$Count++;
 
-				die("Value for '$KEY' key not defined.")
-					unless defined(${$_[0]}{$KEY})
+				die("Value for '$Key' key not defined.")
+					unless defined(${$_[0]}{$Key})
 			}
 		}
 
-		if($COUNT == 0){
-			die("Key '$KEY_VIABLE' not defined");
-			$FAILED++
+		if($Count == 0){
+			die("Key '$KeyViable' not defined");
+			$Failed++
 		}
 	}
 
-	exit(1) if $FAILED
+	exit(1) if $Failed > 0
 }
 
-# Example: TFL::DepChk('/usr/bin/man') | TFL::DepChk('man')
+# Example_2: TFL::DepChk('man')
+# Example_1: TFL::DepChk('/usr/bin/man')
+# Example_3: TFL::DepChk(':', 'man') || print("Not found.\n")
 # @_ = Executable file for which to search in PATH; basename or absolute path.
 sub DepChk{
-	my $DepCount = 0;
+	my $Passive = 'false';
+	if ($_[0] eq ':'){
+		$Passive = 'true';
+		shift(@_)
+	}
 
+	my $DepCount = 0;
 	foreach my $CurDep (@_){
 		my $Found = 'false';
 
 		if ($CurDep !~ '/'){
 			foreach my $CurDir (split(':', $ENV{'PATH'})){
-				foreach my $CurFile ((glob("$CurDir/*"))){
-					next if not -f $CurFile and not -x $CurFile;
+				foreach my $CurFile (glob("$CurDir/*")){
+					next unless -f -x $CurFile;
 
 					if ($CurFile =~ "/$CurDep\$"){
 						$Found = 'true';
@@ -94,18 +102,15 @@ sub DepChk{
 				}
 			}
 		}else{
-			$Found = 'true' if -f $CurDep and -x $CurDep
+			$Found = 'true' if -f -x $CurDep
 		}
 
 		if ($Found ne 'true'){
+			return(1) if $Passive eq 'true';
 			printf(STDERR "ERROR: Dependency '%s' not met.\n", $CurDep);
 			exit(1)
-		}else{
-			$DepCount++
 		}
 	}
-
-	exit(1) unless $DepCount > 0
 }
 
 # Example: TFL::UnderLine('-', 'This is an underlined string.')
@@ -120,7 +125,7 @@ sub UnderLine{
 sub UsageCPU{
 	my $StatFile = '/proc/stat';
 
-	exit(1) if not -f $StatFile or not -r $StatFile;
+	exit(1) unless -f -r $StatFile;
 
 	open(my $FH, '<', $StatFile);
 	my @StatData = <$FH>;
