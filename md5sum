@@ -1,8 +1,3 @@
-966c87155f92f8cde2d0b5e3166e7029  completions/apt-undo-install
-4fefc09cfe28dd34ff027808b9bd7196  completions/getip
-acc1f87e74ce0f9fa8aaaaaf2a1021ad  completions/git-tudu
-e3b7665cb43b1492614841632a2a8eb4  completions/previewer
-c3d3ca3dfb1a319f0963c303b1bd2b59  completions/wcdl
 fd7bc62436220912ed2c540d3cfa57bc  apt-undo-install
 629202302d6fdfb3f915dac1d51157b0  clean-locales
 cdf8c36b91610092f39c993262f116f8  cpufreq
@@ -16,6 +11,11 @@ fa1a09e9717f1e3f7c8ff12049dc4d44  mkdeb
 62812c085a14003f3e2b9b3663cee445  previewer
 abafdcf45973b7ba748e8e4eb4c8aa50  redshifter
 55d3f1aaa3fa5084f121880580a3ad5c  suptime
-6635003c1b2c354b8bddc9243b22de92  TFL.pm
+8cafcdb3b2fd0770db631680687c313d  TFL.pm
 d8e1cdd8b3eb0a8b9e3ec3097063ee63  tozero
 4baff0d50f349f3c98af827c25195b65  wcdl
+966c87155f92f8cde2d0b5e3166e7029  completions/apt-undo-install
+4fefc09cfe28dd34ff027808b9bd7196  completions/getip
+acc1f87e74ce0f9fa8aaaaaf2a1021ad  completions/git-tudu
+e3b7665cb43b1492614841632a2a8eb4  completions/previewer
+c3d3ca3dfb1a319f0963c303b1bd2b59  completions/wcdl
