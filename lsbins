@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Thu  2 Jan 20:01:17 GMT 2020
+# Last Change       - Thu  2 Jan 20:05:03 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ sub DoMatch{
 }
 
 if ($NoDescribe ne 'true' and TFL::DepChk(':', 'man') == 0){
-	my $OldName;
+	my $OldName = '';
 	foreach (`man -f @Exes 2> /dev/null`){
 		chomp();
 		my $Name = (split(' ', $_))[0];
