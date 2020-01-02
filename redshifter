@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/redshifter
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/redshifter.pl
+# Project Name      - PerlProjects/redshifter
 # Started On        - Fri 19 Apr 23:05:28 BST 2019
-# Last Change       - Tue 31 Dec 00:25:26 GMT 2019
+# Last Change       - Thu  2 Jan 23:09:35 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -11,20 +11,20 @@
 use strict;
 use warnings;
 use autodie;
-use TFL; # <-- libtfl-perl (>= 2019-12-14)
+use TFL 'Err', 'DepChk'; # <-- libtfl-perl (>= 2020-01-02)
 
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-31";
+my $CurVer = "2020-01-02";
 
 my ($Temp, $GammasNow);
 my $Buffer = "$ENV{HOME}/.config/redshifter.tmp";
 
 mkdir("$ENV{HOME}/.config") unless -d "$ENV{HOME}/.config";
 
-TFL::DepChk('redshift');
+DepChk('redshift');
 
-TFL::Err(1, "At least one argument is required.") if $#ARGV == -1;
+Err(1, "At least one argument is required.") if $#ARGV == -1;
 
 # Example: GetSetValue('>', 6500) | GetSetValue('<')
 # $_[0] = Whether to read ('<') or write ('>') to the file.
@@ -49,16 +49,14 @@ if($ARGV[0] =~ '^(--version|-v)$'){
 }elsif($ARGV[0] =~ '^(--increment|-i)$'){
 	$Temp = $GammasNow + $ARGV[1];
 
-	TFL::Err(1, "Gamma setting '25000' is the highest.")
-		unless $Temp <= 25000;
+	Err(1, "Gamma setting '25000' is the highest.") unless $Temp <= 25000;
 
 	GetSetValue('>', $Temp);
 	system("redshift -o -O ${Temp}K")
 }elsif($ARGV[0] =~ '^(--decrement|-d)$'){
 	$Temp = $GammasNow - $ARGV[1];
 
-	TFL::Err(1, "Gamma setting '1000' is the lowest.")
-		unless $Temp >= 1000;
+	Err(1, "Gamma setting '1000' is the lowest.") unless $Temp >= 1000;
 
 	GetSetValue('>', $Temp);
 	system("redshift -o -O ${Temp}K")

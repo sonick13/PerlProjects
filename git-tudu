@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/git-tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Sun 22 Dec 23:45:32 GMT 2019
+# Last Change       - Thu  2 Jan 23:04:12 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,16 +13,15 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename', 'dirname';
-use TFL; # <-- libtfl-perl (>= 2019-12-14)
+use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-02)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 use Term::ANSIColor 'color', 'colorvalid';
 
-# I'll disable it when this is actually needed.
 no warnings 'uninitialized', 'File::Find';
 
-my $CurVer = "2019-12-22";
+my $CurVer = "2020-01-02";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -89,35 +88,37 @@ my @ValidKeys = (
 );
 
 while(defined($ARGV[0])){
-	if($ARGV[0] =~ /^--$/){
+	my $Arg = $ARGV[0];
+
+	if($Arg =~ /^--$/){
 		last # <-- End of option processing.
-	}elsif($ARGV[0] =~ '^(--help|-h|-\?)$'){
+	}elsif($Arg =~ '^(--help|-h|-\?)$'){
 		Usage(1); exit 0
-	}elsif($ARGV[0] =~ '^(--version|-v)$'){
+	}elsif($Arg =~ '^(--version|-v)$'){
 		print("$CurVer\n"); exit 0
-	}elsif($ARGV[0] =~ '^(--ignore-case|-i)$'){
+	}elsif($Arg =~ '^(--ignore-case|-i)$'){
 		$DoCase = 'i'
-	}elsif($ARGV[0] =~ '^(--alt-path|-P)$'){
+	}elsif($Arg =~ '^(--alt-path|-P)$'){
 		shift(@ARGV);
 
-		TFL::Err(1, "Option '--alt-path|-P' requires a PATH.")
+		Err(1, "Option '--alt-path|-P' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
 		$Target = $ARGV[0];
 		$SolidTarget = 'true'
-	}elsif($ARGV[0] =~ '^(--config|-c)$'){
+	}elsif($Arg =~ '^(--config|-c)$'){
 		shift(@ARGV);
 
-		TFL::Err(1, "Option '--config|-c' requires a PATH.")
+		Err(1, "Option '--config|-c' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
 		$ConfigFile = $ARGV[0]
-	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
+	}elsif($Arg =~ '^(--force-reset|-F)$'){
 		$ForceReset = 'true'
-	}elsif($ARGV[0] eq '--parseable'){
+	}elsif($Arg eq '--parseable'){
 		$Parseable = 'true'
-	}elsif($ARGV[0] =~ '^-'){
-		TFL::Err(1, "Incorrect option(s) -- see: $Progrm -h")
+	}elsif($Arg =~ '^-'){
+		Err(1, "Incorrect option(s) -- see: $Progrm -h")
 	}else{
 		last
 	}
@@ -126,9 +127,9 @@ while(defined($ARGV[0])){
 }
 
 if (scalar(@ARGV) > 1){
-	TFL::Err(1, "Too many arguments -- see: $Progrm -h")
+	Err(1, "Too many arguments -- see: $Progrm -h")
 }elsif ($DoCase eq 'i' and scalar(@ARGV) == 0){
-	TFL::Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
+	Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
 # Use of this function is to avoid escaping issues in REGEX.
@@ -141,7 +142,7 @@ unlink($ConfigFile) if $ForceReset eq 'true';
 # Read the `config` file, if found, then populate the config hash.
 if (-f -r -T $ConfigFile){
 	sub Boolean{
-		TFL::Err(1, "Invalid boolean '$_[0]' detected.")
+		Err(1, "Invalid boolean '$_[0]' detected.")
 			unless $_[0] eq 'true' or $_[0] eq 'false'
 	}
 
@@ -187,15 +188,15 @@ if (-f -r -T $ConfigFile){
 			}elsif ($Key =~ '^Color_.*'){
 				$ColorHash{$Key} = $Value =~ tr/['"]//dr
 			}else{
-				TFL::Err(1, "Invalid color '$Value' detected.")
+				Err(1, "Invalid color '$Value' detected.")
 					unless colorvalid($Value);
 			}
 		}else{
-			TFL::Err(1, "Invalid key '$Key' detected.")
+			Err(1, "Invalid key '$Key' detected.")
 		}
 	}
 }else{
-	TFL::Err(1, "User configuration file could not be generated.")
+	Err(1, "User configuration file could not be generated.")
 		unless -w -x dirname($ConfigFile);
 
 	# Generate the default config.
@@ -360,7 +361,7 @@ sub GetTodo{
 }
 
 if (-d $Target){
-	TFL::Err(1, 'Directory inaccessible.') unless -r -x $Target;
+	Err(1, 'Directory inaccessible.') unless -r -x $Target;
 
 	our @FileArr;
 
@@ -383,12 +384,12 @@ if (-d $Target){
 
 	foreach (@FileArr){GetTodo($_)}
 }elsif (-f $Target){
-	TFL::Err(1, 'File unreadable.') unless -r $Target;
-	TFL::Err(1, 'File is binary.') if -r -B $Target;
+	Err(1, 'File unreadable.') unless -r $Target;
+	Err(1, 'File is binary.') if -r -B $Target;
 
 	GetTodo($Target)
 }else{
-	TFL::Err(1, 'Non-existent or invalid target specified.')
+	Err(1, 'Non-existent or invalid target specified.')
 }
 
 if ($EntryTTL == 0){

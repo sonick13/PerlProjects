@@ -1,25 +1,26 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/kernelchk
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/kernelchk
 # Started On        - Sun  5 May 13:15:29 BST 2019
-# Last Change       - Sun 22 Dec 21:57:22 GMT 2019
+# Last Change       - Thu  2 Jan 23:07:20 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # Simpler Perl rewrite of the old shell kernelchk program also by TFL.
 #----------------------------------------------------------------------------------
 
+use v5.22.1;
 use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
+use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-02)
 use Gtk2::Notify -init, 'kernelchk'; # <-- libgtk2-notify-perl (>= 0.05-4build2)
-use TFL; # <-- libtfl-perl (>= 2019-12-14)
 
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-22";
+my $CurVer = "2020-01-02";
 my $Progrm = basename($0);
 
 my $ProcFile = '/proc/version';
@@ -64,15 +65,15 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ /^(--set|-s)$/){
 		$Set = 'true'
 	}else{
-		TFL::Err(1, "Incorrect argument(s) specified")
+		Err(1, "Incorrect argument(s) specified")
 	}
 
 	shift(@ARGV)
 }
 
 sub CheckFile{
-	TFL::Err(1, "File '$_[0]' not found.") unless -f $_[0];
-	TFL::Err(1, "Read access to '$_[0]' denied.") unless -r $_[0];
+	Err(1, "File '$_[0]' not found.") unless -f $_[0];
+	Err(1, "Read access to '$_[0]' denied.") unless -r $_[0];
 }
 
 my $MainDir = "$ENV{HOME}/.config/$Progrm";

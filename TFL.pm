@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu  2 Jan 20:54:12 GMT 2020
+# Last Change       - Thu  2 Jan 21:51:40 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -31,7 +31,11 @@ use strict;
 use vars '@ISA', '@EXPORT', '$VERSION';
 
 @ISA = 'Exporter';
-@EXPORT = ('FErr', 'Err', 'KeyVal', 'DepChk', 'UsageCPU', 'UnderLine');
+
+@EXPORT = (
+	'FErr', 'Err', 'KeyVal', 'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine'
+);
+
 $VERSION = '2020-01-02';
 
 # Example: FErr(1, __LINE__, "Text for error goes here.")
@@ -56,6 +60,32 @@ sub Err{
 # $_[1] = Index to return; 0 (key) or 1 (value).
 sub KeyVal{
 	return(@{[split('=', $_[0])]}[$_[1]])
+}
+
+# Example: KeyDef(%KEYS)
+# $_[0] = A hash reference of keys whose existence are to be tested.
+# $_[1] = An array reference whose indices contain viable key choices.
+sub KeyDef{
+	my $Failed = 0;
+	foreach my $KeyViable (@{($_[1])}){
+		my $Count = 0;
+
+		foreach my $Key (keys(%{$_[0]})){
+			if($KeyViable eq $Key){
+				$Count++;
+
+				die("Value for '$Key' key not defined.")
+					unless defined(${$_[0]}{$Key})
+			}
+		}
+
+		if($Count == 0){
+			die("Key '$KeyViable' not defined");
+			$Failed++
+		}
+	}
+
+	exit(1) if $Failed > 0
 }
 
 # Example_2: DepChk('man')

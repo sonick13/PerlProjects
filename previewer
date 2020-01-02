@@ -1,26 +1,24 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/previewer
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Tue 31 Dec 00:44:18 GMT 2019
+# Last Change       - Thu  2 Jan 23:06:02 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-
-#TODO: Flag `-a` isn't working as intended.
 
 use v5.22.1;
 use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
 use Text::Wrap;
 use LWP::UserAgent;
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
-use TFL; # <-- libTFL-perl (>= 2019-05-07)
 
-my $CurVer = "2019-12-31";
+my $CurVer = "2020-01-02";
 my $Progrm = basename($0);
 
 my $DBSite = 'https://community.linuxmint.com/data/reviews.list';
@@ -87,39 +85,39 @@ my $DoRaw = 0;
 my $P1 = '+'; my $P2 = '|';
 my $Database = "$ENV{HOME}/.config/reviewer.db";
 
-while($ARGV[0]){
-	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		Usage;
-		exit 0
-	}elsif($ARGV[0] =~ /^(--version|-v)$/){
-		print("$CurVer\n");
-		exit 0
-	}elsif($ARGV[0] =~ /^(--summary|-S)$/){
+while (scalar(@ARGV) > 0){
+	my $Arg = $ARGV[0];
+
+	if ($Arg =~ '^(--help|-h|-\?)$'){
+		Usage; exit(0)
+	}elsif ($Arg =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif ($Arg =~ '^(--summary|-S)$'){
 		$ShowStats = 1
-	}elsif($ARGV[0] =~ /^(--show-all|-a)$/){
+	}elsif ($Arg =~ '^(--show-all|-a)$'){
 		$ShowAll = 1
-	}elsif($ARGV[0] =~ /^--db-update$/){
+	}elsif ($Arg =~ '^--db-update$'){
 		$UpdateDB = 1
-	}elsif($ARGV[0] =~ /^--db-file$/){
+	}elsif ($Arg =~ '^--db-file$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "No database file specified.")
-			if not $ARGV[0];
+		FErr(1, __LINE__, "No database file specified.") unless $Arg;
 
 		$Database = $ARGV[0]
-	}elsif($ARGV[0] =~ /^(--user|-u)$/){
+	}elsif ($Arg =~ '^(--user|-u)$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "No user specified.") if not $ARGV[0];
+		FErr(1, __LINE__, "No user specified.") unless $Arg;
+
 		$IfUser = $ARGV[0]
-	}elsif($ARGV[0] =~ /^(--boring|-b)$/){
+	}elsif ($Arg =~ '^(--boring|-b)$'){
 		$BeBoring = 1
-	}elsif($ARGV[0] =~ /^--no-reviews$/){
+	}elsif ($Arg =~ '^--no-reviews$'){
 		$NoReviews = 1
-	}elsif($ARGV[0] =~ /^--raw-output$/){
+	}elsif ($Arg =~ '^--raw-output$'){
 		$DoRaw = 1
-	}elsif($ARGV[0] =~ /^-.*/){
-		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified.")
+	}elsif ($Arg =~ '^-.*'){
+		FErr(1, __LINE__, "Incorrect argument(s) specified.")
 	}else{
 		last
 	}
@@ -127,27 +125,27 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-if(not defined($ARGV[0]) and not defined($ARGV[1])){$Argless = 1}
+$Argless = 1 unless defined($ARGV[0]) and defined($ARGV[1]);
 
-unless($UpdateDB or $IfUser or ($ShowAll and $Argless)){
-	if($ShowAll and not length($ARGV[0]) == 0){
-		TFL::FAIL(1, __LINE__, "Missing package name.")
+unless ($UpdateDB or $IfUser or ($ShowAll and $Argless)){
+	if ($ShowAll and not length($ARGV[0]) == 0){
+		FErr(1, __LINE__, "Missing package name.")
 	}
 
-	if($ARGV[1]){
-		if($ShowAll and $ARGV[1] !~ /^[1-5]{1}$/){
-			TFL::FAIL(1, __LINE__, "Invalid rating provided.")
-		}elsif($ShowAll){
-			TFL::FAIL(1, __LINE__, "Told to show all, but provided a rating.")
+	if ($ARGV[1]){
+		if ($ShowAll and $ARGV[1] !~ /^[1-5]{1}$/){
+			FErr(1, __LINE__, "Invalid rating provided.")
+		}elsif ($ShowAll){
+			FErr(1, __LINE__, "Told to show all, but provided a rating.")
 		}
 	}else{
-		unless($ShowAll){
-			TFL::FAIL(1, __LINE__, "A rating is by default required.")
+		unless ($ShowAll){
+			FErr(1, __LINE__, "A rating is by default required.")
 		}
 	}
 }
 
-if($UpdateDB){
+if ($UpdateDB){
 	open(my $FH, '>', $Database);
 
 	my $UA = LWP::UserAgent->new();
@@ -157,14 +155,13 @@ if($UpdateDB){
 
 	close($FH);
 
-	exit 0
+	exit(0)
 }
 
 $Text::Wrap::columns = @{[GetTerminalSize]}[0];
 
-if(not -f $Database){
-	TFL::FAIL(1, __LINE__, "Database missing -- have you used '--db-update' yet?")
-}
+FErr(1, __LINE__, "Database missing -- have you used '--db-update' yet?")
+	unless -f $Database;
 
 open(my $FH, '<', $Database);
 my @FILE_DATA = <$FH>;
@@ -175,23 +172,23 @@ $Ratings{$_} = 0 foreach 1..5;
 my $TotalCount = 0; # <-- TTL comments by user, or for a package.
 my $Count = 0; # <-- TTL comments displayed by user, or for a package.
 
-sub INC_VARS{ # <-- $Rate is passed here.
+sub IncVars{ # <-- $Rate is passed here.
 	foreach(1..5){$Ratings{$_}++ if $_[0] == $_}
 }
 
 sub Format{ # <-- Arguments are typically $Said, $Rate, then $User.
-	if($DoRaw){
-		if(not $NoReviews){
+	if ($DoRaw){
+		unless ($NoReviews){
 			print($_);
 		}else{
 			my @TEMP = split('~~~', $_);
 			print("$TEMP[0]~~~$TEMP[1]~~~$TEMP[2]~~~$TEMP[3]~~~\n");
 		}
 
-		return 0
+		return(0)
 	}
 
-	if($NoReviews){
+	if ($NoReviews){
 		printf("%d/5 ('%s')\n", $_[1], $_[2])
 	}else{
 		printf(
@@ -201,10 +198,10 @@ sub Format{ # <-- Arguments are typically $Said, $Rate, then $User.
 	}
 }
 
-if($BeBoring){$P1 = ' '; $P2 = ' '}
+if ($BeBoring){$P1 = ' '; $P2 = ' '}
 
 my $PackOld;
-foreach(@FILE_DATA){
+foreach (@FILE_DATA){
 	my @CurLine = split("~~~", $_);
 
 	my $Pack = $CurLine[0];
@@ -212,45 +209,45 @@ foreach(@FILE_DATA){
 	my $Said = $CurLine[4];
 	my $User = $CurLine[2];
 
-	if(length($IfUser) > 0){ # <-- Go by users.
-		if(not $ARGV[0]){
-			if($IfUser eq $User){
+	if (length($IfUser) > 0){ # <-- Go by users.
+		if (not $ARGV[0]){
+			if ($IfUser eq $User){
 				$Count++;
 				$TotalCount++;
-				INC_VARS($Rate);
+				IncVars($Rate);
 				print("\n > '$Pack'\n\n");
 				Format($Said, $Rate, $User);
 			}
-		}elsif($Pack eq $ARGV[0]){
-			if($IfUser eq $User){
+		}elsif ($Pack eq $ARGV[0]){
+			if ($IfUser eq $User){
 				$Count++;
 				$TotalCount++;
-				INC_VARS($Rate);
+				IncVars($Rate);
 				Format($Said, $Rate, $User);
 			}
 		}
-	}elsif($ARGV[0]){ # <-- Go by packages.
-		if($Pack eq $ARGV[0]){
+	}elsif ($ARGV[0]){ # <-- Go by packages.
+		if ($Pack eq $ARGV[0]){
 			$TotalCount++;
-			INC_VARS($Rate);
+			IncVars($Rate);
 
-			if($ShowAll){
+			if ($ShowAll){
 				$Count++;
 				Format($Said, $Rate, $User)
-			}elsif(($ARGV[1]) and ($Rate == $ARGV[1])){
+			}elsif ($ARGV[1] and $Rate == $ARGV[1]){
 				$Count++;
 				Format($Said, $Rate, $User)
 			}
 		}
-	}elsif($ShowAll and $Argless){ # <-- Just show all reviews.
+	}elsif ($ShowAll and $Argless){ # <-- Just show all reviews.
 		$Count++;
 		$TotalCount++;
-		INC_VARS($Rate);
+		IncVars($Rate);
 
 		# Ensure print isn't unnecessarily repeated.
-		if($PackOld and $PackOld ne $Pack){
+		if ($PackOld and $PackOld ne $Pack){
 			print("\n > '$Pack'\n\n");
-		}elsif(not $PackOld){
+		}elsif (not $PackOld){
 			print("\n > '$Pack'\n\n");
 		}
 
@@ -261,12 +258,12 @@ foreach(@FILE_DATA){
 	}
 }
 
-if($Count == 0){
+if ($Count == 0){
 	print(STDERR "Uh-oh! ...no reviews were found.\n");
 	exit(2)
 }
 
-if($ShowStats){
+if ($ShowStats){
 	sub Display{
 		my $Buffer = qq{
 			 $_[1]$_[2]

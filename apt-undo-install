@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Fri 27 Dec 23:15:27 GMT 2019
+# Last Change       - Thu  2 Jan 20:57:01 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,19 +15,19 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
-use TFL; # <-- libtfl-perl (>= 2019-12-14)
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
 use AptPkg::Cache; # <-- libapt-pkg-perl (>= 0.1.29build7)
 
 no warnings 'uninitialized';
 
-my $CurVer = "2019-12-27";
+my $CurVer = "2020-01-02";
 my $Progrm = basename($0);
 
 my $Domain = 'https://github.com';
 my $AptLogFile = '/var/log/apt/history.log';
 
 sub Usage{
-	my $Help = qq{            @{[uc($Progrm)]} ($CurVer)
+	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
 		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            A Perl solution to undo recent APT installations.
@@ -70,7 +70,7 @@ sub Usage{
 		FILE:       $AptLogFile
 	};
 
-	print($Help =~ tr/\t//dr)
+	print($Info =~ tr/\t//dr)
 }
 
 my $VerURL = "$Domain/terminalforlife/$Progrm/raw/master/version";
@@ -94,10 +94,10 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ '^(--logfile|-l)$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "Option '--logfile|-l' requires a file.")
+		FErr(1, __LINE__, "Option '--logfile|-l' requires a file.")
 			if length($ARGV[0]) == 0;
 
-		TFL::FAIL(1, __LINE__, "Unable to find or read APT's logfile.")
+		FErr(1, __LINE__, "Unable to find or read APT's logfile.")
 			unless -f $ARGV[0] and -r $ARGV[0];
 
 		$AptLogFile = $ARGV[0]
@@ -114,21 +114,21 @@ while($ARGV[0]){
 	}elsif($ARGV[0] =~ '^(--date|-d)$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "Invalid date specified.")
+		FErr(1, __LINE__, "Invalid date specified.")
 			if not $ARGV[0] =~ '^[0-9]+-[0-9]+-[0-9]+$';
 
 		$FiltaDate = $ARGV[0]
 	}elsif($ARGV[0] =~ '^(--time|-t)$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "Invalid time specified.")
+		FErr(1, __LINE__, "Invalid time specified.")
 			if not $ARGV[0] =~ '^[0-9]+:[0-9]+:[0-9]+$';
 
 		$FiltaTime = $ARGV[0]
 	}elsif($ARGV[0] =~ '^(--count|-c)$'){
 		shift(@ARGV);
 
-		TFL::FAIL(1, __LINE__, "Invalid count specified.")
+		FErr(1, __LINE__, "Invalid count specified.")
 			if not $ARGV[0] =~ '^[0-9]+$';
 
 		$TimesExec = $ARGV[0]
@@ -140,7 +140,7 @@ while($ARGV[0]){
 		$ToRoot = 0;
 		$OutputFormat = substr($ARGV[0], 14)
 	}else{
-		TFL::FAIL(1, __LINE__, "Incorrect argument(s) given")
+		FErr(1, __LINE__, "Incorrect argument(s) given")
 	}
 
 	shift(@ARGV)
@@ -152,7 +152,7 @@ if($ViewLog){
 }
 
 # $< is Perl's builtin variable assigned to the value of the user's UID.
-TFL::FAIL(1, __LINE__, "Root access is required.") if $ToRoot and $< != 0;
+FErr(1, __LINE__, "Root access is required.") if $ToRoot and $< != 0;
 
 open(my $FH, '<', $AptLogFile);
 my @Data = <$FH>;
@@ -167,7 +167,7 @@ foreach (@Data){
 	$InstallWC++
 }
 
-TFL::FAIL(1, __LINE__, "Cannot undo greater than the available $InstallWC time(s).")
+FErr(1, __LINE__, "Cannot undo greater than the available $InstallWC time(s).")
 	if $TimesExec > $InstallWC;
 
 my @InstalledPKGs;
@@ -197,10 +197,10 @@ if($FiltaDate and $FiltaTime){
 		last
 	}
 
-	TFL::FAIL(1, __LINE__, "Invalid --time and/or --date specified.")
+	FErr(1, __LINE__, "Invalid --time and/or --date specified.")
 		unless @InstalledPKGs
 }elsif(not($FiltaDate and $FiltaTime) and ($FiltaDate or $FiltaTime)){
-	TFL::FAIL(1, __LINE__, "Flags --date and --time must be used together.")
+	FErr(1, __LINE__, "Flags --date and --time must be used together.")
 }else{
 	my $DesiredIndices = $InstallWC - $TimesExec;
 	foreach ($DesiredIndices..$InstallWC){
