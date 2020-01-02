@@ -3,29 +3,65 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/lsbins
 # Started On        - Thu 25 Apr 14:17:05 BST 2019
-# Last Change       - Tue 31 Dec 00:40:11 GMT 2019
+# Last Change       - Thu  2 Jan 19:20:36 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 
+use v5.22.1;
 use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
-use List::MoreUtils 'uniq';
-use TFL; # <-- libtfl-perl (>= 2019-12-14)
+use TFL; # <-- libtfl-perl (>= 2020-01-02)
+use List::MoreUtils 'uniq'; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 
-my $CurVer = "2019-12-31";
+my $CurVer = "2020-01-02";
 my $Progrm = basename($0);
 
-while($ARGV[0]){
-	if($ARGV[0] =~ '^(--help|-h|-\?)$'){
-		print("Usage: lsbins {[--help|-h|-?] | [--version|-v]}\n");
-		exit(0)
-	}elsif($ARGV[0] =~ '^(--version|-v)$'){
-		print("$CurVer\n"); exit 0
-	}elsif($ARGV[0] =~ '^-.*'){
-		TFL::Err(1, "Incorrect argument(s) specified")
+sub Usage{
+	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
+		            Written by terminalforlife <terminalforlife\@yahoo.com>
+
+		            A descriptive, searchable overview of PATH executables.
+
+		SYNTAX:     $Progrm [OPTS] [MATCH]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+		            --ignore-case|-i        - Search for MATCH case-insensitively.
+		            --extended-regexp|-E    - Search for MATCH with extended REGEX.
+		            --nodescribe|-N         - Omit short description for commands.
+
+		NOTE:       Where MATCH is a REGEX string for which is searched in the name
+		            of the command, program, file, etc. The description is ignored.
+
+		            Typically, executables found within PATH are lowercase, but for
+		            other times, the above applicable flags comes into play.
+	};
+
+	print($Info =~ tr/\t//dr)
+}
+
+my $NoDescribe = 'false';
+my $CaseInsen = 'false';
+my $ExtReg = 'false';
+
+while (scalar(@ARGV) > 0){
+	my $Arg = $ARGV[0];
+
+	if ($Arg =~ '^(--help|-h|-\?)$'){
+		Usage(1); exit(0)
+	}elsif ($Arg =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif ($Arg =~ '^(--ignore-case|-i)$'){
+		$CaseInsen = 'true'
+	}elsif ($Arg =~ '^(--extended-regexp|-E)$'){
+		$ExtReg = 'true'
+	}elsif ($Arg =~ '^(--nodescribe|-N)$'){
+		$NoDescribe = 'true'
+	}elsif ($Arg =~ '^-.*'){
+		TFL::Err(1, "Unrecognised option(s) specified")
 	}else{
 		last
 	}
@@ -33,22 +69,61 @@ while($ARGV[0]){
 	shift(@ARGV)
 }
 
-# This (temporary solution) works, but it's slow as hell.
-TFL::DepChk('man');
+TFL::Err(1, 'Only one MATCH is applicable.') if scalar(@ARGV) > 1;
 
-my %DescribedExecs;
-foreach (split(':', $ENV{PATH})){
-	foreach(glob("$_/*")){
-		my $Base = basename($_);
-
-		chomp(my @DescLines = `man -f $Base 2> /dev/null`);
-		next unless scalar(@DescLines) > 0;
-		my $Desc = $DescLines[0] =~ s/^.* - //gr;
-
-		$DescribedExecs{$Base} = $Desc if -f -x -r $_
+unless (defined($ARGV[0])){
+	if ($ExtReg eq 'true'){
+		TFL::Err(1, "Option '--extended-regexp|-E' provided, but missing MATCH.")
+	}elsif ($CaseInsen eq 'true'){
+		TFL::Err(1, "Option '--ignore-case|-i' provided, but missing MATCH.")
 	}
 }
 
-foreach (uniq(sort({lc($a) cmp lc($b)} keys(%DescribedExecs)))){
-	printf("%s - %s\n", $_, $DescribedExecs{$_})
+# Generate list of `PATH` executable files.
+my @Exes;
+foreach (split(':', $ENV{PATH})){
+	foreach (glob("$_/*")){
+		push(@Exes, basename($_)) if -f -r -x
+	}
+}
+
+@Exes = uniq(sort(@Exes));
+
+#TODO: Would much rather set and concatenate a variable for this, but how?
+sub DoMatch{
+	return(0) unless defined($ARGV[0]);
+
+	# If a MATCH is provided, check for it, then skip if found.
+	if ($CaseInsen eq 'true'){
+		return(0) if $_[0] =~ /$ARGV[0]/i;
+	}elsif ($ExtReg eq 'true'){
+		return(0) if $_[0] =~ /$ARGV[0]/x;
+	}elsif ($CaseInsen eq 'true' and $ExtReg eq 'true'){
+		return(0) if $_[0] =~ /$ARGV[0]/ix;
+	}else{
+		return(0) if $_[0] =~ $ARGV[0];
+	}
+
+	return(1)
+}
+
+if ($NoDescribe ne 'true' and TFL::DepChk(':', 'man') == 0){
+	foreach (`man -f @Exes 2> /dev/null`){
+		chomp();
+		my $Name = (split(' ', $_))[0];
+		my $Desc = s/^.* - //gr;
+
+		# Capitalise the first letter of the description.
+		my $FirstChar = substr($Desc, 0, 1);
+		my $Remaining = substr($Desc, 1);
+		$Desc = ' - ' . uc($FirstChar) . $Remaining;
+
+		next unless DoMatch($Name) == 0;
+		printf("%s%s\n", $Name, $Desc)
+	}
+}else{
+	foreach (@Exes){
+		next unless DoMatch($_) == 0;
+		printf("%s\n", $_)
+	}
 }
