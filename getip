@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Thu  2 Jan 23:37:25 GMT 2020
+# Last Change       - Fri  3 Jan 13:08:13 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,20 +12,19 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
-use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-02)
+use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-03)
 
-my $CurVer = "2020-01-02";
-my $Progrm = basename($0);
+my $CurVer = "2020-01-03";
 
 my $Domain = "https://whatismyipaddress.com";
 
 sub Usage{
-	my $INFO = qq{            @{[uc($Progrm)]} ($CurVer)
-		            Written by terminalforlife <terminalforlife\@yahoo.com>
+	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
 
 		            View your internal and/or external IP address.
 
-		SYNTAX:     $Progrm [OPTS]
+		SYNTAX:     $TFL::PROGNAME [OPTS]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -36,7 +35,7 @@ sub Usage{
 		SITE:       $Domain
 	};
 
-	print($INFO =~ tr/\t//dr)
+	print($Info =~ tr/\t//dr)
 }
 
 my $Internal = 1;
