@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Fri  3 Jan 13:06:17 GMT 2020
+# Last Change       - Fri  3 Jan 20:31:15 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -73,10 +73,7 @@ Contains the URL for the TFL author's GitHub repositories.
 
 =item FErr()
 
-Example: FErr(1, __LINE__, "Text for error goes here.")
-$_[0] = Boolean integer for whether to exit 1 (1) or not (0).
-$_[1] = Line number; an integer, or, preferably, '__LINE__'.
-$_[2] = The error message string itself, sans newline character.
+Output argument three's error string, with `[0001] ERROR: ' prefixed. Where the number indicates the line number of the error message. If the first argument is a `1', then an `exit(1)' occurs, but if it's a `0', then no exit occurs, as with Err(). The second argument requires `__LINE__' or, in an unlikely case, an integer be otherwise provided.
 
 =cut
 
@@ -87,9 +84,7 @@ sub FErr{
 
 =item Err()
 
-Example: Err(1, "Text for error goes here.")
-$_[0] = Boolean integer for whether to exit 1 (1) or not (0).
-$_[1] = The error message string itself, sans newline character.
+Output argument two's error string, with `ERROR: ' prefixed. If the first argument is a `1', then an `exit(1)' occurs, but if it's a `0', then the message becomes merely superficial.
 
 =cut
 
@@ -100,9 +95,7 @@ sub Err{
 
 =item KeyVal()
 
-Example: KeyVal($ARGV[0], 0)
-$_[0] = String 'key=value' to split.
-$_[1] = Index to return; 0 (key) or 1 (value).
+Return a key or value from argument one's `key=value' string. The second argument should be an integer `0' or `1', for whether to return the key (left string) or value (right string).
 
 =cut
 
@@ -112,9 +105,7 @@ sub KeyVal{
 
 =item KeyDef()
 
-Example: KeyDef(%KEYS)
-$_[0] = A hash reference of keys whose existence are to be tested.
-$_[1] = An array reference whose indices contain viable key choices.
+Test for the definition of keys in argument one's hash, per the second argument's list. Useful for parsing configuration files.
 
 =cut
 
@@ -143,10 +134,7 @@ sub KeyDef{
 
 =item DepChk()
 
-Example_2: DepChk('man')
-Example_1: DepChk('/usr/bin/man')
-Example_3: DepChk(':', 'man') || print("Not found.\n")
-@_ = Executable file for which to search in PATH; basename or absolute path.
+Test for the existence of an executable. If argument one is a basename value, environment variable PATH is checked. If an absolute path is provided, various file tests are performed. Multiple arguments are allowed, even those consisting of both absolute and PATH types.
 
 =cut
 
@@ -186,9 +174,7 @@ sub DepChk{
 
 =item UnderLine()
 
-Example: UnderLine('-', 'This is an underlined string.')
-$_[0] = A single character to repeat for each on the line above.
-$_[1] = The string to underline, such as an important message.
+Pseudo-underline argument two's string with argument one's character.
 
 =cut
 
@@ -198,8 +184,7 @@ sub UnderLine{
 
 =item UsageCPU()
 
-Example: UsageCPU('cpu') | TFL::UsageCPU('cpu2')
-$_[0] = The CPU to grab the percentage (integer) of its usage. {cpu | cpu[INT]}
+Return the CPU usage (determined using `/proc/stat') per the value in argument one, such as `cpu' or `cpuN', where `N' is the number of the core for which to return the usage.
 
 =cut
 
@@ -226,9 +211,7 @@ sub UsageCPU{
 
 =head1 CHANGES
 
-=over 4
-
-=item 2020-01-02
+=head2 2020-01-02
 
 Removed PKGVersion().
 
@@ -236,29 +219,27 @@ Allowed for the exportation of almost all subroutines.
 
 Renamed Defined() to KeyDef(), and FAIL() to FErr().
 
-=item 2019-12-14
+=head2 2019-12-14
 
 Removed i3Do(), DepChkPortable(), _ArgChk(), and UpdChk().
 
 Added Err().
 
-=item 2019-05-16
+=head2 2019-05-16
 
 Added DepChkPortable() and PKGVersion().
 
-=item 2019-05-12
+=head2 2019-05-12
 
 Added i3Do() and UnderLine().
 
-=item 2019-05-07
+=head2 2019-05-07
 
 Added KeyVal(), _ArgChk(), and DepChk().
 
-=item 2019-05-06
+=head2 2019-05-06
 
 TFL module development began.
-
-=back
 
 =cut
 
