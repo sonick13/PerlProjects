@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/wcdl
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Sat 14 Dec 18:47:49 GMT 2019
+# Last Change       - Fri  3 Jan 00:06:42 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,36 +15,36 @@
 use strict;
 use warnings;
 use autodie;
+use File::Basename 'dirname', 'basename';
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
 use LWP::Simple;
 use LWP::UserAgent;
 use Image::Magick; # <-- libimage-magick-perl
 use List::MoreUtils 'uniq';
 use X11::Protocol;
-use File::Basename qw{dirname basename};
 use File::Path 'make_path';
 use File::Temp;
 use POSIX 'ceil';
-use Term::ANSIColor qw{GREEN RED BOLD RESET YELLOW};
-use TFL; # <-- libtfl-perl (>= 2019-05-07)
+use Term::ANSIColor 'GREEN', 'RED', 'BOLD', 'RESET', 'YELLOW';
 
-my $_VERSION_ = "2019-05-11";
-my $_PROJECT_ = basename($0);
+my $CurVer = "2020-01-03";
+my $Progrm = basename($0);
 
-my $DOM = 'https://wallpaperscraft.com';
-my $GH_URL = "https://github.com/terminalforlife/$_PROJECT_/raw/master/version";
-my $LOCAL_DIR = "$ENV{HOME}/.local/share/$_PROJECT_";
-my $CACHE_DIR = "$LOCAL_DIR/cache";
-my $CACHE_CATS = "$CACHE_DIR/categories";
-my $CACHE_PAGES = "$CACHE_DIR/pages";
-my $HOMEPAGE = "$CACHE_DIR/homepage";
+my $Domain = 'https://wallpaperscraft.com';
+my $GHURL = "https://github.com/terminalforlife/$Progrm/raw/master/version";
+my $LocalDir = "$ENV{HOME}/.local/share/$Progrm";
+my $CacheDir = "$LocalDir/cache";
+my $CacheCats = "$CacheDir/categories";
+my $CachePages = "$CacheDir/pages";
+my $HomePage = "$CacheDir/homepage";
 
-sub USAGE{
-	my $INFO = qq{            @{[uc($_PROJECT_)]} ($_VERSION_)
+sub Usage{
+	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
 		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Extensive Perl downloader for Wallpaperscraft.
 
-		SYNTAX:     $_PROJECT_ [OPTS] CATEGORY PAGE
+		SYNTAX:     $Progrm [OPTS] CATEGORY PAGE
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -62,85 +62,85 @@ sub USAGE{
 
 		NOTE:       Page numbers can be given in ranges, or single digits, as shown below.
 
-		DISPLAY:    By default, $_PROJECT_ will try to detect the current display resolution.
+		DISPLAY:    By default, $Progrm will try to detect the current display resolution.
 
 		            If you're using a multi-monitor setup, only the first discovered
 		            (connected) display will be processed; in this case, you might be
 		            better off picking your resolution manually, with the
 		            '--resolution|-r' flags.
 
-		EXAMPLE:    $_PROJECT_ -D ~/Downloads -N nature '2 8 10'
-		            $_PROJECT_ --links-only abstract '1 3 8 10-24 105'
-		            $_PROJECT_ --repopulate --clobber -O cars 1-5
-		            $_PROJECT_ -O -f cat -f snow animals 1-100
+		EXAMPLE:    $Progrm -D ~/Downloads -N nature '2 8 10'
+		            $Progrm --links-only abstract '1 3 8 10-24 105'
+		            $Progrm --repopulate --clobber -O cars 1-5
+		            $Progrm -O -f cat -f snow animals 1-100
 
-		SITE:       $DOM
+		SITE:       $Domain
 	};
 
-	print($INFO =~ s/\t//gr)
+	print($Info =~ s/\t//gr)
 }
 
-my $RES = '';
-my $DEST = './';
-my $COLOR = 1;
-my $CLOBBER = 0;
-my $SAVE_AS_PNG = 0;
-my $REPOPULATE = 0;
-my $LINKS_ONLY = 0;
-my $LIST_CATS = 0;
-my $NO_CACHE = 0;
-my $FILTER = 0;
-my @FILTER_MATCH;
-my $SHOW_RES = 0;
+my $Resolution = '';
+my $Destination = './';
+my $Color = 1;
+my $Clobber = 0;
+my $SaveAsPNG = 0;
+my $Repopulate = 0;
+my $LinksOnly = 0;
+my $ListCats = 0;
+my $NoCache = 0;
+my $Filter = 0;
+my @FilterMatch;
+my $ShowRes = 0;
 
-while(defined($ARGV[0])){
-	if($ARGV[0] =~ /^(--help|-h|-\?)$/){
-		USAGE(); exit 0
-	}elsif($ARGV[0] =~ /^(--version|-v)$/){
-		print("$_VERSION_\n"); exit 0
-	}elsif($ARGV[0] =~ /^--colorless$/){
-		$COLOR = 0
-	}elsif($ARGV[0] =~ /^(--links-only|-O)$/){
-		$LINKS_ONLY = 1
-	}elsif($ARGV[0] =~ /^--show-categories$/){
-		$LIST_CATS = 1
-	}elsif($ARGV[0] =~ /^--show-resolutions$/){
-		$SHOW_RES = 1
-	}elsif($ARGV[0] =~ /^(--resolution|-r)$/){
+while (defined($ARGV[0])){
+	if ($ARGV[0] =~ '^(--help|-h|-\?)$'){
+		Usage(); exit(0)
+	}elsif ($ARGV[0] =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif ($ARGV[0] =~ '^--colorless$'){
+		$Color = 0
+	}elsif ($ARGV[0] =~ '^(--links-only|-O)$'){
+		$LinksOnly = 1
+	}elsif ($ARGV[0] =~ '^--show-categories$'){
+		$ListCats = 1
+	}elsif ($ARGV[0] =~ '^--show-resolutions$'){
+		$ShowRes = 1
+	}elsif ($ARGV[0] =~ '^(--resolution|-r)$'){
 		shift(@ARGV);
 
-		if($ARGV[0] =~ /^[0-9]+x[0-9]+$/){
-			$RES = $ARGV[0]
+		if ($ARGV[0] =~ '^[0-9]+x[0-9]+$'){
+			$Resolution = $ARGV[0]
 		}else{
-			TFL::FAIL(1, __LINE__, "Invalid resolution chosen.")
+			FErr(1, __LINE__, "Invalid resolution chosen.")
 		}
-	}elsif($ARGV[0] =~ /^(--filter|-f)$/){
+	}elsif ($ARGV[0] =~ '^(--filter|-f)$'){
 		shift(@ARGV);
 
-		$FILTER = 1;
-		push(@FILTER_MATCH, $ARGV[0])
-	}elsif($ARGV[0] =~ /^(--png|-p)$/){
-		$SAVE_AS_PNG = 1
-	}elsif($ARGV[0] =~ /^(--dest|-D)$/){
+		$Filter = 1;
+		push(@FilterMatch, $ARGV[0])
+	}elsif ($ARGV[0] =~ '^(--png|-p)$'){
+		$SaveAsPNG = 1
+	}elsif ($ARGV[0] =~ '^(--dest|-D)$'){
 		shift(@ARGV);
 
-		if(-d $ARGV[0]){
-			if($ARGV[0] !~ /\/$/){
-				$DEST = $ARGV[0] . '/'
+		if (-d $ARGV[0]){
+			if ($ARGV[0] !~ '/$'){
+				$Destination = $ARGV[0] . '/'
 			}else{
-				$DEST = $ARGV[0]
+				$Destination = $ARGV[0]
 			}
 		}else{
-			TFL::FAIL(1, __LINE__, "Directory not found.")
+			FErr(1, __LINE__, "Directory not found.")
 		}
-	}elsif($ARGV[0] =~ /^--repopulate$/){
-		$REPOPULATE = 1
-	}elsif($ARGV[0] =~ /^--clobber$/){
-		$CLOBBER = 1
-	}elsif($ARGV[0] =~ /^(--no-cache|-N)$/){
-		$NO_CACHE = 1
-	}elsif($ARGV[0] =~ /^-/){
-		TFL::FAIL(1, __LINE__, "Incorrect argument(s) specified")
+	}elsif ($ARGV[0] =~ '^--repopulate$'){
+		$Repopulate = 1
+	}elsif ($ARGV[0] =~ '^--clobber$'){
+		$Clobber = 1
+	}elsif ($ARGV[0] =~ '^(--no-cache|-N)$'){
+		$NoCache = 1
+	}elsif ($ARGV[0] =~ '^-'){
+		FErr(1, __LINE__, "Incorrect argument(s) specified")
 	}else{
 		last
 	}
@@ -158,47 +158,48 @@ $UA->agent('Mozilla/5.0');
 
 #-----------------------------------------------------------------PRIMARY FUNCTIONS
 
-my $TMP; # <-- Set scope here, for later cleanup.
-sub DL_PAGE{
-	if(not $NO_CACHE){
-		if((not $REPOPULATE) && (-f $_[0])){
+my $TempFile; # <-- Set scope here, for later cleanup.
+sub DLPage{
+	if (not $NoCache){
+		if (not $Repopulate and -f $_[0]){
 			return(1)
-		}elsif($REPOPULATE or not -f $_[0]){
+		}elsif ($Repopulate or not -f $_[0]){
 			my $DIR = dirname($_[0]);
 			make_path($DIR) unless -d $DIR;
 
 			# Extra -f condition because file doesn't always exist.
-			unlink($_[0]) if $REPOPULATE and -f $_[0];
+			unlink($_[0]) if $Repopulate and -f $_[0];
 
 			open(my $FH, '>:encoding(UTF-8)', $_[0]);
 
-			my $DATA = $UA->get($_[1]);
-			if($DATA->is_success()){
-				print($FH $DATA->decoded_content())
+			my $Data = $UA->get($_[1]);
+			if ($Data->is_success()){
+				print($FH $Data->decoded_content())
 			}else{
 				unlink($_[0]);
-				TFL::FAIL(1, __LINE__, "Unable to fetch and cache page data.")
+
+				FErr(1, __LINE__, "Unable to fetch and cache page data.")
 			}
 
 			close($FH)
 		}
-	}elsif($NO_CACHE){
+	}elsif ($NoCache){
 		# Ignoring the first index to ensure no cache overwrites.
 
-		if($REPOPULATE){
-			TFL::FAIL(1, __LINE__, "Told to repopulate, but '--no-cache|N' is enabled")
-		}
+		FErr(1, __LINE__, "Told to repopulate, but '--no-cache|N' is enabled")
+			if $Repopulate;
 
-		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_{$_PROJECT_}.tmp');
+		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_{$Progrm}.tmp');
 		binmode($FH, ':utf8'); # <-- Ensure temp file uses UTF-8 encoding.
-		$TMP = $FH->filename();
+		$TempFile = $FH->filename();
 
-		my $DATA = $UA->get($_[1]);
-		if($DATA->is_success()){
-			print($FH $DATA->decoded_content())
+		my $Data = $UA->get($_[1]);
+		if ($Data->is_success()){
+			print($FH $Data->decoded_content())
 		}else{
 			unlink($_[1]);
-			TFL::FAIL(1, __LINE__, "Unable to fetch page data.")
+
+			FErr(1, __LINE__, "Unable to fetch page data.")
 		}
 
 		close($FH)
@@ -206,15 +207,15 @@ sub DL_PAGE{
 }
 
 sub DL_IMAGE{
-	return(1) if -f $_[0] and not $CLOBBER;
+	return(1) if -f $_[0] and not $Clobber;
 
 	open(my $FH, '>', $_[0]);
 
-	my $DATA = $UA->get($_[1]);
-	if($DATA->is_success()){
-		print($FH $DATA->decoded_content());
+	my $Data = $UA->get($_[1]);
+	if ($Data->is_success()){
+		print($FH $Data->decoded_content());
 	}else{
-		if($COLOR){
+		if ($Color){
 			print(BOLD . RED . "[!]" . RESET);
 		}else{
 			print("[!]");
@@ -226,61 +227,61 @@ sub DL_IMAGE{
 
 	close($FH);
 
-	if($SAVE_AS_PNG){
-		my $IMAGE_OBJ = Image::Magick->new();
-		$IMAGE_OBJ->Read($_[0]);
-		$IMAGE_OBJ->Write($_[0] =~ s/\.jpg$/.png/r);
+	if ($SaveAsPNG){
+		my $ImageObj = Image::Magick->new();
+		$ImageObj->Read($_[0]);
+		$ImageObj->Write($_[0] =~ s/\.jpg$/.png/r);
 		unlink($_[0]) # <-- Remove the original after conversion.
 	}
 }
 
 #--------------------------------------------------------------RESOLUTION DETECTION
 
-if(length($RES) == 0){
+if (length($Resolution) == 0){
 	my $X11 = X11::Protocol->new();
 	my $X = $X11->{screens}[0]{width_in_pixels};
 	my $Y = $X11->{screens}[0]{height_in_pixels};
-	$RES = $X . 'x' . $Y
+	$Resolution = $X . 'x' . $Y
 }
 
 #------------------------------------------------------CATEGORY & HOMEPAGE HANDLING
 
-DL_PAGE($HOMEPAGE, $DOM);
-open(my $FH, '<:encoding(UTF-8)', $HOMEPAGE);
+DLPage($HomePage, $Domain);
+open(my $FH, '<:encoding(UTF-8)', $HomePage);
 
-my %CATNUMS;
-my @RESOLUTIONS;
-while(<$FH>){
-	chomp($_);
+my %CatNums;
+my @Resolutions;
+while (<$FH>){
+	chomp();
 
 	# Generate hash keys and their numeric values.
-	if($_ =~ /class="filter__count"/){
-		my @LINE = split('<', $_);
-		my $CAT = $LINE[0] =~ s/(\s+|<.*$)//r;
+	if ($_ =~ /class="filter__count"/){
+		my @Line = split('<', $_);
+		my $Category = $Line[0] =~ s/(\s+|<.*$)//r;
 
-		if($CAT !~ /60 Favorites$/){
+		if ($Category !~ /60 Favorites$/){
 			# Site not updated URL after name change.
-			$CAT = 'hi-tech' if $CAT eq "Technologies";
+			$Category = 'hi-tech' if $Category eq "Technologies";
 
-			my $NUM = $LINE[1] =~ s/^.*>//gr;
-			$CATNUMS{lc($CAT) =~ s/\s/_/gr} = $NUM
+			my $NUM = $Line[1] =~ s/^.*>//gr;
+			$CatNums{lc($Category) =~ s/\s/_/gr} = $NUM
 		}
-	}elsif($_ =~ /value="[0-9]+x[0-9]+"/){
-		my @LINE = split(' ', $_);
-		push(@RESOLUTIONS, $LINE[1] =~ s/("|value=)//gr)
+	}elsif ($_ =~ /value="[0-9]+x[0-9]+"/){
+		my @Line = split(' ', $_);
+		push(@Resolutions, $Line[1] =~ s/("|value=)//gr)
 	}
 }
 
 close($FH);
-unlink($TMP) if $NO_CACHE;
+unlink($TempFile) if $NoCache;
 
-if($SHOW_RES){
-	print("$_\n") foreach @RESOLUTIONS;
-	exit 0
+if ($ShowRes){
+	print("$_\n") foreach @Resolutions;
+	exit(0)
 }
 
-if($LIST_CATS){
-	if($COLOR){
+if ($ListCats){
+	if ($Color){
 		printf(
 			BOLD . GREEN . "%-14s %s %s\n" . RESET,
 			"CATEGORY", "IMAGES", "PAGES"
@@ -289,40 +290,40 @@ if($LIST_CATS){
 		printf("%-14s %s %s\n", "CATEGORY", "IMAGES", "PAGES");
 	}
 
-	foreach(keys(%CATNUMS)){
-		my $PAGE_TTL = ceil($CATNUMS{$_});
+	foreach (keys(%CatNums)){
+		my $PAGE_TTL = ceil($CatNums{$_});
 
 		printf(
 			"%-14s %6d %d\n",
-			$_, $CATNUMS{$_},
+			$_, $CatNums{$_},
 			ceil($PAGE_TTL / 15)
 		)
 	}
 
-	exit 0
+	exit(0)
 }
 
-if(($ARGV[0]) and not(exists($CATNUMS{$ARGV[0]}))){
-	TFL::FAIL(1, __LINE__, "Invalid category provided.")
+if ($ARGV[0] and not exists($CatNums{$ARGV[0]})){
+	FErr(1, __LINE__, "Invalid category provided.")
 }
 
 #--------------------------------------------------------------PROCESS PAGE NUMBERS
 
 my @PAGES;
-unless($ARGV[1]){
-	TFL::FAIL(1, __LINE__, "At least one (non-0) page must be provided.")
+unless ($ARGV[1]){
+	FErr(1, __LINE__, "At least one (non-0) page must be provided.")
 }else{
 	my @PAGE_NUM_LIST = split(' ', $ARGV[1]);
-	foreach(@PAGE_NUM_LIST){
-		if($_ =~ /^([1-9]|[1-9][0-9]+)$/){
+	foreach (@PAGE_NUM_LIST){
+		if ($_ =~ /^([1-9]|[1-9][0-9]+)$/){
 			push(@PAGES, $_)
-		}elsif($_ =~ /^[0-9]+-[0-9]+$/){
+		}elsif ($_ =~ /^[0-9]+-[0-9]+$/){
 			# Process ranges, like 1-4, which would output '1 2 3 4'.
 			my ($START, $END) = split('-', $_);
 			my @NUMS = ($START..$END);
 			push(@PAGES, $_) foreach @NUMS
 		}else{
-			TFL::FAIL(1, __LINE__, "Invalid page number detected.")
+			FErr(1, __LINE__, "Invalid page number detected.")
 		}
 	}
 }
@@ -331,88 +332,84 @@ unless($ARGV[1]){
 
 my $DL_LINK = 'https://images.wallpaperscraft.com/image';
 
-foreach(@PAGES){
-	my $DL_FH;
+foreach (@PAGES){
+	my $DLFH;
 
 	# Check the user didn't enter too high a page number, by deviding the total
-	# number of images (hence the hash) for the chosen category, by 15. Must
-	# round up with ceil() (POSIX), as the final page may display 1-15 images.
-	my $TOTAL_IMAGES_INTO_PAGES = ceil($CATNUMS{$ARGV[0]} / 15);
-	if($_ > $TOTAL_IMAGES_INTO_PAGES){
-		TFL::FAIL(1, __LINE__, "Page '$_' is out of range.")
-	}
+	# number of images (hence the hash) for the chosen category, by 15. Must round
+	# up with `ceil()` (`POSIX`), as the final page may display 1-15 images.
+	my $TOTAL_IMAGES_INTO_PAGES = ceil($CatNums{$ARGV[0]} / 15);
 
-	if(length($RES) > 0){
-		my $FOUND_RESOLUTION = 0;
-		foreach(@RESOLUTIONS){
-			if($_ eq $RES){
-				$FOUND_RESOLUTION = 1;
+	FErr(1, __LINE__, "Page '$_' is out of range.")
+		if $_ > $TOTAL_IMAGES_INTO_PAGES;
+
+	if (length($Resolution) > 0){
+		my $FoundRes = 0;
+		foreach (@Resolutions){
+			if ($_ eq $Resolution){
+				$FoundRes = 1;
 				last
 			}
 		}
 
-		unless($FOUND_RESOLUTION){
-			TFL::FAIL(1, __LINE__, "Resolution not supported.")
-		}
+		FErr(1, __LINE__, "Resolution not supported.") unless $FoundRes
 	}
 
-	DL_PAGE("$CACHE_CATS/$ARGV[0]/$RES/$_", "$DOM/catalog/$ARGV[0]/page$_");
+	DLPage("$CacheCats/$ARGV[0]/$Resolution/$_", "$Domain/catalog/$ARGV[0]/page$_");
 
-	if(not $NO_CACHE){
-		open($DL_FH, '<:encoding(UTF-8)', "$CACHE_CATS/$ARGV[0]/$RES/$_");
-	}elsif($NO_CACHE){
-		open($DL_FH, '<:encoding(UTF-8)', "$TMP");
+	if (not $NoCache){
+		open($DLFH, '<:encoding(UTF-8)', "$CacheCats/$ARGV[0]/$Resolution/$_");
+	}elsif ($NoCache){
+		open($DLFH, '<:encoding(UTF-8)', "$TempFile");
 	}
 
-	my $ID;
-	my $TAGS_ID;
-	my $FULL_LINK;
-	while(<$DL_FH>){
-		chomp($_);
+	my ($ID, $TagsID, $FullLink);
 
-		if($_ =~ /src="https:/ and $_ =~ /class="wallpapers__image"/){
-			my @LINE = split(' ', $_);
+	while (<$DLFH>){
+		chomp();
 
-			$TAGS_ID = $LINE[2] =~ s/(^src=".*\/|"|_[0-9]+x[0-9]+\.jpg"$)//gr;
-			$ID = $TAGS_ID =~ s/^.*_//gr;
-			$FULL_LINK = "$DL_LINK/${TAGS_ID}_$RES.jpg";
+		if ($_ =~ /src="https:/ and $_ =~ /class="wallpapers__image"/){
+			my @Line = split(' ', $_);
 
-			# For the --filter|-f feature. Multiple of these flags can
-			# be used to further narrow down the desired image.
-			if($FILTER){
-				my $FILTER_COUNT = 0;
-				my $TAGS = $TAGS_ID =~ s/_[0-9]+$//r;
-				foreach(@FILTER_MATCH){
-					if($TAGS !~ /$_/){
+			$TagsID = $Line[2] =~ s/(^src=".*\/|"|_[0-9]+x[0-9]+\.jpg"$)//gr;
+			$ID = $TagsID =~ s/^.*_//gr;
+			$FullLink = "$DL_LINK/${TagsID}_$Resolution.jpg";
+
+			# For the --filter|-f feature. Multiple of these flags can be used to
+			# further narrow down the desired image.
+			if ($Filter){
+				my $FilterCount = 0;
+				my $TAGS = $TagsID =~ s/_[0-9]+$//r;
+				foreach (@FilterMatch){
+					if ($TAGS !~ /$_/){
 						next
 					}else{
-						$FILTER_COUNT += 1
+						$FilterCount += 1
 					}
 				}
 
-				# If the total number of matches equal the amount
-				# of array indices, in a human-readable way, then
-				# skip to the next image.
-				next if $FILTER_COUNT < $#FILTER_MATCH + 1
+				# If the total number of matches equal the amount of array
+				# indices, in a human-readable way, then skip to the next image.
+				next if $FilterCount < $#FilterMatch + 1
 			}
 
-			if($LINKS_ONLY){
-				print("$FULL_LINK\n")
+			if ($LinksOnly){
+				print("$FullLink\n")
 			}else{
-				if($COLOR){
+				if ($Color){
 					print(
 						BOLD . YELLOW . "FILE:" . RESET .
-						" '${TAGS_ID}_$RES.jpg' "
+						" '${TagsID}_$Resolution.jpg' "
 					);
 				}else{
-					print("FILE: '${TAGS_ID}_$RES.jpg' ");
+					print("FILE: '${TagsID}_$Resolution.jpg' ");
 				}
 
-				DL_IMAGE("$DEST/${TAGS_ID}_$RES.jpg", $FULL_LINK);
+				DL_IMAGE("$Destination/${TagsID}_$Resolution.jpg", $FullLink);
 				print("\n")
 			}
 		}
 	}
 
-	unlink($TMP) if $NO_CACHE
+	unlink($TempFile) if $NoCache
 }

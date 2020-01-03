@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Thu  2 Jan 23:07:04 GMT 2020
+# Last Change       - Thu  2 Jan 23:37:25 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ my $IntStr = 'Internal IP: ';
 my $ExtStr = 'External IP: ';
 
 while(scalar(@ARGV) > 0){
-	my $Arg = $Arg;
+	my $Arg = $ARGV[0];
 
 	if($Arg =~ '^(--help|-h|-\?)$'){
 		Usage(); exit 0

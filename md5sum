@@ -7,7 +7,7 @@ c3d3ca3dfb1a319f0963c303b1bd2b59  completions/wcdl
 728d4612ec21e55fc6a9b942d258a339  clean-locales
 325104ae6b4c4591cddac02c3011c0e9  cpufreq
 ca68987265fcf9ad93d407853de96a4b  get-fma
-62ca976bf04f3e61a4b751eea1d2e3a7  getip
+0cd13c0c050d103c8552f89b5fd017d1  getip
 93aecd950562e1cc830c8863fe53071a  gitbrov
 de139dede3ce0954f2e3b24364e7f7e5  git-tudu
 9d38c36966bc7f81c8a3939a17c933b9  kernelchk
@@ -18,4 +18,4 @@ ce01b7c4a9f42f440d8be064e5e1cf2f  previewer
 55d3f1aaa3fa5084f121880580a3ad5c  suptime
 54bb1a564e572585d99f61dd785e9a46  TFL.pm
 d8e1cdd8b3eb0a8b9e3ec3097063ee63  tozero
-4baff0d50f349f3c98af827c25195b65  wcdl
+a2474daba85f383bdc86fc19930a924f  wcdl
