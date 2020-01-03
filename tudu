@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Fri  3 Jan 13:19:28 GMT 2020
+# Last Change       - Fri  3 Jan 20:03:57 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename', 'dirname';
-use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-02)
+use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-03)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
@@ -22,15 +22,14 @@ use Term::ANSIColor 'color', 'colorvalid';
 no warnings 'uninitialized', 'File::Find';
 
 my $CurVer = "2020-01-03";
-my $Progrm = basename($0);
 
 sub Usage{
-	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
-		            Written by terminalforlife <terminalforlife\@yahoo.com>
+	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
 
 		            Configurable developer tool to overview projects' todos.
 
-		SYNTAX:     $Progrm [OPTS] [REGEX]
+		SYNTAX:     $TFL::PROGNAME [OPTS] [REGEX]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -58,7 +57,7 @@ sub Usage{
 
 		            Once the 'config' file has been generated, adjust as needed.
 
-		FILE:       ~/.config/$Progrm/config
+		FILE:       ~/.config/$TFL::PROGNAME/config
 	};
 
 	print($Info =~ tr/\t//dr)
@@ -72,7 +71,7 @@ my (
 # Snip the one whitespace before the todo entry.
 my $TodoStrLen = length($TodoStr) + 1;
 
-my $MainDir = "$ENV{HOME}/.config/$Progrm";
+my $MainDir = "$ENV{HOME}/.config/$TFL::PROGNAME";
 mkdir($MainDir) unless -d $MainDir;
 
 my $TargetFile = "$MainDir/target";
@@ -118,7 +117,7 @@ while(defined($ARGV[0])){
 	}elsif($Arg eq '--parseable'){
 		$Parseable = 'true'
 	}elsif($Arg =~ '^-'){
-		Err(1, "Incorrect option(s) -- see: $Progrm -h")
+		Err(1, "Incorrect option(s) -- see: $TFL::PROGNAME -h")
 	}else{
 		last
 	}
@@ -127,7 +126,7 @@ while(defined($ARGV[0])){
 }
 
 if (scalar(@ARGV) > 1){
-	Err(1, "Too many arguments -- see: $Progrm -h")
+	Err(1, "Too many arguments -- see: $TFL::PROGNAME -h")
 }elsif ($DoCase eq 'i' and scalar(@ARGV) == 0){
 	Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
@@ -202,9 +201,9 @@ if (-f -r -T $ConfigFile){
 	# Generate the default config.
 	open(my $FH, '>', $ConfigFile);
 
-	my $Contents = qq{# User configuration file for `$Progrm` ($CurVer)
+	my $Contents = qq{# User configuration file for `$TFL::PROGNAME` ($CurVer)
 
-		# Specify the location (file or directory) for $Progrm to use. If the CWD
+		# Specify the location (file or directory) for $TFL::PROGNAME to use. If the CWD
 		# is specified (the default value), the search is made non-recursively.
 		Target=./
 
@@ -256,7 +255,7 @@ if (-f -r -T $ConfigFile){
 	printf($FH "%s\n", $Contents =~ tr/\t//dr);
 
 	close($FH);
-	printf("File '~/.config/$Progrm/config' generated -- please restart.\n");
+	printf("File '~/.config/$TFL::PROGNAME/config' generated -- please restart.\n");
 	exit(0)
 }
 
