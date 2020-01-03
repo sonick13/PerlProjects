@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/clean-locales
 # Started On        - Thu  9 May 21:32:57 BST 2019
-# Last Change       - Thu  2 Jan 23:06:23 GMT 2020
+# Last Change       - Fri  3 Jan 19:53:24 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,21 +12,20 @@ use strict;
 use warnings;
 use autodie;
 use File::Basename 'basename';
-use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-03)
 use File::Path 'remove_tree';
 
-my $CurVer = "2020-01-02";
-my $Progrm = basename($0);
+my $CurVer = "2020-01-03";
 
 my $LocDir = '/usr/share/locale';
 
 sub Usage{
-	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
-		            Written by terminalforlife <terminalforlife\@yahoo.com>
+	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
 
 		            Remove non-English localizations.
 
-		SYNTAX:     $Progrm [OPTS]
+		SYNTAX:     $TFL::PROGNAME [OPTS]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -68,18 +67,18 @@ my $ErrCount = 0;
 
 # $_[0] = The directory or file to process.
 sub DelIt{
-	sub Err{
+	sub ErrUpCount{
 		print($_[0])
 		$ErrCount++
 	}
 
 	if (-d $_[0]){
-		remove_tree($_[0], {safe => 1}) or Err("$_[0]  [!]\n")
+		remove_tree($_[0], {safe => 1}) or ErrUpCount("$_[0]  [!]\n")
 	}elsif (-f $_[0]){
-		unlink($_[0]) or Err("$_[0]  [!]\n")
+		unlink($_[0]) or ErrUpCount("$_[0]  [!]\n")
 	}
 
-	Err("$_[0]  [?]\n")
+	ErrUpCount("$_[0]  [?]\n")
 }
 
 foreach (glob("$LocDir/*")){
