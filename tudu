@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-#cito M:755 O:0 G:0 T:/usr/bin/git-tudu
+#cito M:755 O:0 G:0 T:/usr/bin/tudu
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/git-tudu
+# Project Name      - PerlProjects/tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Thu  2 Jan 23:04:12 GMT 2020
+# Last Change       - Fri  3 Jan 13:19:28 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized', 'File::Find';
 
-my $CurVer = "2020-01-02";
+my $CurVer = "2020-01-03";
 my $Progrm = basename($0);
 
 sub Usage{
@@ -58,7 +58,7 @@ sub Usage{
 
 		            Once the 'config' file has been generated, adjust as needed.
 
-		FILE:       ~/.config/git-tudu/config
+		FILE:       ~/.config/$Progrm/config
 	};
 
 	print($Info =~ tr/\t//dr)
@@ -256,7 +256,7 @@ if (-f -r -T $ConfigFile){
 	printf($FH "%s\n", $Contents =~ tr/\t//dr);
 
 	close($FH);
-	printf("File '~/.config/git-tudu/config' generated -- please restart.\n");
+	printf("File '~/.config/$Progrm/config' generated -- please restart.\n");
 	exit(0)
 }
 
