@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-download-deps
 # Started On        - Sat  4 Jan 21:55:31 GMT 2020
-# Last Change       - Sun  5 Jan 01:25:26 GMT 2020
+# Last Change       - Sun  5 Jan 01:27:38 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ Err(1, 'At least one package is required.') if scalar(@ARGV) == 0;
 
 my $Cache = AptPkg::Cache->new();
 
-my $MissingPKG;
+my $MissingPKG = '';
 sub FetchDeps{
 	my $Get = $Cache->get($_[0]);
 	my $Vers = $Get->{'VersionList'};
