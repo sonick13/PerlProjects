@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/apt-download-deps
 # Started On        - Sat  4 Jan 21:55:31 GMT 2020
-# Last Change       - Sun  5 Jan 00:35:44 GMT 2020
+# Last Change       - Sun  5 Jan 00:49:49 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -57,10 +57,19 @@ while (scalar(@ARGV) > 0){
 	shift(@ARGV)
 }
 
+Err(1, 'At least one package is required.') if scalar(@ARGV) == 0;
+
 my $Cache = AptPkg::Cache->new();
 
 sub FetchDeps{
-	my $Vers = $Cache->get($_[0])->{'VersionList'};
+	my $Get = $Cache->get($_[0]);
+	my $Vers = $Get->{'VersionList'};
+
+	unless (defined($Vers)){
+		Err(0, "Package '$_[0]' not found.");
+		return
+	}
+
 	my $Deps = $Vers->[0]->{'DependsList'};
 
 	my @Packages;
@@ -83,9 +92,9 @@ my @ToDL;
 while (scalar(@ARGV) > 0){
 	push(@ToDL, FetchDeps($ARGV[0]));
 	if ($BaseToo eq 'true'){
-		system("apt-get download $ARGV[0] @ToDL")
+		system("apt-get download $ARGV[0] @ToDL 2> /dev/null")
 	}else{
-		system("apt-get download @ToDL")
+		system("apt-get download @ToDL 2> /dev/null")
 	}
 
 	shift(@ARGV)
