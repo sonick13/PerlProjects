@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/git-tudu
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/tudu
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/completions/git-tudu
+# Project Name      - PerlProjects/completions/tudu
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Fri 27 Dec 22:28:55 GMT 2019
+# Last Change       - Sat  4 Jan 13:00:17 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-# This is the bash completion script for git-tudu
+# This is the bash completion script for tudu
 #----------------------------------------------------------------------------------
 
-_gittudu(){
+_tudu(){
 	GetArgs(){
 		local IsOpts F1 F2 _
-		git-tudu -h | while read F1 F2 _; do
+		tudu -h | while read F1 F2 _; do
 			if [ "$F1" = 'OPTS:' ]; then
 				printf '%s ' "${F2//|/ }"
 				IsOpts='true'
@@ -31,4 +31,4 @@ _gittudu(){
 	COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`)
 }
 
-complete -F _gittudu git-tudu
+complete -F _tudu tudu

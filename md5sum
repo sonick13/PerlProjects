@@ -1,8 +1,9 @@
 966c87155f92f8cde2d0b5e3166e7029  completions/apt-undo-install
 4fefc09cfe28dd34ff027808b9bd7196  completions/getip
-acc1f87e74ce0f9fa8aaaaaf2a1021ad  completions/git-tudu
 e3b7665cb43b1492614841632a2a8eb4  completions/previewer
+1cceddbad34c2d90af0538b638ba9e19  completions/tudu
 c3d3ca3dfb1a319f0963c303b1bd2b59  completions/wcdl
+02bf91c469ccc26f660997a7b303bc75  apt-download-deps
 8cc777f2a5f6cdd6d5623a26b761247b  apt-undo-install
 9867680bd82e666e8156ab626188e874  clean-locales
 325104ae6b4c4591cddac02c3011c0e9  cpufreq

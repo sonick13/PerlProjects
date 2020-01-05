@@ -1,0 +1,92 @@
+#!/usr/bin/env perl
+#cito M:755 O:0 G:0 T:/usr/bin/apt-download-deps
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/apt-download-deps
+# Started On        - Sat  4 Jan 21:55:31 GMT 2020
+# Last Change       - Sun  5 Jan 00:35:44 GMT 2020
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+
+use v5.22.1;
+use strict;
+use warnings;
+use autodie;
+use TFL 'Err', 'DepChk'; # <-- libtfl-perl (>= 2020-01-03)
+use AptPkg::Cache; # <-- libapt-pkg-perl (>= 0.1.29build7)
+
+my $CurVer = "2020-01-05";
+
+sub Usage{
+	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
+
+		            Download all dependencies for one or more Debian packages.
+
+		SYNTAX:     $TFL::PROGNAME [OPTS] [PKG_1 [PKG_2] ...]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+		            --include-base|-b       - Also download the base package(s).
+
+		NOTE:       This program, written in Perl, is ideal for situations in which
+		            the user wishes to transfer to or store packages on another
+		            machine for later offline use.
+	};
+
+	print($Info =~ tr/\t//dr)
+}
+
+my $BaseToo = 'false';
+
+while (scalar(@ARGV) > 0){
+	my $Arg = $ARGV[0];
+
+	if ($Arg =~ '^(--help|-h|-\?)$'){
+		Usage(1); exit(0)
+	}elsif ($Arg =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif ($Arg =~ '^(--include-base|-b)$'){
+		$BaseToo = 'true'
+	}elsif ($Arg =~ '^-'){
+		Err(1, "Incorrect argument(s) specified.")
+	}else{
+		last
+	}
+
+	shift(@ARGV)
+}
+
+my $Cache = AptPkg::Cache->new();
+
+sub FetchDeps{
+	my $Vers = $Cache->get($_[0])->{'VersionList'};
+	my $Deps = $Vers->[0]->{'DependsList'};
+
+	my @Packages;
+
+	my $Iter = 0;
+	while ($Iter < scalar(@{$Deps})){
+		my $Dep = $Deps->[$Iter++];
+
+		next unless $Dep->{'DepType'} eq 'Depends';
+
+		push(@Packages, $Dep->{'TargetPkg'}->{'Name'})
+	}
+
+	return(@Packages)
+}
+
+DepChk('apt-get');
+
+my @ToDL;
+while (scalar(@ARGV) > 0){
+	push(@ToDL, FetchDeps($ARGV[0]));
+	if ($BaseToo eq 'true'){
+		system("apt-get download $ARGV[0] @ToDL")
+	}else{
+		system("apt-get download @ToDL")
+	}
+
+	shift(@ARGV)
+}
