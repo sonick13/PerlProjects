@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Thu  9 Jan 18:54:49 GMT 2020
+# Last Change       - Thu  9 Jan 19:43:39 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 use strict;
 use warnings;
 use autodie;
-use TFL 'Err', 'Boolean'; # <-- libtfl-perl (>= 2020-01-08)
+use TFL 'FErr', 'Boolean'; # <-- libtfl-perl (>= 2020-01-08)
 use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
 use Git::Repository; # <-- libgit-repository-perl (>= 1.317-1)
 use File::Basename 'basename', 'dirname';
@@ -40,7 +40,7 @@ sub Usage{
 		            --force-reset           - Force regeneration of user's config.
 		            --parseable             - Parseable output, similar to raw.
 
-		NOTE:       The use of '--' to specify the end of OPTS, is supported.
+		NOTE:       Signifying the end of OPTS with '--' is supported.
 
 		            Where REGEX is a REGEX string to use to filter repositories by
 		            the full path, relative to the 'Target' location.
@@ -56,7 +56,7 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($Parseable, $Compact, $DoCase, $Target, $ForceReset, %ColorHash);
+my ($SolidTarget, $Parseable, $Compact, $DoCase, $Target, $ForceReset, %ColorHash);
 
 my $MainDir = "$ENV{HOME}/.config/$TFL::PROGNAME";
 my $ConfigFile = "$MainDir/config";
@@ -64,7 +64,9 @@ my $ConfigFile = "$MainDir/config";
 mkdir($MainDir) unless -d $MainDir;
 
 while (defined($ARGV[0])){
-	if ($ARGV[0] =~ '^(--help|-h|-\?)$'){
+	if($ARGV[0] =~ /^--$/){
+		last # <-- End of option processing.
+	}elsif ($ARGV[0] =~ '^(--help|-h|-\?)$'){
 		Usage(1); exit(0)
 	}elsif ($ARGV[0] =~ '^(--version|-v)$'){
 		print("$CurVer\n"); exit(0)
@@ -73,14 +75,15 @@ while (defined($ARGV[0])){
 	}elsif($ARGV[0] =~ '^(--alt-path|-P)$'){
 		shift(@ARGV);
 
-		Err(1, "Option '--alt-path|-P' requires a PATH.")
+		FErr(1, __LINE__, "Option '--alt-path|-P' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
 		$Target = $ARGV[0];
+		$SolidTarget = 'true'
 	}elsif($ARGV[0] =~ '^(--config|-c)$'){
 		shift(@ARGV);
 
-		Err(1, "Option '--config|-c' requires a PATH.")
+		FErr(1, __LINE__, "Option '--config|-c' requires a PATH.")
 			unless length($ARGV[0]) > 0;
 
 		$ConfigFile = $ARGV[0]
@@ -89,7 +92,7 @@ while (defined($ARGV[0])){
 	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
 		$ForceReset = 'true'
 	}elsif($ARGV[0] =~ '^-'){
-		Err(1, "Incorrect option(s) specified.")
+		FErr(1, __LINE__, "Incorrect option(s) specified.")
 	}else{
 		last
 	}
@@ -100,9 +103,9 @@ while (defined($ARGV[0])){
 my $RegexStr = $ARGV[0] if defined($ARGV[0]);
 
 if (scalar(@ARGV) > 1){
-	Err(1, "Too many arguments -- see: $TFL::PROGNAME -h")
+	FErr(1, __LINE__, "Too many arguments -- see: $TFL::PROGNAME -h")
 }elsif ($DoCase eq 'i' and scalar(@ARGV) == 0){
-	Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
+	FErr(1, __LINE__, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
 my @CKeys = ('Color_Symbol', 'Color_Repository', 'Color_Status');
@@ -131,10 +134,10 @@ if (-f -r -T $ConfigFile){
 		chomp(my ($Key, $Value) = split('=', $_));
 
 		if ($Key eq 'Target'){
-			Err(1, "Key 'Target' not set -- see: $TFL::PROGNAME -h")
+			FErr(1, __LINE__, "Key 'Target' not set -- see: $TFL::PROGNAME -h")
 				if $Value eq 'NULL';
 
-			$Target = $Value =~ s/\/$//r
+			$Target = $Value =~ s/\/$//r unless $SolidTarget eq 'true'
 		}elsif ($Key eq 'RegexStr'){
 			$RegexStr = $Value unless length($Value) == 0
 		}elsif ($Key eq 'Parseable'){
@@ -143,20 +146,20 @@ if (-f -r -T $ConfigFile){
 			Boolean($Value);
 			$Parseable = $Value
 		}elsif ($Key =~ '^Color_.*'){
-			Err(1, "Invalid color '$Value' detected.")
+			FErr(1, __LINE__, "Invalid color '$Value' detected.")
 				unless colorvalid($Value);
 
 			$ColorHash{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key =~ '^Color_.*'){
-			Err(1, "Invalid 'Color_*' key detected.")
+			FErr(1, __LINE__, "Invalid 'Color_*' key detected.")
 				unless grep($Key, @CKeys);
 
 			$ColorHash{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key =~ '^Char_.*'){
 			if (not grep($Key, keys(%Syms))){
-				Err(1, "Invalid 'Char_*' key detected.")
+				FErr(1, __LINE__, "Invalid 'Char_*' key detected.")
 			}elsif (length($Value) > 1){
-				Err(1, "Invalid 'Char_*' value detected.")
+				FErr(1, __LINE__, "Invalid 'Char_*' value detected.")
 			}elsif (length($Value) == 0){
 				next
 			}
@@ -165,7 +168,7 @@ if (-f -r -T $ConfigFile){
 		}elsif ($Key eq 'Compact'){
 			$Compact = $Value
 		}else{
-			Err(1, "Invalid key '$Key' detected.")
+			FErr(1, __LINE__, "Invalid key '$Key' detected.")
 		}
 	}
 }else{
@@ -249,7 +252,9 @@ foreach (@FileArr){
 
 	chomp(my @Status = $Git->run('status'));
 
-	# File `HEAD` is assumed to exist and be accessible.
+	FErr(1, __LINE__, "Unable to acquire repository information.")
+		unless -f "$Path/.git/HEAD";
+
 	open(my $FH, '<', "$Path/.git/HEAD");
 	chomp($Branch = basename(<$FH>));
 	close($FH);
