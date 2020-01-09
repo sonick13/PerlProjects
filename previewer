@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Thu  2 Jan 23:06:02 GMT 2020
+# Last Change       - Thu  9 Jan 21:10:44 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,24 +12,22 @@ use v5.22.1;
 use strict;
 use warnings;
 use autodie;
-use File::Basename 'basename';
-use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
-use Text::Wrap;
-use LWP::UserAgent;
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-03)
+use Text::Wrap; # <-- libtext-wrapi18n-perl (>= 0.06-7.1)
+use LWP::UserAgent; # <-- libwww-perl (>= 6.15-1)
 use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
 
-my $CurVer = "2020-01-02";
-my $Progrm = basename($0);
+my $CurVer = "2020-01-09";
 
 my $DBSite = 'https://community.linuxmint.com/data/reviews.list';
 
 sub Usage{
-	my $Help = qq{	            @{[uc($Progrm)]} ($CurVer)
-		            Written by terminalforlife <terminalforlife\@yahoo.com>
+	my $Help = qq{	            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
 
 		            Perl program to pretty-print Linux Mint package reviews.
 
-		SYNTAX:     $Progrm [OPTS] [PACKAGE] [RATING]
+		SYNTAX:     $TFL::PROGNAME [OPTS] [PACKAGE] [RATING]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -42,12 +40,12 @@ sub Usage{
 		            --db-update             - Download and update the database.
 		            --db-file PATH          - Instead, use this database file.
 
-		NOTE:       Although $Progrm uses Linux Mint's review and rating database, it can
+		NOTE:       Although $TFL::PROGNAME uses Linux Mint's review and rating database, it can
 		            still prove useful in Debian, Ubuntu, and their other derivatives, -
 		            albeit with inaccuracies.
 
 		            If you specifiy your own database file, it MUST adhere to the same
-		            formatting as the official one, lest $Progrm wind up a buggy mess.
+		            formatting as the official one, lest $TFL::PROGNAME wind up a buggy mess.
 
 		            For example:
 
@@ -60,9 +58,9 @@ sub Usage{
 		            Previewer is a Perl fork of and vast improvement over the original -
 		            shell program, 'reviewer', written also by 'terminalforlife'.
 
-		EXAMPLE:    $Progrm -b -a --summary firefox
-		            $Progrm --no-reviews -S vim 2
-		            $Progrm --user 'Velimor' mintstick 4
+		EXAMPLE:    $TFL::PROGNAME -b -a --summary firefox
+		            $TFL::PROGNAME --no-reviews -S vim 2
+		            $TFL::PROGNAME --user 'Velimor' mintstick 4
 
 		FILE:       Unless told otherwise, the database is stored here:
 
