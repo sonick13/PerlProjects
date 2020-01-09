@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Thu  9 Jan 18:37:05 GMT 2020
+# Last Change       - Thu  9 Jan 18:54:49 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -40,10 +40,10 @@ sub Usage{
 		            --force-reset           - Force regeneration of user's config.
 		            --parseable             - Parseable output, similar to raw.
 
-		NOTE:       The directory is allowed up 2 levels in depth, allowing for
-		            categories and their subcategories.
+		NOTE:       The use of '--' to specify the end of OPTS, is supported.
 
-		            Where REGEX is a REGEX string to use to filter repositories.
+		            Where REGEX is a REGEX string to use to filter repositories by
+		            the full path, relative to the 'Target' location.
 
 		CONFIG:     A user configuration file (see below) will be generated when
 		            the program is executed without such a file existing.
@@ -97,8 +97,7 @@ while (defined($ARGV[0])){
 	shift(@ARGV)
 }
 
-# Use of this function is to avoid escaping issues in REGEX.
-my $RegexStr = quotemeta($ARGV[0]) if defined($ARGV[0]);
+my $RegexStr = $ARGV[0] if defined($ARGV[0]);
 
 if (scalar(@ARGV) > 1){
 	Err(1, "Too many arguments -- see: $TFL::PROGNAME -h")
@@ -109,9 +108,15 @@ if (scalar(@ARGV) > 1){
 my @CKeys = ('Color_Symbol', 'Color_Repository', 'Color_Status');
 
 my %Syms = (
-	'Char_Clean' => '≎', 'Char_Uncommitted' => '≍', 'Char_Unstaged' => '≭',
-	'Char_New' => '≺', 'Char_Removed' => '⊀', 'Char_Initial' => '≔',
-	'Char_Leads' => '∾', 'Char_Fix' => '⮂', 'Char_Unknown' => '!'
+	'Char_Clean'         => '≎',
+	'Char_Fix'           => '⮂',
+	'Char_Initial'       => '≔',
+	'Char_Leads'         => '∾',
+	'Char_New'           => '≺',
+	'Char_Removed'       => '⊀',
+	'Char_Uncommitted'   => '≍',
+	'Char_Unknown'       => '!',
+	'Char_Unstaged'      => '≭'
 );
 
 unlink($ConfigFile) if $ForceReset eq 'true';
@@ -131,7 +136,7 @@ if (-f -r -T $ConfigFile){
 
 			$Target = $Value =~ s/\/$//r
 		}elsif ($Key eq 'RegexStr'){
-			$RegexStr = quotemeta($Value) unless length($Value) == 0
+			$RegexStr = $Value unless length($Value) == 0
 		}elsif ($Key eq 'Parseable'){
 			next if $Parseable eq 'true';
 
@@ -186,20 +191,20 @@ if (-f -r -T $ConfigFile){
 		# Optionally assign your own character to each type of status. The defaults
 		# will be used if these keys' values are left empty.
 		Char_Clean=
-		Char_Uncommitted=
-		Char_Unstaged=
-		Char_New=
-		Char_Removed=
+		Char_Fix=
 		Char_Initial=
 		Char_Leads=
-		Char_Fix=
+		Char_New=
+		Char_Removed=
+		Char_Uncommitted=
 		Char_Unknown=
+		Char_Unstaged=
 
 		# Various color keys and their values. To disable color support, simply
 		# set each of these to null, by removing all of their values.
-		Color_Symbol=red
 		Color_Repository=bright_white
-		Color_Status=white};
+		Color_Status=white
+		Color_Symbol=red};
 
 	printf($FH "%s\n", $Contents =~ tr/\t//dr);
 
