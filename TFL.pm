@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu  9 Jan 14:48:03 GMT 2020
+# Last Change       - Thu  9 Jan 19:48:04 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ use vars '@ISA', '@EXPORT', '$VERSION';
 	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine', 'Boolean'
 );
 
-$VERSION = '2020-01-02';
+$VERSION = '2020-01-09';
 
 our ($PROGNAME) = $0 =~ m{(?:.*/)?([^/]*)};
 our $AUTHOR = 'written by terminalforlife <terminalforlife@yahoo.com>';
