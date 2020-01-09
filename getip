@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Fri  3 Jan 13:08:13 GMT 2020
+# Last Change       - Thu  9 Jan 22:27:48 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ use autodie;
 use File::Basename 'basename';
 use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-03)
 
-my $CurVer = "2020-01-03";
+my $CurVer = "2020-01-09";
 
 my $Domain = "https://whatismyipaddress.com";
 
@@ -69,13 +69,13 @@ while(scalar(@ARGV) > 0){
 Err(1, "Either '--internal|-i' or '--external|-e'.") if $IntExtDetected == 2;
 
 if($Internal){
-	use Net::Address::IP::Local; # <-- libnet-address-ip-local-perl
+	use Net::Address::IP::Local; # <-- libnet-address-ip-local-perl (>= 0.1.2-3)
 
 	print($IntStr . Net::Address::IP::Local->public() . "\n")
 }
 
 if($External){
-	use LWP::UserAgent;
+	use LWP::UserAgent; # <-- libwww-perl (>= 6.15-1)
 
 	my $UA = LWP::UserAgent->new();
 	$UA->max_redirect(1);
