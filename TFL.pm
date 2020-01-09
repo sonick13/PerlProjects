@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Fri  3 Jan 20:31:15 GMT 2020
+# Last Change       - Thu  9 Jan 14:48:03 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ use vars '@ISA', '@EXPORT', '$VERSION';
 
 @EXPORT = (
 	'$PROGNAME', '$AUTHOR', '$GITHUB', 'FErr', 'Err', 'KeyVal',
-	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine'
+	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine', 'Boolean'
 );
 
 $VERSION = '2020-01-02';
@@ -207,9 +207,24 @@ sub UsageCPU{
 	}
 }
 
+=item Boolean()
+
+Check the 'true' or 'false' value of the first argument; must be either one.
+
+=cut
+
+sub Boolean{
+	Err(1, "Invalid boolean '$_[0]' detected.")
+		unless $_[0] =~ '^(true|false)$'
+}
+
 =back
 
 =head1 CHANGES
+
+=head2 2020-01-02
+
+Added Boolean().
 
 =head2 2020-01-02
 
