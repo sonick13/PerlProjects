@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Fri  3 Jan 00:06:42 GMT 2020
+# Last Change       - Thu  9 Jan 23:08:14 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,36 +15,35 @@
 use strict;
 use warnings;
 use autodie;
+use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-03)
+use LWP::Simple; # <-- libwww-perl (6.15-1)
+use LWP::UserAgent; # <-- libwww-perl (6.15-1)
+use Image::Magick; # <-- libimage-magick-perl (>= 8:6.8.9.9-7)
+use List::MoreUtils 'uniq'; # <-- liblist-moreutils-perl (>= 0.413-1build1)
+use X11::Protocol; # <-- libx11-protocol-perl (>= 0.56-7)
+use Term::ANSIColor 'GREEN', 'RED', 'BOLD', 'RESET', 'YELLOW';
 use File::Basename 'dirname', 'basename';
-use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-02)
-use LWP::Simple;
-use LWP::UserAgent;
-use Image::Magick; # <-- libimage-magick-perl
-use List::MoreUtils 'uniq';
-use X11::Protocol;
 use File::Path 'make_path';
 use File::Temp;
 use POSIX 'ceil';
-use Term::ANSIColor 'GREEN', 'RED', 'BOLD', 'RESET', 'YELLOW';
 
-my $CurVer = "2020-01-03";
-my $Progrm = basename($0);
+my $CurVer = "2020-01-09";
 
 my $Domain = 'https://wallpaperscraft.com';
-my $GHURL = "https://github.com/terminalforlife/$Progrm/raw/master/version";
-my $LocalDir = "$ENV{HOME}/.local/share/$Progrm";
+my $GHURL = "https://github.com/terminalforlife/$TFL::PROGNAME/raw/master/version";
+my $LocalDir = "$ENV{HOME}/.local/share/$TFL::PROGNAME";
 my $CacheDir = "$LocalDir/cache";
 my $CacheCats = "$CacheDir/categories";
 my $CachePages = "$CacheDir/pages";
 my $HomePage = "$CacheDir/homepage";
 
 sub Usage{
-	my $Info = qq{            @{[uc($Progrm)]} ($CurVer)
+	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
 		            Written by terminalforlife <terminalforlife\@yahoo.com>
 
 		            Extensive Perl downloader for Wallpaperscraft.
 
-		SYNTAX:     $Progrm [OPTS] CATEGORY PAGE
+		SYNTAX:     $TFL::PROGNAME [OPTS] [CATEGORY] [PAGE]
 
 		OPTS:       --help|-h|-?            - Displays this help information.
 		            --version|-v            - Output only the version datestamp.
@@ -62,22 +61,20 @@ sub Usage{
 
 		NOTE:       Page numbers can be given in ranges, or single digits, as shown below.
 
-		DISPLAY:    By default, $Progrm will try to detect the current display resolution.
+		DISPLAY:    By default, $TFL::PROGNAME will try to detect the current display resolution.
 
 		            If you're using a multi-monitor setup, only the first discovered
 		            (connected) display will be processed; in this case, you might be
 		            better off picking your resolution manually, with the
 		            '--resolution|-r' flags.
 
-		EXAMPLE:    $Progrm -D ~/Downloads -N nature '2 8 10'
-		            $Progrm --links-only abstract '1 3 8 10-24 105'
-		            $Progrm --repopulate --clobber -O cars 1-5
-		            $Progrm -O -f cat -f snow animals 1-100
+		EXAMPLE:    $TFL::PROGNAME -D ~/Downloads -N nature '2 8 10'
+		            $TFL::PROGNAME --links-only abstract '1 3 8 10-24 105'
+		            $TFL::PROGNAME --repopulate --clobber -O cars 1-5
+		            $TFL::PROGNAME -O -f cat -f snow animals 1-100
 
 		SITE:       $Domain
-	};
-
-	print($Info =~ s/\t//gr)
+	} =~ s/\t//gr)
 }
 
 my $Resolution = '';
@@ -189,7 +186,7 @@ sub DLPage{
 		FErr(1, __LINE__, "Told to repopulate, but '--no-cache|N' is enabled")
 			if $Repopulate;
 
-		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_{$Progrm}.tmp');
+		my $FH = File::Temp->new(UNLINK => 0, SUFFIX => '_{$TFL::PROGNAME}.tmp');
 		binmode($FH, ':utf8'); # <-- Ensure temp file uses UTF-8 encoding.
 		$TempFile = $FH->filename();
 
