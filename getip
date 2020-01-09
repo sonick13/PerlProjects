@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/getip
 # Started On        - Wed  8 May 14:35:49 BST 2019
-# Last Change       - Thu  9 Jan 22:27:48 GMT 2020
+# Last Change       - Thu  9 Jan 22:41:56 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,12 +14,14 @@ use autodie;
 use File::Basename 'basename';
 use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-03)
 
+no warnings 'uninitialized';
+
 my $CurVer = "2020-01-09";
 
 my $Domain = "https://whatismyipaddress.com";
 
 sub Usage{
-	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
 		            $TFL::AUTHOR
 
 		            View your internal and/or external IP address.
@@ -33,32 +35,26 @@ sub Usage{
 		            --ip-only|-I            - Show only the IP address.
 
 		SITE:       $Domain
-	};
-
-	print($Info =~ tr/\t//dr)
+	} =~ tr/\t//dr)
 }
 
-my $Internal = 1;
-my $External = 1;
+my $Internal = 'true';
+my $External = 'true';
 my $IntExtDetected = 0;
 my $IntStr = 'Internal IP: ';
 my $ExtStr = 'External IP: ';
 
-while(scalar(@ARGV) > 0){
-	my $Arg = $ARGV[0];
-
-	if($Arg =~ '^(--help|-h|-\?)$'){
-		Usage(); exit 0
-	}elsif($Arg =~ '^(--version|-v)$'){
-		print("$CurVer\n"); exit 0
-	}elsif($Arg =~ '^(--internal|-i)$'){
-		$IntExtDetected++;
-		$Internal = 1; $External = 0
-	}elsif($Arg =~ '^(--external|-e)$'){
-		$IntExtDetected++;
-		$Internal = 0; $External = 1
-	}elsif($Arg =~ '^(--ip-only|-I)$'){
-		$IntStr = ''; $ExtStr = '';
+while(length($ARGV[0]) > 0){
+	if($ARGV[0] =~ '^(--help|-h|-\?)$'){
+		Usage(); exit(0)
+	}elsif($ARGV[0] =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif($ARGV[0] =~ '^(--internal|-i)$'){
+		$IntExtDetected++; $Internal = 'true'; $External = 'false'
+	}elsif($ARGV[0] =~ '^(--external|-e)$'){
+		$IntExtDetected++; $Internal = 'false'; $External = 'true'
+	}elsif($ARGV[0] =~ '^(--ip-only|-I)$'){
+		$IntStr = ''; $ExtStr = ''
 	}else{
 		Err(1, "Incorrect argument(s) specified")
 	}
@@ -82,13 +78,11 @@ if($External){
 	$UA->protocols_allowed(['http', 'https']);
 	$UA->agent('Mozilla/5.0');
 
-	my @Data = split("\n", $UA->get($Domain)->decoded_content());
-
-	foreach(@Data){
+	foreach(split("\n", $UA->get($Domain)->decoded_content())){
 		foreach(@{[split(' ', $_)]}){
 			if($_ =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]/){
 				print($_ =~ s/(.*)<\/span>$/$ExtStr$1/r . "\n");
-				last
+				exit(0)
 			}
 		}
 	}
