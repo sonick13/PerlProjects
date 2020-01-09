@@ -1,0 +1,360 @@
+#!/usr/bin/env perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/gitsap
+# Started On        - Mon  6 Jan 23:46:07 GMT 2020
+# Last Change       - Wed  8 Jan 23:01:54 GMT 2020
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# This project is based on a script I wrote in shell (Bash) called `gitsa` which
+# did the same thing but on a simpler and slower scale.
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use TFL 'Err', 'Boolean'; # <-- libtfl-perl (>= 2020-01-08)
+use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
+use Git::Repository; # <-- libgit-repository-perl (>= 1.317-1)
+use File::Basename 'basename', 'dirname';
+use Term::ANSIColor 'color', 'colorvalid';
+
+no warnings 'uninitialized';
+
+my $CurVer = "2020-01-08";
+
+sub Usage{
+	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
+
+		            Display an elegant overview of your git repositories.
+
+		SYNTAX:     $TFL::PROGNAME [OPTS] [REGEX]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+		            --ignore-case|-i        - Case-insensitive search for REGEX.
+		            --alt-path|-P PATH      - Override value in config with PATH.
+		            --config PATH           - Override default file with PATH.
+		            --force-reset           - Force regeneration of user's config.
+		            --parseable             - Parseable output, similar to raw.
+
+		NOTE:       The directory is allowed up 2 levels in depth, allowing for
+		            categories and their subcategories.
+
+		            Where REGEX is a REGEX string to use to filter repositories.
+
+		CONFIG:     A user configuration file (see below) will be generated when
+		            the program is executed without such a file existing.
+
+		            Once the 'config' file has been generated, adjust as needed.
+
+		FILE:       ~/.config/$TFL::PROGNAME/config
+	};
+
+	print($Info =~ tr/\t//dr)
+}
+
+my ($Parseable, $Compact, $DoCase, $Target, $ForceReset, %ColorHash);
+
+my $MainDir = "$ENV{HOME}/.config/$TFL::PROGNAME";
+my $ConfigFile = "$MainDir/config";
+
+mkdir($MainDir) unless -d $MainDir;
+
+while (defined($ARGV[0])){
+	if ($ARGV[0] =~ '^(--help|-h|-\?)$'){
+		Usage(1); exit(0)
+	}elsif ($ARGV[0] =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}elsif($ARGV[0] =~ '^(--ignore-case|-i)$'){
+		$DoCase = 'i'
+	}elsif($ARGV[0] =~ '^(--alt-path|-P)$'){
+		shift(@ARGV);
+
+		Err(1, "Option '--alt-path|-P' requires a PATH.")
+			unless length($ARGV[0]) > 0;
+
+		$Target = $ARGV[0];
+	}elsif($ARGV[0] =~ '^(--config|-c)$'){
+		shift(@ARGV);
+
+		Err(1, "Option '--config|-c' requires a PATH.")
+			unless length($ARGV[0]) > 0;
+
+		$ConfigFile = $ARGV[0]
+	}elsif($ARGV[0] eq '--parseable'){
+		$Parseable = 'true'
+	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
+		$ForceReset = 'true'
+	}elsif($ARGV[0] =~ '^-'){
+		Err(1, "Incorrect option(s) specified.")
+	}else{
+		last
+	}
+
+	shift(@ARGV)
+}
+
+# Use of this function is to avoid escaping issues in REGEX.
+my $RegexStr = quotemeta($ARGV[0]) if defined($ARGV[0]);
+
+if (scalar(@ARGV) > 1){
+	Err(1, "Too many arguments -- see: $TFL::PROGNAME -h")
+}elsif ($DoCase eq 'i' and scalar(@ARGV) == 0){
+	Err(1, "Option '--ignore-case|-i' used, but no REGEX provided.")
+}
+
+my @CKeys = ('Color_Symbol', 'Color_Repository', 'Color_Status');
+
+my %Syms = (
+	'Char_Clean' => '≎', 'Char_Uncommitted' => '≍', 'Char_Unstaged' => '≭',
+	'Char_New' => '≺', 'Char_Removed' => '⊀', 'Char_Initial' => '≔',
+	'Char_Leads' => '∾', 'Char_Fix' => '⮂', 'Char_Unknown' => '!'
+);
+
+unlink($ConfigFile) if $ForceReset eq 'true';
+
+if (-f -r -T $ConfigFile){
+	open(my $FH, '<', $ConfigFile);
+	my @Data = <$FH>;
+	close($FH);
+
+	foreach (@Data){
+		next if length($_) <= 1 or $_ =~ '^#';
+		chomp(my ($Key, $Value) = split('=', $_));
+
+		if ($Key eq 'Target'){
+			Err(1, "Key 'Target' not set -- see: $TFL::PROGNAME -h")
+				if $Value eq 'NULL';
+
+			$Target = $Value =~ s/\/$//r
+		}elsif ($Key eq 'RegexStr'){
+			$RegexStr = quotemeta($Value) unless length($Value) == 0
+		}elsif ($Key eq 'Parseable'){
+			next if $Parseable eq 'true';
+
+			Boolean($Value);
+			$Parseable = $Value
+		}elsif ($Key =~ '^Color_.*'){
+			Err(1, "Invalid color '$Value' detected.")
+				unless colorvalid($Value);
+
+			$ColorHash{$Key} = $Value =~ tr/['"]//dr
+		}elsif ($Key =~ '^Color_.*'){
+			Err(1, "Invalid 'Color_*' key detected.")
+				unless grep($Key, @CKeys);
+
+			$ColorHash{$Key} = $Value =~ tr/['"]//dr
+		}elsif ($Key =~ '^Char_.*'){
+			if (not grep($Key, keys(%Syms))){
+				Err(1, "Invalid 'Char_*' key detected.")
+			}elsif (length($Value) > 1){
+				Err(1, "Invalid 'Char_*' value detected.")
+			}elsif (length($Value) == 0){
+				next
+			}
+
+			$Syms{$Key} = $Value =~ tr/['"]//dr
+		}elsif ($Key eq 'Compact'){
+			$Compact = $Value
+		}else{
+			Err(1, "Invalid key '$Key' detected.")
+		}
+	}
+}else{
+	open(my $FH, '>', $ConfigFile);
+
+	my $Contents = qq{# User configuration file for `$TFL::PROGNAME` ($CurVer)
+
+		# Specify the location (file or directory) for $TFL::PROGNAME to use.
+		Target=NULL
+
+		# If set to a value, it will always be used as REGEX. This could be handy
+		# if you want to always view certain repositories. This key, if used, will
+		# override any REGEX string otherwise set.
+		RegexStr=
+
+		# Display text in an easy-to-parse way, overriding pretty keys shown below.
+		# If enabled, all symbols will be removed.
+		Parseable=false
+
+		# Display each repository's symbol, name, and status on a single line.
+		Compact=false
+
+		# Optionally assign your own character to each type of status. The defaults
+		# will be used if these keys' values are left empty.
+		Char_Clean=
+		Char_Uncommitted=
+		Char_Unstaged=
+		Char_New=
+		Char_Removed=
+		Char_Initial=
+		Char_Leads=
+		Char_Fix=
+		Char_Unknown=
+
+		# Various color keys and their values. To disable color support, simply
+		# set each of these to null, by removing all of their values.
+		Color_Symbol=red
+		Color_Repository=bright_white
+		Color_Status=white};
+
+	printf($FH "%s\n", $Contents =~ tr/\t//dr);
+
+	close($FH);
+	printf("File '~/.config/$TFL::PROGNAME/config' generated -- please restart.\n");
+	exit(0)
+}
+
+my @FileArr;
+sub Conditions{
+	my $Name = $File::Find::name;
+
+	return unless basename($Name) eq '.git';
+	return unless -d -r -x $Name;
+	my $NewName = $Name =~ s/$Target\///r;
+
+	push(@FileArr, $NewName =~ s/\/\.git$//r)
+}
+
+# Recursive search for files in `Target` per `Conditions()`.
+find(\&Conditions, $Target);
+
+my (@Results, $Result);
+foreach (@FileArr){
+	my $Path = "$Target/$_";
+
+	# Look for user-provided REGEX in line, if one is given.
+	if (length($RegexStr) > 0){
+		if ($DoCase eq 'i'){
+			next unless grep(m/$RegexStr/i, $_)
+		}else{
+			next unless grep(m/$RegexStr/, $_)
+		}
+	}
+
+	my $Git = Git::Repository->new('work_tree' => $Path);
+
+	# Default values, in-case something goes wrong.
+	my $Branch = "Unknown branch ";
+	my $Sym = $Syms{'unknown'};
+	my $Desc = '...';
+
+	chomp(my @Status = $Git->run('status'));
+
+	# File `HEAD` is assumed to exist and be accessible.
+	open(my $FH, '<', "$Path/.git/HEAD");
+	chomp($Branch = basename(<$FH>));
+	close($FH);
+
+	# Loops in special order:
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		($Sym, $Desc) = ($Syms{'Char_Initial'}, 'has no commits, yet.')
+			if "$Arr[0]$Arr[1]" eq 'Initialcommit';
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		($Sym, $Desc) = ($Syms{'Char_Fix'}, 'has conflict(s).')
+			if "$Arr[0]$Arr[1]$Arr[2]" eq '(fixconflictsand'
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		my @CommitsRaw = $Git->run('log', '--format=oneline');
+		my $Commits = scalar(@CommitsRaw);
+
+		($Sym, $Desc) = ($Syms{'Char_Clean'}, "is $Commits commit(s) clean.")
+			if "$Arr[0]$Arr[1]$Arr[2]" eq 'nothingtocommit,';
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		my $Found = 'true' if "$Arr[0]$Arr[1]$Arr[3]" eq 'Yourbranchahead';
+
+		if ($Found eq 'true'){
+			my $Leads = $Arr[scalar(@Arr) - 2];
+			($Sym, $Desc) = ($Syms{'Char_Leads'}, "leads by $Leads commit(s).")
+		}
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		my $Found = 'true' if "$Arr[0]$Arr[1]" eq 'Untrackedfiles:';
+
+		my $FilesTTL = 0;
+		if ($Found eq 'true'){
+			my @Data = $Git->run('status', '--short');
+
+			foreach (@Data){
+				$FilesTTL++ if $_ =~ '^?? '
+			}
+
+			($Sym, $Desc) = ($Syms{'Char_New'}, "has $FilesTTL new file(s).")
+		}
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		my $Found = 'true' if "$Arr[0]" eq 'modified:';
+
+		if ($Found eq 'true'){
+			my @Data = $Git->run('diff', '--shortstat');
+
+			my $FilesTTL;
+			foreach (@Data){
+				$FilesTTL = (split(' ', $_))[0] and last
+			}
+
+			($Sym, $Desc) = ($Syms{'Char_Uncommitted'}, "has $FilesTTL modified file(s).")
+		}
+	}
+
+	foreach (@Status){
+		chomp(my @Arr = split(' ', $_));
+
+		($Sym, $Desc) = ($Syms{'Char_Unstaged'}, "has changes to commit.")
+			if "$Arr[0]$Arr[1]$Arr[2]$Arr[3]" eq 'Changestobecommitted:'
+	}
+
+	# End of specially-ordered while loops.
+
+	if ($Parseable eq 'true'){
+		$Result = sprintf(
+			"%s~~~%s", $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+		);
+	}elsif ($Compact ne 'true'){
+		$Result = sprintf(
+			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
+			color($ColorHash{'Color_Repository'}) . "%s\n" . color('reset') .
+			color($ColorHash{'Color_Status'}) . "     %s" . color('reset'),
+			$Sym, $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+		);
+	}else{
+		$Result = sprintf(
+			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
+			color($ColorHash{'Color_Repository'}) . "%s " . color('reset') .
+			color($ColorHash{'Color_Status'}) . "%s" . color('reset'),
+			$Sym, $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+		);
+	}
+
+	push(@Results, $Result)
+}
+
+my $Count;
+foreach (@Results){
+	print("$_\n");
+	print("\n") unless ++$Count == scalar(@Results)
+		or $Compact eq 'true' or $Parseable eq 'true'
+}
