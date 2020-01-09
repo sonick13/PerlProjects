@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Fri  3 Jan 20:03:57 GMT 2020
+# Last Change       - Thu  9 Jan 18:55:08 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized', 'File::Find';
 
-my $CurVer = "2020-01-03";
+my $CurVer = "2020-01-09";
 
 sub Usage{
 	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -132,7 +132,7 @@ if (scalar(@ARGV) > 1){
 }
 
 # Use of this function is to avoid escaping issues in REGEX.
-my $RegexStr = quotemeta($ARGV[0]);
+my $RegexStr = $ARGV[0];
 
 my $TermCols = @{[GetTerminalSize()]}[0];
 
@@ -163,9 +163,9 @@ if (-f -r -T $ConfigFile){
 			}elsif ($Key eq 'Target'){
 				$Target = $Value unless $SolidTarget eq 'true'
 			}elsif ($Key eq 'TodoStr'){
-				$TodoStr = quotemeta($Value)
+				$TodoStr = $Value
 			}elsif ($Key eq 'RegexStr'){
-				$RegexStr = quotemeta($Value) unless length($Value) == 0
+				$RegexStr = $Value unless length($Value) == 0
 			}elsif ($Key eq 'DoZPNums'){
 				Boolean($Value);
 				$DoZPNums = $Value
