@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/gitsap
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Wed  8 Jan 23:01:54 GMT 2020
+# Last Change       - Thu  9 Jan 18:37:05 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-08";
+my $CurVer = "2020-01-09";
 
 sub Usage{
 	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
