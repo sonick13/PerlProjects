@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu  9 Jan 19:48:04 GMT 2020
+# Last Change       - Thu  9 Jan 19:48:40 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ sub Boolean{
 
 =head1 CHANGES
 
-=head2 2020-01-02
+=head2 2020-01-09
 
 Added Boolean().
 
