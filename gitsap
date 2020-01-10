@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Fri 10 Jan 15:16:15 GMT 2020
+# Last Change       - Fri 10 Jan 16:15:19 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -109,7 +109,8 @@ if (scalar(@ARGV) > 1){
 	FErr(1, __LINE__, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
-my @CKeys = ('Color_Symbol', 'Color_Repository', 'Color_Status');
+my @Sets = ('Target', 'Parseable', 'ShowBranch', 'RegexStr', 'Compact');
+my @CKeys = ('Color_Symbol', 'Color_Repo', 'Color_RepoDir', 'Color_Status');
 
 my %Syms = (
 	'Char_Clean'         => '≎',
@@ -123,6 +124,8 @@ my %Syms = (
 	'Char_Unstaged'      => '≭'
 );
 
+my $ValidKeysTTL = scalar(@Sets) + scalar(@CKeys) + scalar(keys(%Syms));
+
 unlink($ConfigFile) if $ForceReset eq 'true';
 
 if (-f -r -T $ConfigFile){
@@ -130,9 +133,12 @@ if (-f -r -T $ConfigFile){
 	my @Data = <$FH>;
 	close($FH);
 
+	my $TTL = 0;
 	foreach (@Data){
 		next if length($_) <= 1 or $_ =~ '^#';
 		chomp(my ($Key, $Value) = split('=', $_));
+
+		$TTL++;
 
 		if ($Key eq 'Target'){
 			FErr(1, __LINE__, "Key 'Target' not set -- see: $TFL::PROGNAME -h")
@@ -173,6 +179,8 @@ if (-f -r -T $ConfigFile){
 			FErr(1, __LINE__, "Invalid key '$Key' detected.")
 		}
 	}
+
+	FErr(1, __LINE__, 'One or more keys are missing.') unless $TTL == $ValidKeysTTL
 }else{
 	open(my $FH, '>', $ConfigFile);
 
@@ -182,7 +190,7 @@ if (-f -r -T $ConfigFile){
 		Target=NULL
 
 		# Whether or not to display the repository's current branch.
-		ShowBranch=true
+		ShowBranch=false
 
 		# If set to a value, it will always be used as REGEX. This could be handy
 		# if you want to always view certain repositories. This key, if used, will
@@ -194,7 +202,7 @@ if (-f -r -T $ConfigFile){
 		Parseable=false
 
 		# Display each repository's symbol, name, and status on a single line.
-		Compact=false
+		Compact=true
 
 		# Optionally assign your own character to each type of status. The defaults
 		# will be used if these keys' values are left empty.
@@ -210,9 +218,10 @@ if (-f -r -T $ConfigFile){
 
 		# Various color keys and their values. To disable color support, simply
 		# set each of these to null, by removing all of their values.
-		Color_Repository=bright_white
-		Color_Status=white
-		Color_Symbol=red
+		Color_Repo=red
+		Color_RepoDir=red
+		Color_Status=bright_white
+		Color_Symbol=bright_red
 	} =~ tr/\t//dr);
 
 	close($FH);
@@ -237,6 +246,7 @@ find(\&Conditions, $Target);
 my (@Results, $Result);
 foreach (@FileArr){
 	my $Path = "$Target/$_";
+	my $ShowPath = $Path =~ s/$Target\///r;
 
 	# Look for user-provided REGEX in line, if one is given.
 	if (length($RegexStr) > 0){
@@ -343,28 +353,32 @@ foreach (@FileArr){
 			if "$Arr[0]$Arr[1]$Arr[2]$Arr[3]" eq 'Changestobecommitted:'
 	}
 
-	# End of specially-ordered while loops.
+	# End of specially-ordered loops.
+
+	my $DirName = dirname($ShowPath) . '/';
+	my $BaseName = basename($ShowPath);
 
 	$Desc = "Branch '$Branch' $Desc" if $ShowBranch eq 'true';
 
 	if ($Parseable eq 'true'){
-		$Result = sprintf(
-			"%s~~~%s", $Path =~ s/$Target\///r, $Desc
-		);
+		$Result = sprintf("%s%s~~~%s", $DirName, $BaseName, $Desc)
 	}elsif ($Compact ne 'true'){
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
 			color($ColorHash{'Color_Repository'}) . "%s\n" . color('reset') .
-			color($ColorHash{'Color_Status'}) . "     %s" . color('reset'),
-			$Sym, $Path =~ s/$Target\///r, $Desc
-		);
+			color($ColorHash{'Color_Status'}) . "     %s" . color('reset') .
+			color($ColorHash{'Color_RepoDir'}) . "%s" . color('reset') .
+			color($ColorHash{'Color_Repo'}) . "%s" . color('reset'),
+			$Sym, $DirName, $BaseName, $Desc
+		)
 	}else{
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
-			color($ColorHash{'Color_Repository'}) . "%s " . color('reset') .
+			color($ColorHash{'Color_RepoDir'}) . "%s" . color('reset') .
+			color($ColorHash{'Color_Repo'}) . "%s " . color('reset') .
 			color($ColorHash{'Color_Status'}) . "%s" . color('reset'),
-			$Sym, $Path =~ s/$Target\///r, $Desc
-		);
+			$Sym, $DirName, $BaseName, $Desc
+		)
 	}
 
 	push(@Results, $Result)
