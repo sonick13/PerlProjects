@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Thu  9 Jan 23:46:16 GMT 2020
+# Last Change       - Fri 10 Jan 15:07:42 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-09";
+my $CurVer = "2020-01-10";
 
 sub Usage{
 	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -56,7 +56,10 @@ sub Usage{
 	print($Info =~ tr/\t//dr)
 }
 
-my ($SolidTarget, $Parseable, $Compact, $DoCase, $Target, $ForceReset, %ColorHash);
+my (
+	$ShowBranch, $SolidTarget, $Parseable, $Compact,
+	$DoCase, $Target, $ForceReset, %ColorHash
+);
 
 my $MainDir = "$ENV{HOME}/.config/$TFL::PROGNAME";
 my $ConfigFile = "$MainDir/config";
@@ -140,9 +143,10 @@ if (-f -r -T $ConfigFile){
 			$Target = $Value =~ s/\/$//r unless $SolidTarget eq 'true'
 		}elsif ($Key eq 'RegexStr'){
 			$RegexStr = $Value unless length($Value) == 0
+		}elsif ($Key eq 'ShowBranch'){
+			Boolean($Value);
+			$ShowBranch = $Value
 		}elsif ($Key eq 'Parseable'){
-			next if $Parseable eq 'true';
-
 			Boolean($Value);
 			$Parseable = $Value
 		}elsif ($Key =~ '^Color_.*'){
@@ -178,6 +182,9 @@ if (-f -r -T $ConfigFile){
 
 		# Specify the location (file or directory) for $TFL::PROGNAME to use.
 		Target=NULL
+
+		# Whether or not to display the repository's current branch.
+		ShowBranch=true
 
 		# If set to a value, it will always be used as REGEX. This could be handy
 		# if you want to always view certain repositories. This key, if used, will
@@ -255,9 +262,11 @@ foreach (@FileArr){
 	FErr(1, __LINE__, "Unable to acquire repository information.")
 		unless -f "$Path/.git/HEAD";
 
-	open(my $FH, '<', "$Path/.git/HEAD");
-	chomp($Branch = basename(<$FH>));
-	close($FH);
+	unless ($ShowBranch eq 'false'){
+		open(my $FH, '<', "$Path/.git/HEAD");
+		chomp($Branch = basename(<$FH>));
+		close($FH);
+	}
 
 	# Loops in special order:
 
@@ -339,23 +348,25 @@ foreach (@FileArr){
 
 	# End of specially-ordered while loops.
 
+	$Desc = "Branch '$Branch' $Desc" if $ShowBranch eq 'true';
+
 	if ($Parseable eq 'true'){
 		$Result = sprintf(
-			"%s~~~%s", $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+			"%s~~~%s", $Path =~ s/$Target\///r, $Desc
 		);
 	}elsif ($Compact ne 'true'){
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
 			color($ColorHash{'Color_Repository'}) . "%s\n" . color('reset') .
 			color($ColorHash{'Color_Status'}) . "     %s" . color('reset'),
-			$Sym, $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+			$Sym, $Path =~ s/$Target\///r, $Desc
 		);
 	}else{
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
 			color($ColorHash{'Color_Repository'}) . "%s " . color('reset') .
 			color($ColorHash{'Color_Status'}) . "%s" . color('reset'),
-			$Sym, $Path =~ s/$Target\///r, "Branch '$Branch' $Desc"
+			$Sym, $Path =~ s/$Target\///r, $Desc
 		);
 	}
 
