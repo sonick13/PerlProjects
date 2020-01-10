@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Fri 10 Jan 15:07:42 GMT 2020
+# Last Change       - Fri 10 Jan 15:16:15 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ no warnings 'uninitialized';
 my $CurVer = "2020-01-10";
 
 sub Usage{
-	my $Info = qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
 		            $TFL::AUTHOR
 
 		            Display an elegant overview of your git repositories.
@@ -51,9 +51,7 @@ sub Usage{
 		            Once the 'config' file has been generated, adjust as needed.
 
 		FILE:       ~/.config/$TFL::PROGNAME/config
-	};
-
-	print($Info =~ tr/\t//dr)
+	} =~ tr/\t//dr)
 }
 
 my (
@@ -178,7 +176,7 @@ if (-f -r -T $ConfigFile){
 }else{
 	open(my $FH, '>', $ConfigFile);
 
-	my $Contents = qq{# User configuration file for `$TFL::PROGNAME` ($CurVer)
+	print($FH qq{# User configuration file for `$TFL::PROGNAME` ($CurVer)
 
 		# Specify the location (file or directory) for $TFL::PROGNAME to use.
 		Target=NULL
@@ -214,9 +212,8 @@ if (-f -r -T $ConfigFile){
 		# set each of these to null, by removing all of their values.
 		Color_Repository=bright_white
 		Color_Status=white
-		Color_Symbol=red};
-
-	printf($FH "%s\n", $Contents =~ tr/\t//dr);
+		Color_Symbol=red
+	} =~ tr/\t//dr);
 
 	close($FH);
 	printf("File '~/.config/$TFL::PROGNAME/config' generated -- please restart.\n");
