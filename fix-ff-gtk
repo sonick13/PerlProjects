@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/fix-ff-gtk (Fix Firefox GTK)
 # Started On        - Fri 10 Jan 19:32:40 GMT 2020
-# Last Change       - Fri 10 Jan 23:51:52 GMT 2020
+# Last Change       - Sat 11 Jan 00:07:33 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -13,9 +13,9 @@
 use strict;
 use warnings;
 use autodie;
-use TFL 'Err', 'YNInput'; # <-- libtfl-perl (>= 2020-01-10)
+use TFL 'Err', 'YNInput'; # <-- libtfl-perl (>= 2020-01-11)
 
-my $CurVer = "2020-01-10";
+my $CurVer = "2020-01-11";
 
 my $File = '/usr/bin/firefox';
 my $Theme = 'Adwaita';
