@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-
+#cito M:755 O:0 G:0 T:/usr/bin/ldmod
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/ldmod (List & Describe Modules)
 # Started On        - Sat 11 Jan 14:33:58 GMT 2020
-# Last Change       - Sat 11 Jan 18:34:00 GMT 2020
+# Last Change       - Sat 11 Jan 18:35:38 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
