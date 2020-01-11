@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Sat 11 Jan 21:50:02 GMT 2020
+# Last Change       - Sat 11 Jan 21:55:28 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -364,21 +364,20 @@ foreach (@FileArr){
 
 	if ($Parseable eq 'true'){
 		$Result = sprintf("%s%s~~~%s", $DirName, $BaseName, $Desc)
-	}elsif ($Compact ne 'true'){
+	}elsif ($Compact eq 'true'){
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
-			color($ColorHash{'Color_Repository'}) . "%s\n" . color('reset') .
-			color($ColorHash{'Color_Status'}) . "     %s" . color('reset') .
 			color($ColorHash{'Color_RepoDir'}) . "%s" . color('reset') .
-			color($ColorHash{'Color_Repo'}) . "%s" . color('reset'),
+			color($ColorHash{'Color_Repo'}) . "%s " . color('reset') .
+			color($ColorHash{'Color_Status'}) . "%s" . color('reset'),
 			$Sym, $DirName, $BaseName, $Desc
 		)
 	}else{
 		$Result = sprintf(
 			color($ColorHash{'Color_Symbol'}) . "  %s  " . color('reset') .
 			color($ColorHash{'Color_RepoDir'}) . "%s" . color('reset') .
-			color($ColorHash{'Color_Repo'}) . "%s " . color('reset') .
-			color($ColorHash{'Color_Status'}) . "%s" . color('reset'),
+			color($ColorHash{'Color_Repo'}) . "%s\n" . color('reset') .
+			color($ColorHash{'Color_Status'}) . "     %s" . color('reset'),
 			$Sym, $DirName, $BaseName, $Desc
 		)
 	}
