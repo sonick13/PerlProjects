@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Fri 10 Jan 16:15:19 GMT 2020
+# Last Change       - Sat 11 Jan 21:50:02 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-10";
+my $CurVer = "2020-01-11";
 
 sub Usage{
 	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -239,6 +239,8 @@ sub Conditions{
 
 	push(@FileArr, $NewName =~ s/\/\.git$//r)
 }
+
+FErr(1, __LINE__, "Target directory not found.") unless -d $Target;
 
 # Recursive search for files in `Target` per `Conditions()`.
 find(\&Conditions, $Target);
