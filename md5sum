@@ -7,6 +7,7 @@ ffa55884b0c43ca6341d1b721a02dfed  apt-download-deps
 8cc777f2a5f6cdd6d5623a26b761247b  apt-undo-install
 9867680bd82e666e8156ab626188e874  clean-locales
 325104ae6b4c4591cddac02c3011c0e9  cpufreq
+21c7cbba7ebea408bc23b9df4ee9275a  fix-ff-gtk
 ca68987265fcf9ad93d407853de96a4b  get-fma
 04dab8e31411c2ae622d202747ccda10  getip
 93aecd950562e1cc830c8863fe53071a  gitbrov
@@ -17,7 +18,7 @@ d19d9d633a6eb7feddb084ab22bc7f52  gitsap
 769375aa561193e1e313f9ba80cdffda  previewer
 0b35499db50014c1e4019c6c67df3d52  redshifter
 55d3f1aaa3fa5084f121880580a3ad5c  suptime
-f3539e61ed49fddbd2a9e29b360479c4  TFL.pm
+b63668374cfdd26c0502d15baf938bac  TFL.pm
 d8e1cdd8b3eb0a8b9e3ec3097063ee63  tozero
 afacf96716e44c1a0a298d1504a3b853  tudu
 bf809a0325e6ffdc5e86aef9dab00007  wcdl
