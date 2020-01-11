@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Thu  9 Jan 19:48:40 GMT 2020
+# Last Change       - Sat 11 Jan 00:05:50 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -38,10 +38,10 @@ use vars '@ISA', '@EXPORT', '$VERSION';
 
 @EXPORT = (
 	'$PROGNAME', '$AUTHOR', '$GITHUB', 'FErr', 'Err', 'KeyVal',
-	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine', 'Boolean'
+	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine', 'Boolean', 'YNInput'
 );
 
-$VERSION = '2020-01-09';
+$VERSION = '2020-01-11';
 
 our ($PROGNAME) = $0 =~ m{(?:.*/)?([^/]*)};
 our $AUTHOR = 'written by terminalforlife <terminalforlife@yahoo.com>';
@@ -218,9 +218,32 @@ sub Boolean{
 		unless $_[0] =~ '^(true|false)$'
 }
 
+=item YNInput()
+
+Ask a simple 'yes' or 'no' question, per the first argument, case-insensitively.
+
+=cut
+
+sub YNInput{
+	print("$_[0] [Y/N] ");
+	my $Reply = <STDIN>;
+
+	if ($Reply =~ '^([Nn]|[Nn][Oo])$'){
+		return(1)
+	}elsif (length($Reply) == 0 or $Reply !~ '^([Yy]|[Yy][Ee][Ss])$'){
+		return(2)
+	}else{
+		return(0)
+	}
+}
+
 =back
 
 =head1 CHANGES
+
+=head2 2020-01-11
+
+Added YNInput().
 
 =head2 2020-01-09
 
