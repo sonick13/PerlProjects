@@ -1,0 +1,71 @@
+#!/usr/bin/env perl
+
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/vignify
+# Started On        - Sun 12 Jan 22:02:23 GMT 2020
+# Last Change       - Sun 12 Jan 23:54:21 GMT 2020
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Just a small script I wrote one night while messing around with the Image::Magick
+# module. It will scale the image up to your current screen's resolution, and add a
+# vignette effect, plus some other things.
+#
+# I plan to use this and some other things to make some cool backgrounds for videos
+# I put up on my YouTube channel, Learn Linux.
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use TFL 'Err', 'YNInput'; # <-- libtfl-perl (>= 2020-01-02)
+use Image::Magick; # <-- libimage-magick-perl (>= 8:6.8.9.9-7)
+use X11::Protocol; # <-- libx11-protocol-perl (>= 0.56-7)
+
+no warnings 'uninitialized';
+
+unless (@ARGV == 2 or @ARGV == 3){
+	printf(
+		"Usage: %s [IN] [OUT] [COMPOSITE]\n",
+		$0 =~ m{(?:.*/)?(.*)}
+	) and exit(1)
+}elsif (not -f -r $ARGV[0]){
+	Err(1, 'Input file missing or unreadable.')
+}elsif (not -d $ARGV[1] =~ m{([^./].*)(?:/.*)} || './'){
+	Err(1, 'Output path missing or unreadable.')
+}
+
+my $Input = $ARGV[0];
+my $Output = $ARGV[1];
+
+sub GetRes{
+	my $X11 = X11::Protocol->new();
+
+	return([$X11->width_in_pixels(), $X11->height_in_pixels()]);
+}
+
+my $Image = Image::Magick->new();
+
+$Image->Read($Input);
+
+my ($Width, $Height) = $Image->Get('width', 'height');
+
+$Image->Resize(
+	'width' => GetRes()->[0],
+	'height' => GetRes()->[1]
+);
+
+$Image->BlueShift(1.4);
+
+$Image->Vignette(
+	'background' => 'black', 'x' => 290,
+	'y' => 270, 'geometry' => '300x300'
+);
+
+$Image->Display(':0');
+
+if (YNInput('Save?')){
+	$Image->Write($Output)
+}else{
+	unlink($Output) if -f $Output
+}
