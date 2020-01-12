@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/TFL.pm
 # Started On        - Mon  6 May 19:29:05 BST 2019
-# Last Change       - Sat 11 Jan 00:05:50 GMT 2020
+# Last Change       - Sun 12 Jan 23:42:07 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -229,11 +229,11 @@ sub YNInput{
 	my $Reply = <STDIN>;
 
 	if ($Reply =~ '^([Nn]|[Nn][Oo])$'){
-		return(1)
+		return(0)
 	}elsif (length($Reply) == 0 or $Reply !~ '^([Yy]|[Yy][Ee][Ss])$'){
 		return(2)
 	}else{
-		return(0)
+		return(1)
 	}
 }
 
