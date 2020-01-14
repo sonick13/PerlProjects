@@ -3,26 +3,33 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Sat 11 Jan 21:55:28 GMT 2020
+# Last Change       - Tue 14 Jan 19:55:09 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
 # This project is based on a script I wrote in shell (Bash) called `gitsa` which
 # did the same thing but on a simpler and slower scale.
+#
+# Dependencies:
+#
+#   libfile-listing-perl (>= 6.04-1)
+#   libgit-repository-perl (>= 1.317-1)
+#   libnumber-bytes-human-perl (>= 0.09-1)
+#   libtfl-perl (>= 2020-01-08)
 #----------------------------------------------------------------------------------
 
 use strict;
 use warnings;
 use autodie;
-use TFL 'FErr', 'Boolean'; # <-- libtfl-perl (>= 2020-01-08)
-use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
-use Git::Repository; # <-- libgit-repository-perl (>= 1.317-1)
+use TFL 'FErr', 'Boolean';
+use File::Find;
+use Git::Repository;
 use File::Basename 'basename', 'dirname';
 use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-11";
+my $CurVer = "2020-01-14";
 
 sub Usage{
 	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -55,8 +62,8 @@ sub Usage{
 }
 
 my (
-	$ShowBranch, $SolidTarget, $Parseable, $Compact,
-	$DoCase, $Target, $ForceReset, %ColorHash
+	$ShowBranch, $SolidTarget, $Parseable, $Compact, $ShowSize,
+	$DoCase, $Target, $ForceReset, %ColorHash, $OmitClean
 );
 
 my $MainDir = "$ENV{HOME}/.config/$TFL::PROGNAME";
@@ -109,8 +116,15 @@ if (scalar(@ARGV) > 1){
 	FErr(1, __LINE__, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
-my @Sets = ('Target', 'Parseable', 'ShowBranch', 'RegexStr', 'Compact');
-my @CKeys = ('Color_Symbol', 'Color_Repo', 'Color_RepoDir', 'Color_Status');
+my @Sets = (
+	'OmitClean', 'Target', 'Parseable', 'ShowSize',
+	'ShowBranch', 'RegexStr', 'Compact'
+);
+
+my @CKeys = (
+	'Color_Symbol', 'Color_Repo',
+	'Color_RepoDir', 'Color_Status'
+);
 
 my %Syms = (
 	'Char_Clean'         => '≎',
@@ -150,9 +164,15 @@ if (-f -r -T $ConfigFile){
 		}elsif ($Key eq 'ShowBranch'){
 			Boolean($Value);
 			$ShowBranch = $Value
+		}elsif ($Key eq 'ShowSize'){
+			Boolean($Value);
+			$ShowSize = $Value
 		}elsif ($Key eq 'Parseable'){
 			Boolean($Value);
 			$Parseable = $Value
+		}elsif ($Key eq 'OmitClean'){
+			Boolean($Value);
+			$OmitClean = $Value
 		}elsif ($Key =~ '^Color_.*'){
 			FErr(1, __LINE__, "Invalid color '$Value' detected.")
 				unless colorvalid($Value);
@@ -189,8 +209,14 @@ if (-f -r -T $ConfigFile){
 		# Specify the location (file or directory) for $TFL::PROGNAME to use.
 		Target=NULL
 
+		# Display the total human-readable size of each repository.
+		ShowSize=false
+
 		# Whether or not to display the repository's current branch.
 		ShowBranch=false
+
+		# If enabled, all clean repositories will be ommitted from the results.
+		OmitClean=false
 
 		# If set to a value, it will always be used as REGEX. This could be handy
 		# if you want to always view certain repositories. This key, if used, will
@@ -229,21 +255,23 @@ if (-f -r -T $ConfigFile){
 	exit(0)
 }
 
-my @FileArr;
-sub Conditions{
-	my $Name = $File::Find::name;
-
-	return unless basename($Name) eq '.git';
-	return unless -d -r -x $Name;
-	my $NewName = $Name =~ s/$Target\///r;
-
-	push(@FileArr, $NewName =~ s/\/\.git$//r)
-}
-
 FErr(1, __LINE__, "Target directory not found.") unless -d $Target;
 
 # Recursive search for files in `Target` per `Conditions()`.
-find(\&Conditions, $Target);
+my @FileArr;
+find(
+	sub {
+		my $Name = $File::Find::name;
+
+		return unless basename($Name) eq '.git';
+		return unless -d -r -x $Name;
+		my $NewName = $Name =~ s/$Target\///r;
+
+		push(@FileArr, $NewName =~ s/\/\.git$//r)
+	},
+
+	$Target
+);
 
 my (@Results, $Result);
 foreach (@FileArr){
@@ -362,6 +390,24 @@ foreach (@FileArr){
 
 	$Desc = "Branch '$Branch' $Desc" if $ShowBranch eq 'true';
 
+	if ($ShowSize eq 'true'){
+		use Number::Bytes::Human 'format_bytes';
+
+		my $Bytes = 0;
+
+		find(
+			sub {
+				# Tally up the bytes for each file found.
+				$Bytes += (stat($File::Find::name))[7]
+			},
+
+			$Path
+		);
+
+		my $SansPeriod = substr($Desc, 0, length($Desc) - 1);
+		$Desc = sprintf("%s, taking up %s.", $SansPeriod, format_bytes($Bytes))
+	}
+
 	if ($Parseable eq 'true'){
 		$Result = sprintf("%s%s~~~%s", $DirName, $BaseName, $Desc)
 	}elsif ($Compact eq 'true'){
@@ -382,12 +428,19 @@ foreach (@FileArr){
 		)
 	}
 
+	next if $OmitClean eq 'true' and $Desc =~ 'commit\(s\) clean';
+
 	push(@Results, $Result)
 }
 
-my $Count;
-foreach (@Results){
-	print("$_\n");
-	print("\n") unless ++$Count == scalar(@Results)
-		or $Compact eq 'true' or $Parseable eq 'true'
+if (scalar(@Results) > 0){
+	my $Count;
+	foreach (@Results){
+		print("$_\n");
+		print("\n") unless ++$Count == scalar(@Results)
+			or $Compact eq 'true' or $Parseable eq 'true'
+	}
+}else{
+	# If all repositories are clean and OmitClean is enabled, this:
+	print(STDERR "Uh-oh! ...nothing to show.\n") and exit(2)
 }
