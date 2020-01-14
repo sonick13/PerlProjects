@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Tue 14 Jan 19:55:09 GMT 2020
+# Last Change       - Tue 14 Jan 20:10:47 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -116,26 +116,35 @@ if (scalar(@ARGV) > 1){
 	FErr(1, __LINE__, "Option '--ignore-case|-i' used, but no REGEX provided.")
 }
 
-my @Sets = (
-	'OmitClean', 'Target', 'Parseable', 'ShowSize',
-	'ShowBranch', 'RegexStr', 'Compact'
-);
+my %Index = (
+	'Sets' => [
+		'Compact',
+		'OmitClean',
+		'Parseable',
+		'RegexStr',
+		'ShowBranch',
+		'ShowSize',
+		'Target'
+	],
 
-my @CKeys = (
-	'Color_Symbol', 'Color_Repo',
-	'Color_RepoDir', 'Color_Status'
-);
+	'CKeys' => [
+		'Color_Repo',
+		'Color_RepoDir',
+		'Color_Status',
+		'Color_Symbol'
+	],
 
-my %Syms = (
-	'Char_Clean'         => '≎',
-	'Char_Fix'           => '⮂',
-	'Char_Initial'       => '≔',
-	'Char_Leads'         => '∾',
-	'Char_New'           => '≺',
-	'Char_Removed'       => '⊀',
-	'Char_Uncommitted'   => '≍',
-	'Char_Unknown'       => '!',
-	'Char_Unstaged'      => '≭'
+	'Syms' => {
+		'Char_Clean' => '≎',
+		'Char_Fix' => '⮂',
+		'Char_Initial' => '≔',
+		'Char_Leads' => '∾',
+		'Char_New' => '≺',
+		'Char_Removed' => '⊀',
+		'Char_Uncommitted' => '≍',
+		'Char_Unknown' => '!',
+		'Char_Unstaged' => '≭'
+	}
 );
 
 my $ValidKeysTTL = scalar(@Sets) + scalar(@CKeys) + scalar(keys(%Syms));
