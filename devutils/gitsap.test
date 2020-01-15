@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/devutils/gitsap.test
 # Started On        - Wed 15 Jan 13:44:46 GMT 2020
-# Last Change       - Wed 15 Jan 23:48:10 GMT 2020
+# Last Change       - Wed 15 Jan 23:57:16 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -19,6 +19,9 @@ ChkDep tput mktemp perl sed sleep rm cp
 Run="$HOME/GitHub/terminalforlife/Personal/PerlProjects/source/gitsap"
 RealConfig="$HOME/.config/gitsap/config"
 TestConfig=`mktemp`
+
+printf -v Spaces '%*s' `tput cols` ' '
+Bars=${Spaces// /-}
 
 cp "$RealConfig" "$TestConfig"
 
@@ -53,7 +56,10 @@ Execute(){
 
 	printf '\n\n'
 
+	printf '%s\n' "$Bars"
 	perl $Run --config "$TestConfig" "$@"
+	printf '%s\n' "$Bars"
+
 	printf '\nexit(\e[1;36m%d\e[0m)\n\n' $?
 
 	# Keep the configuration file fresh for each execution.
