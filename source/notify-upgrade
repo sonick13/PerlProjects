@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
-#cito M:755 O:0 G:0 T:/usr/bin/notify-upgrade
+
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/notify-upgrade
 # Started On        - Wed 15 Jan 00:45:46 GMT 2020
-# Last Change       - Wed 15 Jan 16:28:43 GMT 2020
+# Last Change       - Wed 15 Jan 16:33:08 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
