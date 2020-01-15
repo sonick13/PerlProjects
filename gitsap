@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Tue 14 Jan 20:10:47 GMT 2020
+# Last Change       - Wed 15 Jan 00:14:52 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -24,12 +24,11 @@ use autodie;
 use TFL 'FErr', 'Boolean';
 use File::Find;
 use Git::Repository;
-use File::Basename 'basename', 'dirname';
 use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-14";
+my $CurVer = "2020-01-15";
 
 sub Usage{
 	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -118,36 +117,36 @@ if (scalar(@ARGV) > 1){
 
 my %Index = (
 	'Sets' => [
-		'Compact',
-		'OmitClean',
-		'Parseable',
-		'RegexStr',
-		'ShowBranch',
-		'ShowSize',
-		'Target'
+		'Compact',                  # Keep each result on one line.
+		'OmitClean',                # Don't display repositories which are clean.
+		'Parseable',                # Raw-like data for use by scripts, etc.
+		'RegexStr',                 # REGEX to filter results by repository path.
+		'ShowBranch',               # Currently-active branch of each repository.
+		'ShowSize',                 # Total disk space used by each repository.
+		'Target'                    # Directory in which to look for repositories.
 	],
 
 	'CKeys' => [
-		'Color_Repo',
-		'Color_RepoDir',
-		'Color_Status',
-		'Color_Symbol'
+		'Color_Repo',               # Base name of each repository path.
+		'Color_RepoDir',            # Directory name of each repository path.
+		'Color_Status',             # Status string for each repository.
+		'Color_Symbol'              # Symbol assigned to each category of status.
 	],
 
 	'Syms' => {
-		'Char_Clean' => '≎',
-		'Char_Fix' => '⮂',
-		'Char_Initial' => '≔',
-		'Char_Leads' => '∾',
-		'Char_New' => '≺',
-		'Char_Removed' => '⊀',
-		'Char_Uncommitted' => '≍',
-		'Char_Unknown' => '!',
-		'Char_Unstaged' => '≭'
+		'Char_Clean' => '≎',        # When a repository needs nothing done.
+		'Char_Fix' => '⮂',          # When conflicts needing fixed are found.
+		'Char_Initial' => '≔',      # Freshly-created repository yet to commit.
+		'Char_Leads' => '∾',        # Repository leads by X amount of commits.
+		'Char_New' => '≺',          # X amount of new, unstaged files were found.
+		'Char_Removed' => '⊀',      # X amount of files were unexpectedly removed.
+		'Char_Uncommitted' => '≍',  # Staged modifications yet to be committed.
+		'Char_Unknown' => '!',      # When the status is unrecognised by `gitsap`.
+		'Char_Unstaged' => '≭'      # Changes in the repository yet to be staged.
 	}
 );
 
-my $ValidKeysTTL = scalar(@Sets) + scalar(@CKeys) + scalar(keys(%Syms));
+my $ValidKeysTTL = @{$Index{'Sets'}} + @{$Index{'CKeys'}} + keys(%{$Index{'Syms'}});
 
 unlink($ConfigFile) if $ForceReset eq 'true';
 
@@ -189,11 +188,11 @@ if (-f -r -T $ConfigFile){
 			$ColorHash{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key =~ '^Color_.*'){
 			FErr(1, __LINE__, "Invalid 'Color_*' key detected.")
-				unless grep($Key, @CKeys);
+				unless grep($Key, @{$Index{'CKeys'}});
 
 			$ColorHash{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key =~ '^Char_.*'){
-			if (not grep($Key, keys(%Syms))){
+			if (not grep($Key, keys(%{$Index{'Syms'}}))){
 				FErr(1, __LINE__, "Invalid 'Char_*' key detected.")
 			}elsif (length($Value) > 1){
 				FErr(1, __LINE__, "Invalid 'Char_*' value detected.")
@@ -201,7 +200,7 @@ if (-f -r -T $ConfigFile){
 				next
 			}
 
-			$Syms{$Key} = $Value =~ tr/['"]//dr
+			${$Index{'Syms'}}{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key eq 'Compact'){
 			$Compact = $Value
 		}else{
@@ -272,11 +271,15 @@ find(
 	sub {
 		my $Name = $File::Find::name;
 
-		return unless basename($Name) eq '.git';
-		return unless -d -r -x $Name;
-		my $NewName = $Name =~ s/$Target\///r;
+		# Avoids error via missing argument in below `sprintf()` call, this happens
+		# when the user specifies the `--alt-path|-P` option.
+		return() if length($Name) == 1;
 
-		push(@FileArr, $NewName =~ s/\/\.git$//r)
+		return unless ($Name =~ '(?:.*/)(.*)')[0] eq '.git';
+		return unless -d -r -x $Name;
+		my $NewName = $Name =~ s/^$Target\///r;
+
+		push(@FileArr, ($NewName =~ '(.*)(?:/\.git$)')[0])
 	},
 
 	$Target
@@ -285,14 +288,14 @@ find(
 my (@Results, $Result);
 foreach (@FileArr){
 	my $Path = "$Target/$_";
-	my $ShowPath = $Path =~ s/$Target\///r;
+	my ($ShowPath) = $Path =~ m{(?:$Target/)(.*)};
 
 	# Look for user-provided REGEX in line, if one is given.
 	if (length($RegexStr) > 0){
 		if ($DoCase eq 'i'){
-			next unless grep(m/$RegexStr/i, $_)
+			next unless m{$RegexStr}i
 		}else{
-			next unless grep(m/$RegexStr/, $_)
+			next unless m{$RegexStr}
 		}
 	}
 
@@ -300,7 +303,7 @@ foreach (@FileArr){
 
 	# Default values, in-case something goes wrong.
 	my $Branch = "Unknown branch ";
-	my $Sym = $Syms{'unknown'};
+	my $Sym = ${$Index{'Syms'}}{'unknown'};
 	my $Desc = '...';
 
 	chomp(my @Status = $Git->run('status'));
@@ -310,7 +313,7 @@ foreach (@FileArr){
 
 	unless ($ShowBranch eq 'false'){
 		open(my $FH, '<', "$Path/.git/HEAD");
-		chomp($Branch = basename(<$FH>));
+		($Branch) = <$FH> =~ m{(?:.*/)(.*)};
 		close($FH);
 	}
 
@@ -319,14 +322,14 @@ foreach (@FileArr){
 	foreach (@Status){
 		chomp(my @Arr = split(' ', $_));
 
-		($Sym, $Desc) = ($Syms{'Char_Initial'}, 'has no commits, yet.')
+		($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Initial'}, 'has no commits, yet.')
 			if "$Arr[0]$Arr[1]" eq 'Initialcommit';
 	}
 
 	foreach (@Status){
 		chomp(my @Arr = split(' ', $_));
 
-		($Sym, $Desc) = ($Syms{'Char_Fix'}, 'has conflict(s).')
+		($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Fix'}, 'has conflict(s).')
 			if "$Arr[0]$Arr[1]$Arr[2]" eq '(fixconflictsand'
 	}
 
@@ -336,7 +339,7 @@ foreach (@FileArr){
 		my @CommitsRaw = $Git->run('log', '--format=oneline');
 		my $Commits = scalar(@CommitsRaw);
 
-		($Sym, $Desc) = ($Syms{'Char_Clean'}, "is $Commits commit(s) clean.")
+		($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Clean'}, "is $Commits commit(s) clean.")
 			if "$Arr[0]$Arr[1]$Arr[2]" eq 'nothingtocommit,';
 	}
 
@@ -347,7 +350,7 @@ foreach (@FileArr){
 
 		if ($Found eq 'true'){
 			my $Leads = $Arr[scalar(@Arr) - 2];
-			($Sym, $Desc) = ($Syms{'Char_Leads'}, "leads by $Leads commit(s).")
+			($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Leads'}, "leads by $Leads commit(s).")
 		}
 	}
 
@@ -364,7 +367,7 @@ foreach (@FileArr){
 				$FilesTTL++ if $_ =~ '^?? '
 			}
 
-			($Sym, $Desc) = ($Syms{'Char_New'}, "has $FilesTTL new file(s).")
+			($Sym, $Desc) = (${$Index{'Syms'}}{'Char_New'}, "has $FilesTTL new file(s).")
 		}
 	}
 
@@ -381,21 +384,21 @@ foreach (@FileArr){
 				$FilesTTL = (split(' ', $_))[0] and last
 			}
 
-			($Sym, $Desc) = ($Syms{'Char_Uncommitted'}, "has $FilesTTL modified file(s).")
+			($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Uncommitted'}, "has $FilesTTL modified file(s).")
 		}
 	}
 
 	foreach (@Status){
 		chomp(my @Arr = split(' ', $_));
 
-		($Sym, $Desc) = ($Syms{'Char_Unstaged'}, "has changes to commit.")
+		($Sym, $Desc) = (${$Index{'Syms'}}{'Char_Unstaged'}, "has changes to commit.")
 			if "$Arr[0]$Arr[1]$Arr[2]$Arr[3]" eq 'Changestobecommitted:'
 	}
 
 	# End of specially-ordered loops.
 
-	my $DirName = dirname($ShowPath) . '/';
-	my $BaseName = basename($ShowPath);
+	my $DirName = ($ShowPath =~ '(.*)(?:/.*)')[0] . '/';
+	my $BaseName = ($ShowPath =~ '(?:.*/)(.*)')[0];
 
 	$Desc = "Branch '$Branch' $Desc" if $ShowBranch eq 'true';
 
