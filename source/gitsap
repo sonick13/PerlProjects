@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Wed 15 Jan 16:25:25 GMT 2020
+# Last Change       - Wed 15 Jan 19:54:41 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -319,6 +319,8 @@ foreach (@FileArr){
 		($Branch) = <$FH> =~ m{(?:.*/)(.*)};
 		close($FH);
 	}
+
+	#TODO: Combine ordered loop functionality into the one loop.
 
 	# Loops in special order:
 
