@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+#cito M:755 O:0 G:0 T:/usr/bin/notify-upgrade
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/notify-upgrade
+# Started On        - Wed 15 Jan 00:45:46 GMT 2020
+# Last Change       - Wed 15 Jan 02:14:00 GMT 2020
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Dependencies:
+#
+#  apt (>= 1.2.32)
+#  libtfl-perl (>= 2020-01-03)
+#----------------------------------------------------------------------------------
+
+use strict;
+use warnings;
+use autodie;
+use TFL 'Err', 'DepChk';
+
+no warnings 'uninitialized';
+
+my $CurVer = "2020-01-15";
+
+sub Usage{
+	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
+		            $TFL::AUTHOR
+
+		            Simple upgrade notifier for Debian- and Ubuntu-based systems.
+
+		SYNTAX:     $TFL::PROGNAME [OPTS]
+
+		OPTS:       --help|-h|-?            - Displays this help information.
+		            --version|-v            - Output only the version datestamp.
+
+		NOTE:       Per the provided cron job, the check occurs every hour.
+	} =~ tr/\t//dr)
+}
+
+while (defined($ARGV[0])){
+	if ($ARGV[0] =~ '^(--help|-h|-\?)$'){
+		Usage(1); exit(0)
+	}elsif ($ARGV[0] =~ '^(--version|-v)$'){
+		print("$CurVer\n"); exit(0)
+	}else{
+		Err(1, "Incorrect option(s) specified.")
+	}
+
+	shift(@ARGV)
+}
+
+DepChk('apt-get');
+
+sub GetStats (){
+	my (%Stats, $Total);
+
+	foreach (`apt-get -s dist-upgrade`){
+		next unless /^[0-9]+ upgraded,/;
+
+		my @Arr = split(' ', $_);
+
+		%Stats = (
+			'Category' => {
+				'Upgrade' => $Arr[0],
+				'Install' => $Arr[2],
+				'Remove' => $Arr[5],
+				'Skip' => $Arr[9]
+			},
+
+			'Total' => $Total
+		);
+
+		last
+	}
+
+	my $Category = $Stats{'Category'};
+	$Total += $_ foreach values(%$Category);
+
+	return(\%Stats)
+}
+
+print GetStats()->{'Category'}->{'Upgrade'}
