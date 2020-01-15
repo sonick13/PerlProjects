@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Wed 15 Jan 19:54:41 GMT 2020
+# Last Change       - Wed 15 Jan 23:50:03 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -205,6 +205,7 @@ if (-f -r -T $ConfigFile){
 
 			${$Index{'Syms'}}{$Key} = $Value =~ tr/['"]//dr
 		}elsif ($Key eq 'Compact'){
+			Boolean($Value);
 			$Compact = $Value
 		}else{
 			FErr(1, __LINE__, "Invalid key '$Key' detected.")
