@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 #cito M:755 O:0 G:0 T:/usr/bin/wcdl
 #----------------------------------------------------------------------------------
-# Project Name      - wcdl (Wallpaperscraft Downloader)
+# Project Name      - PerlProjects/source/wcdl (Wallpaperscraft Downloader)
 # Started On        - Sat 27 Apr 18:54:48 BST 2019
-# Last Change       - Thu  9 Jan 23:08:14 GMT 2020
+# Last Change       - Wed 15 Jan 16:26:39 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ use File::Path 'make_path';
 use File::Temp;
 use POSIX 'ceil';
 
-my $CurVer = "2020-01-09";
+my $CurVer = "2020-01-15";
 
 my $Domain = 'https://wallpaperscraft.com';
 my $GHURL = "https://github.com/terminalforlife/$TFL::PROGNAME/raw/master/version";

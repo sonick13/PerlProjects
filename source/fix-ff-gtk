@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 #cito M:755 O:0 G:0 T:/usr/bin/fix-ff-gtk
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/fix-ff-gtk (Fix Firefox GTK)
+# Project Name      - PerlProjects/source/fix-ff-gtk (Fix Firefox GTK)
 # Started On        - Fri 10 Jan 19:32:40 GMT 2020
-# Last Change       - Sat 11 Jan 00:07:33 GMT 2020
+# Last Change       - Wed 15 Jan 16:25:02 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use warnings;
 use autodie;
 use TFL 'Err', 'YNInput'; # <-- libtfl-perl (>= 2020-01-11)
 
-my $CurVer = "2020-01-11";
+my $CurVer = "2020-01-15";
 
 my $File = '/usr/bin/firefox';
 my $Theme = 'Adwaita';

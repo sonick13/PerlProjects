@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 #cito M:755 O:0 G:0 T:/usr/bin/clean-locales
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/clean-locales
+# Project Name      - PerlProjects/source/clean-locales
 # Started On        - Thu  9 May 21:32:57 BST 2019
-# Last Change       - Fri  3 Jan 20:00:01 GMT 2020
+# Last Change       - Wed 15 Jan 16:24:51 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use File::Basename 'basename';
 use TFL 'FErr'; # <-- libtfl-perl (>= 2020-01-03)
 use File::Path 'remove_tree';
 
-my $CurVer = "2020-01-03";
+my $CurVer = "2020-01-15";
 
 my $LocDir = '/usr/share/locale';
 

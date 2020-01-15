@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/getip
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/tudu
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/completions/getip
+# Project Name      - PerlProjects/source/completions/tudu
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Fri 27 Dec 22:28:50 GMT 2019
+# Last Change       - Wed 15 Jan 16:27:12 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
-# This is the bash completion script for getip.
+# This is the bash completion script for tudu
 #----------------------------------------------------------------------------------
 
-_getip(){
+_tudu(){
 	GetArgs(){
 		local IsOpts F1 F2 _
-		getip -h | while read F1 F2 _; do
+		tudu -h | while read F1 F2 _; do
 			if [ "$F1" = 'OPTS:' ]; then
 				printf '%s ' "${F2//|/ }"
 				IsOpts='true'
@@ -31,4 +31,4 @@ _getip(){
 	COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`)
 }
 
-complete -F _getip getip
+complete -F _tudu tudu

@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 #cito M:755 O:0 G:0 T:/usr/bin/apt-undo-install
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/apt-undo-install
+# Project Name      - PerlProjects/source/apt-undo-install
 # Started On        - Tue 23 Apr 18:46:07 BST 2019
-# Last Change       - Thu  2 Jan 20:57:01 GMT 2020
+# Last Change       - Wed 15 Jan 16:24:43 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ use AptPkg::Cache; # <-- libapt-pkg-perl (>= 0.1.29build7)
 
 no warnings 'uninitialized';
 
-my $CurVer = "2020-01-02";
+my $CurVer = "2020-01-15";
 my $Progrm = basename($0);
 
 my $Domain = 'https://github.com';
