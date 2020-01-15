@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/tudu
 # Started On        - Sat 14 Dec 19:42:12 GMT 2019
-# Last Change       - Wed 15 Jan 21:27:34 GMT 2020
+# Last Change       - Wed 15 Jan 23:34:05 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -12,16 +12,17 @@
 #   libtfl-perl (>= 2020-01-03)
 #   libfile-listing-perl (>= 6.04-1)
 #   liblist-moreutils-perl (>= 0.413-1build1)
+#   libterm-readkey-perl (>= 2.33-1build1)
 #----------------------------------------------------------------------------------
 
 use v5.22.1;
 use strict;
 use warnings;
 use autodie;
-use TFL 'Err'; # <-- libtfl-perl (>= 2020-01-03)
-use File::Find; # <-- libfile-listing-perl (>= 6.04-1)
-use List::MoreUtils; # <-- liblist-moreutils-perl (>= 0.413-1build1)
-use Term::ReadKey 'GetTerminalSize'; # <-- libterm-readkey-perl (>= 2.33-1build1)
+use TFL 'Err';
+use File::Find;
+use List::MoreUtils;
+use Term::ReadKey 'GetTerminalSize';
 use Term::ANSIColor 'color', 'colorvalid';
 
 no warnings 'uninitialized', 'File::Find';
