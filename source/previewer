@@ -3,9 +3,11 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/previewer
 # Started On        - Mon 22 Apr 01:30:36 BST 2019
-# Last Change       - Wed 15 Jan 16:25:50 GMT 2020
+# Last Change       - Wed 15 Jan 16:35:03 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# Briefly tested and noted to also actually work in Windows 7 Professional.
 #----------------------------------------------------------------------------------
 
 use v5.22.1;
