@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/devutils/gitsap.test
 # Started On        - Wed 15 Jan 13:44:46 GMT 2020
-# Last Change       - Wed 15 Jan 23:57:16 GMT 2020
+# Last Change       - Thu 16 Jan 20:05:21 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -11,6 +11,7 @@
 #----------------------------------------------------------------------------------
 
 set -e
+. /usr/lib/tflbp-sh/Err
 . /usr/lib/tflbp-sh/ChkDep
 set +e
 
@@ -29,18 +30,30 @@ tput smcup
 tput clear
 
 SigHandler(){
-	Sig=$1
+	Sig=$?
 
 	rm "$TestConfig" 2> /dev/null
 	tput rmcup
-	exit $1
+	exit $Sig
 }
 
 trap SigHandler EXIT ABRT QUIT HUP TERM INT
 
-SetVal(){ sed -ir "s|^$1=.*|$1=$2|" "$TestConfig" || exit 7; }
+SetVal(){
+	if [ $# -eq 0 -o $# -gt 2 ]; then
+		Err 1 "Function 'SetVal()' needs at least one argument."
+	else
+		if [ -n "$2" ]; then
+			sed -i "s|^$1=.*|$1=$2|" "$TestConfig" || exit 4
+		else
+			sed -i 's|^\('"$1"'=\).*|\1|' "$TestConfig" | head || exit 4
+		fi
+	fi
+}
 
 Execute(){
+	tput clear
+
 	Message=$1
 	shift
 
@@ -55,47 +68,528 @@ Execute(){
 	done
 
 	printf '\n\n'
-
 	printf '%s\n' "$Bars"
+
 	perl $Run --config "$TestConfig" "$@"
-	printf '%s\n' "$Bars"
+	ExitStatus=$?
 
-	printf '\nexit(\e[1;36m%d\e[0m)\n\n' $?
+	printf '%s\n' "$Bars"
+	printf '\nexit(\e[1;36m%d\e[0m)\n\n' $ExitStatus
 
 	# Keep the configuration file fresh for each execution.
 	cp "$RealConfig" "$TestConfig"
+
+	printf '\n'
+	read -n 1 -s -p 'Press any key to continue...'
 }
 
 #---------------------------------------------------------------------Test Commands
 
-SetVal Compact asdf
-Execute "Set 'Compact' key to invalid value."
-
-SetVal Compact false
-Execute "Disabled 'Compact' key."
-
-SetVal Compact true
-Execute "Enabled 'Compact' key."
-
+SetVal Target NULL
 SetVal ShowSize false
-Execute "Disable 'ShowSize' key."
-
-SetVal ShowSize true
-Execute "Enable 'ShowSize' key."
-
-SetVal ShowBranch true
-Execute "Enable 'ShowBranch' key."
-
 SetVal ShowBranch false
-Execute "Disable 'ShowBranch' key."
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Default settings, including the 'Target' value."
+
+SetVal Target '$HOME/GitHub/terminalforlife'
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Default settings, with a 'Target' value including a variable."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Default key settings, with valid 'Target' value."
+
+SetVal Target
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Empty value of 'Target' key."
+
+SetVal Target ' '
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set invalid 'Target' value."
+
+SetVal Target "$HOME/GitHub/terminalforlife/"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "End 'Target' value with '/' character."
+
+SetVal Target '/tmp'
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set valid but unlikely 'Target' value."
+
+SetVal Target "/root"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set root (locked-down) directory for 'Target' value."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr 'i3Config'
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Use matching 'RegexStr' key value of (/i3Config/) in configuration file."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr '^i3Config$'
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Use non-matching 'RegexStr' key value of (/^i3Config$/) in configuration file."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Use matching 'RegexStr' value (/i3Config/) via the final argument." 'i3Config'
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Use non-matching 'RegexStr' key value (/^i3Config$/) via the final argument." '^iCfig$'
 
 SetVal Target "$HOME/GitHub/terminalforlife/Personal/PerlProjects"
-Execute "Set 'Target' key to one repository."
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set 'Target' to within a repository tree."
 
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_orange
+Execute "Set 'Color_Symbol' to an invalid color value."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean 'X'
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set 'Char_Clean' to a valid character key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean '_-'
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set 'Char_Clean' to an invalid (too long) character key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo bright_yellow
+SetVal Color_RepoDir bright_yellow
+SetVal Color_Status bright_yellow
+SetVal Color_Symbol bright_yellow
+Execute 'Change all color keys to bright yellow.'
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact 'asdf'
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Set 'Compact' key to invalid value."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact false
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Disabled 'Compact' key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize true
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Enable 'ShowSize' key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch true
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Enable 'ShowBranch' key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean true
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Enable 'OmitClean' key."
+
+SetVal Target "$HOME/GitHub/terminalforlife"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
 Execute 'Parseable output via OPT.' '--parseable'
-
-SetVal Parseable true
-Execute 'Parseable via configuration file.'
 
 #----------------------------------------------------------------------------------
 
