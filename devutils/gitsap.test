@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/devutils/gitsap.test
 # Started On        - Wed 15 Jan 13:44:46 GMT 2020
-# Last Change       - Thu 16 Jan 20:05:21 GMT 2020
+# Last Change       - Thu 16 Jan 22:41:06 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -14,6 +14,8 @@ set -e
 . /usr/lib/tflbp-sh/Err
 . /usr/lib/tflbp-sh/ChkDep
 set +e
+
+[ "$1" == '--auto' ] && Auto='true'
 
 ChkDep tput mktemp perl sed sleep rm cp
 
@@ -52,7 +54,7 @@ SetVal(){
 }
 
 Execute(){
-	tput clear
+	[ "$Auto" == 'true' ] || tput clear
 
 	Message=$1
 	shift
@@ -64,6 +66,8 @@ Execute(){
 		for Color in '1;32' '0;31' '2;32' '0;31' '0;32' '0;31' '1;31'; do
 			printf "\r\e[${Color}m%s\e[0m" $I "$Message"
 			sleep 0.03s
+
+			[ "$Auto" == 'true' ] && sleep 0.03s
 		done
 	done
 
@@ -80,7 +84,7 @@ Execute(){
 	cp "$RealConfig" "$TestConfig"
 
 	printf '\n'
-	read -n 1 -s -p 'Press any key to continue...'
+	[ "$Auto" == 'true' ] || read -n 1 -s -p 'Press any key to continue...'
 }
 
 #---------------------------------------------------------------------Test Commands
@@ -105,7 +109,7 @@ SetVal Color_Repo red
 SetVal Color_RepoDir red
 SetVal Color_Status bright_white
 SetVal Color_Symbol bright_red
-Execute "Default settings, including the 'Target' value."
+Execute "Default configuration settings."
 
 SetVal Target '$HOME/GitHub/terminalforlife'
 SetVal ShowSize false
@@ -127,7 +131,7 @@ SetVal Color_Repo red
 SetVal Color_RepoDir red
 SetVal Color_Status bright_white
 SetVal Color_Symbol bright_red
-Execute "Default settings, with a 'Target' value including a variable."
+Execute "Default, with 'Target' value including a variable."
 
 SetVal Target "$HOME/GitHub/terminalforlife"
 SetVal ShowSize false
@@ -149,7 +153,29 @@ SetVal Color_Repo red
 SetVal Color_RepoDir red
 SetVal Color_Status bright_white
 SetVal Color_Symbol bright_red
-Execute "Default key settings, with valid 'Target' value."
+Execute "Default, with valid 'Target' value."
+
+SetVal Target "$HOME/GitHub/terminalforlife/Personal"
+SetVal ShowSize false
+SetVal ShowBranch false
+SetVal OmitClean false
+SetVal RegexStr
+SetVal Parseable false
+SetVal Compact true
+SetVal Char_Clean
+SetVal Char_Fix
+SetVal Char_Initial
+SetVal Char_Leads
+SetVal Char_New
+SetVal Char_Removed
+SetVal Char_Uncommitted
+SetVal Char_Unknown
+SetVal Char_Unstaged
+SetVal Color_Repo red
+SetVal Color_RepoDir red
+SetVal Color_Status bright_white
+SetVal Color_Symbol bright_red
+Execute "Valid 'Target' value, but only one directory with repositories."
 
 SetVal Target
 SetVal ShowSize false
@@ -594,4 +620,4 @@ Execute 'Parseable output via OPT.' '--parseable'
 #----------------------------------------------------------------------------------
 
 printf '\n'
-read -n 1 -s -p 'Press any key to continue...'
+read -n 1 -s -p 'Press any key to finish...'

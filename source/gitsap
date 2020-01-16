@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/gitsap
 # Started On        - Mon  6 Jan 23:46:07 GMT 2020
-# Last Change       - Wed 15 Jan 23:50:03 GMT 2020
+# Last Change       - Thu 16 Jan 22:36:15 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -26,9 +26,9 @@ use File::Find;
 use Git::Repository;
 use Term::ANSIColor 'color', 'colorvalid';
 
-no warnings 'uninitialized';
+no warnings 'uninitialized', 'File::Find';
 
-my $CurVer = "2020-01-15";
+my $CurVer = "2020-01-16";
 
 sub Usage{
 	print(qq{            @{[uc($TFL::PROGNAME)]} ($CurVer)
@@ -98,7 +98,7 @@ while (defined($ARGV[0])){
 
 		$ConfigFile = $ARGV[0]
 	}elsif($ARGV[0] eq '--parseable'){
-		$Parseable = 'true'
+		$Parseable = 'true';
 	}elsif($ARGV[0] =~ '^(--force-reset|-F)$'){
 		$ForceReset = 'true'
 	}elsif($ARGV[0] =~ '^-'){
@@ -180,7 +180,7 @@ if (-f -r -T $ConfigFile){
 			$ShowSize = $Value
 		}elsif ($Key eq 'Parseable'){
 			Boolean($Value);
-			$Parseable = $Value
+			$Parseable = $Value unless $Parseable eq 'true'
 		}elsif ($Key eq 'OmitClean'){
 			Boolean($Value);
 			$OmitClean = $Value
@@ -267,6 +267,12 @@ if (-f -r -T $ConfigFile){
 	exit(0)
 }
 
+# Handle user-provided environment variables.
+foreach (keys(%ENV)){
+	$Target = $Target =~ s|\$$_|$ENV{$_}|gr if exists($ENV{$_})
+}
+
+FErr(1, __LINE__, "Target directory not provided.") unless length($Target) > 0;
 FErr(1, __LINE__, "Target directory not found.") unless -d $Target;
 
 # Recursive search for files in `Target` per `Conditions()`.
@@ -277,7 +283,7 @@ find(
 
 		# Avoids error via missing argument in below `sprintf()` call, this happens
 		# when the user specifies the `--alt-path|-P` option.
-		return() if length($Name) == 1;
+		#return() if length($Name) == 1;
 
 		return unless ($Name =~ '(?:.*/)(.*)')[0] eq '.git';
 		return unless -d -r -x $Name;
@@ -292,7 +298,7 @@ find(
 my (@Results, $Result);
 foreach (@FileArr){
 	my $Path = "$Target/$_";
-	my ($ShowPath) = $Path =~ m{(?:$Target/)(.*)};
+	my $ShowPath = ($Path =~ "(?:$Target/)(.*)")[0];
 
 	# Look for user-provided REGEX in line, if one is given.
 	if (length($RegexStr) > 0){
@@ -317,7 +323,7 @@ foreach (@FileArr){
 
 	unless ($ShowBranch eq 'false'){
 		open(my $FH, '<', "$Path/.git/HEAD");
-		($Branch) = <$FH> =~ m{(?:.*/)(.*)};
+		$Branch = (<$FH> =~ '(?:.*/)(.*)')[0];
 		close($FH);
 	}
 
@@ -380,7 +386,7 @@ foreach (@FileArr){
 	foreach (@Status){
 		chomp(my @Arr = split(' ', $_));
 
-		my $Found = 'true' if "$Arr[0]" eq 'modified:';
+		my $Found = 'true' if $Arr[0] eq 'modified:';
 
 		if ($Found eq 'true'){
 			my @Data = $Git->run('diff', '--shortstat');
@@ -403,8 +409,14 @@ foreach (@FileArr){
 
 	# End of specially-ordered loops.
 
-	my $DirName = ($ShowPath =~ '(.*)(?:/.*)')[0] . '/';
-	my $BaseName = ($ShowPath =~ '(?:.*/)(.*)')[0];
+	my $DirName = ($ShowPath =~ '(.*)(?:/.*)')[0];
+
+	# Addresses repository displaying incorrectly if there's only one directory in
+	# which repositories reside. Since `$Target` is omitted, `$DirName` would be
+	# empty, in that situation, hence this workaround.
+	$DirName = $DirName . '/' if length($DirName) > 0;
+
+	my $BaseName = ($ShowPath =~ '(?:.*/)?(.*)')[0];
 
 	$Desc = "Branch '$Branch' $Desc" if $ShowBranch eq 'true';
 
