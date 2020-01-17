@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/tflsoftware
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/tflcomp-perl
 #----------------------------------------------------------------------------------
-# Project Name      - PerlProjects/source/completions/tflsoftware
+# Project Name      - PerlProjects/source/tflcomp-perl
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Fri 17 Jan 02:29:42 GMT 2020
+# Last Change       - Fri 17 Jan 02:52:04 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -17,12 +17,18 @@
 #
 # Quick setup, after installation via Cito, and as root:
 #
-#   ln /usr/share/bash-completion/completions/tflsoftware apt-undo-install
-#   ln /usr/share/bash-completion/completions/tflsoftware getip
-#   ln /usr/share/bash-completion/completions/tflsoftware gitsap
-#   ln /usr/share/bash-completion/completions/tflsoftware previewer
-#   ln /usr/share/bash-completion/completions/tflsoftware tudu
-#   ln /usr/share/bash-completion/completions/tflsoftware wcdl
+#   ln /usr/share/bash-completion/completions/tflcomp-perl apt-undo-install
+#   ln /usr/share/bash-completion/completions/tflcomp-perl cpufreq
+#   ln /usr/share/bash-completion/completions/tflcomp-perl fix-ff-gtk
+#   ln /usr/share/bash-completion/completions/tflcomp-perl getip
+#   ln /usr/share/bash-completion/completions/tflcomp-perl gitsap
+#   ln /usr/share/bash-completion/completions/tflcomp-perl kernelchk
+#   ln /usr/share/bash-completion/completions/tflcomp-perl ldmod
+#   ln /usr/share/bash-completion/completions/tflcomp-perl lsbins
+#   ln /usr/share/bash-completion/completions/tflcomp-perl previewer
+#   ln /usr/share/bash-completion/completions/tflcomp-perl redshifter
+#   ln /usr/share/bash-completion/completions/tflcomp-perl tudu
+#   ln /usr/share/bash-completion/completions/tflcomp-perl wcdl
 #----------------------------------------------------------------------------------
 
 _wcdl(){
@@ -144,7 +150,9 @@ _tflparser(){
 	COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`)
 }
 
+complete -W '--help -h -? --version -v --reset -r --increment -i --decrement -d' redshifter
+complete -W '--help -h -? -v --version' cpufreq
+complete -F _tflparser gitsap tudu getip fix-ff-gtk ldmod lsbins kernelchk
 complete -F _aptundoinstall -o default apt-undo-install
-complete -F _tflparser gitsap tudu getip
 complete -F _previewer previewer
 complete -F _wcdl wcdl
