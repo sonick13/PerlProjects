@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+#cito M:644 O:0 G:0 T:/usr/share/bash-completion/completions/tflsoftware
+#----------------------------------------------------------------------------------
+# Project Name      - PerlProjects/source/completions/tflsoftware
+# Started On        - Mon 29 Jan 18:47:58 GMT 2018
+# Last Change       - Fri 17 Jan 02:29:42 GMT 2020
+# Author E-Mail     - terminalforlife@yahoo.com
+# Author GitHub     - https://github.com/terminalforlife
+#----------------------------------------------------------------------------------
+# This is the bash completion script for various programs stored in PerlProjects.
+#
+# A link (symbolic or hard) must be created in the below directory:
+#
+#   /usr/share/bash-completion/completions
+#
+# Each link must be called each of the programs for which this script completes.
+#
+# Quick setup, after installation via Cito, and as root:
+#
+#   ln /usr/share/bash-completion/completions/tflsoftware apt-undo-install
+#   ln /usr/share/bash-completion/completions/tflsoftware getip
+#   ln /usr/share/bash-completion/completions/tflsoftware gitsap
+#   ln /usr/share/bash-completion/completions/tflsoftware previewer
+#   ln /usr/share/bash-completion/completions/tflsoftware tudu
+#   ln /usr/share/bash-completion/completions/tflsoftware wcdl
+#----------------------------------------------------------------------------------
+
+_wcdl(){
+	local Current=${COMP_WORDS[$COMP_CWORD]}
+	local Previous=${COMP_WORDS[$COMP_CWORD - 1]}
+
+	GetArgs(){
+		local IsOpts F1 F2 _
+		wcdl -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
+
+	GetCats(){
+		while read -a X; do
+			if [ "${X[0]}" -a "${X[0]}" != "CATEGORY" ]; then
+				printf "%s " "${X[0]}"
+			fi
+		done <<< "$(wcdl --colorless --show-categories)"
+	}
+
+	if [[ $Previous =~ ^(--resolution|-r)$ ]]; then
+		COMPREPLY=($(compgen -W "$(wcdl --show-resolutions)" -- "$2"))
+	elif [[ "$Current" == -* ]]; then
+		COMPREPLY=($(compgen -W "$(GetArgs)" -- "$2"))
+	elif [[ $Previous =~ ^(--dest|-D)$ ]]; then
+		COMPREPLY=($(compgen -o default -- "$2"))
+	else
+		COMPREPLY=($(compgen -W "$(GetCats)" -- "$2"))
+	fi
+}
+
+_previewer(){
+	GetArgs(){
+		local IsOpts F1 F2 _
+		previewer -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
+
+	case $2 in
+		-*)
+			COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`) ;;
+		*)
+			PKGList=(`_xfunc dpkg _comp_dpkg_installed_packages`)
+			COMPREPLY=(`compgen -W "${PKGList[*]}" -- "$2"`) ;;
+	esac
+}
+
+_aptundoinstall(){
+	GetArgs(){
+		local CurLine Word
+
+		while read -a CurLine; do
+			if ! [[ "$IS_OPTS_LINE" == 'true' && "$Old" =~ ^[A-Z]+:$ ]]; then
+				case "${CurLine[0]}" in
+					OPTS:)
+						Word="${CurLine[1]//|/ } " ;;
+					-*)
+						Word="${CurLine[0]//|/ } " ;;
+				esac
+
+				if [ "$Word" == '--output-only:F ' ]; then
+					printf '%s ' --output-only:{col,list,desc}
+				else
+					printf '%s ' "$Word"
+				fi
+
+				local Old=${CurLine[0]/OPTS:}
+			else
+				break
+			fi
+		done <<< "$(apt-undo-install -h)"
+	}
+
+	COMPREPLY=($(compgen -W "$(GetArgs)" -- "$2"))
+}
+
+_tflparser(){
+	Self=$1
+
+	GetArgs(){
+		local IsOpts F1 F2 _
+		"$Self" -h | while read F1 F2 _; do
+			if [ "$F1" = 'OPTS:' ]; then
+				printf '%s ' "${F2//|/ }"
+				IsOpts='true'
+			elif [ "$IsOpts" = 'true' ]; then
+				case $F1 in
+					-*)
+						printf '%s ' "${F1//|/ }"
+						[ -z "$F1" ] && break ;;
+					*) continue ;;
+				esac
+			fi
+		done
+	}
+
+	COMPREPLY=(`compgen -W "$(GetArgs)" -- "$2"`)
+}
+
+complete -F _aptundoinstall -o default apt-undo-install
+complete -F _tflparser gitsap tudu getip
+complete -F _previewer previewer
+complete -F _wcdl wcdl
