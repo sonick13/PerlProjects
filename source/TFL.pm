@@ -41,7 +41,7 @@ use vars '@ISA', '@EXPORT', '$VERSION';
 	'DepChk', 'KeyDef', 'UsageCPU', 'UnderLine', 'Boolean', 'YNInput'
 );
 
-$VERSION = '2020-01-11';
+$VERSION = '2020-01-15';
 
 our ($PROGNAME) = $0 =~ m{(?:.*/)?([^/]*)};
 our $AUTHOR = 'written by terminalforlife <terminalforlife@yahoo.com>';
