@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------------------
 # Project Name      - PerlProjects/source/tflcomp-perl
 # Started On        - Mon 29 Jan 18:47:58 GMT 2018
-# Last Change       - Fri 17 Jan 02:52:04 GMT 2020
+# Last Change       - Fri 17 Jan 02:56:00 GMT 2020
 # Author E-Mail     - terminalforlife@yahoo.com
 # Author GitHub     - https://github.com/terminalforlife
 #----------------------------------------------------------------------------------
@@ -15,20 +15,9 @@
 #
 # Each link must be called each of the programs for which this script completes.
 #
-# Quick setup, after installation via Cito, and as root:
+# Example:
 #
-#   ln /usr/share/bash-completion/completions/tflcomp-perl apt-undo-install
-#   ln /usr/share/bash-completion/completions/tflcomp-perl cpufreq
-#   ln /usr/share/bash-completion/completions/tflcomp-perl fix-ff-gtk
-#   ln /usr/share/bash-completion/completions/tflcomp-perl getip
-#   ln /usr/share/bash-completion/completions/tflcomp-perl gitsap
-#   ln /usr/share/bash-completion/completions/tflcomp-perl kernelchk
-#   ln /usr/share/bash-completion/completions/tflcomp-perl ldmod
-#   ln /usr/share/bash-completion/completions/tflcomp-perl lsbins
-#   ln /usr/share/bash-completion/completions/tflcomp-perl previewer
-#   ln /usr/share/bash-completion/completions/tflcomp-perl redshifter
-#   ln /usr/share/bash-completion/completions/tflcomp-perl tudu
-#   ln /usr/share/bash-completion/completions/tflcomp-perl wcdl
+#   sudo ln /usr/share/bash-completion/completions/tflcomp-perl gitsap
 #----------------------------------------------------------------------------------
 
 _wcdl(){
